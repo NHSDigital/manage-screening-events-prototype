@@ -1,41 +1,14 @@
-<!-- Use this page as the index for your project -->
 
-<!-- ADDING CUSTOM CSS - Add your custom CSS or Sass in /app/assets/sass/main.scss -->
+{% extends 'layout-app.html' %}
 
-<!-- Extends the layout from /views/layout.html -->
-{% extends 'layout.html' %}
-<!--
-  In /views/layout.html you can:
-    - change the header and footer
-    - add custom CSS and JavaScript
--->
+{% set formAction = "foo" %}
 
-<!-- Set the page title -->
-{% block pageTitle %}
+
+{% block pageContent %}
+
+<h1>
   {{serviceName}}
-{% endblock %}
+  <span class="nhsuk-caption-xl nhsuk-caption--bottom">Prototype kit {{version}}</span>
+</h1>
 
-<!-- For adding a breadcrumb or back link -->
-<!-- Code examples can be found at https://service-manual.nhs.uk/design-system/components/breadcrumbs and https://service-manual.nhs.uk/design-system/components/back-link -->
-{% block beforeContent %}
-{% endblock %}
-
-
-<!-- For adding page content -->
-<!-- Page layout code can be found at https://service-manual.nhs.uk/design-system/styles/layout -->
-{% block content %}
-  <div class="nhsuk-grid-row">
-    <div class="nhsuk-grid-column-two-thirds">
-
-      <!-- Change the page title here -->
-      <h1>
-        {{serviceName}}
-        <span class="nhsuk-caption-xl nhsuk-caption--bottom">Prototype kit {{version}}</span>
-      </h1>
-
-
-      <!-- End of content -->
-
-    </div>
-  </div>
 {% endblock %}

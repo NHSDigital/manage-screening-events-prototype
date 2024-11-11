@@ -51,6 +51,8 @@ app.use(cookieParser());
 // Nunjucks configuration for application
 const appViews = [
   path.join(__dirname, 'app/views/'),
+  path.join(__dirname, 'app/views/_templates'),
+  path.join(__dirname, 'app/views/_includes'),
   path.join(__dirname, 'docs/views/'),
   path.join(__dirname, 'lib/prototype-admin/'),
   path.join(__dirname, 'node_modules/nhsuk-frontend/packages/components'),

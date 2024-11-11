@@ -13,9 +13,12 @@
 {% endblock %}
 
 <!-- Set the page title -->
-{% block pageTitle %}
-  NHS.UK prototype kit
-{% endblock %}
+{% block pageTitle -%}
+  {%- if pageHeading -%}
+    {{- pageHeading }} -
+  {%- endif -%}
+  {{- serviceName }} - NHS
+{%- endblock %}
 
 <!-- Edit the header -->
 <!-- Header code examples can be found at https://service-manual.nhs.uk/design-system/components/header -->
@@ -51,7 +54,7 @@
 {% block bodyEnd %}
   {% block scripts %}
     <!-- Custom JavaScript files can be added to this file -->
-    {% include "includes/scripts.html" %}
+    {% include "_includes/scripts.html" %}
     <!-- For adding page specific JavsScript -->
     {% block pageScripts %}{% endblock %}
   {% endblock %}
