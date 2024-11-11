@@ -2,6 +2,16 @@
 {% extends "layout.html" %}
 
 
+{% block beforeContent %}
+
+{{ backLink({
+  href: "javascript:history.back();",
+  text: "Go back"
+}) }}
+
+{% endblock %}
+
+
 {% block content %}
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-two-thirds">

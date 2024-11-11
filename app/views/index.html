@@ -1,8 +1,6 @@
 
 {% extends 'layout-app.html' %}
 
-{% set formAction = "foo" %}
-
 
 {% block pageContent %}
 
@@ -10,5 +8,14 @@
   {{serviceName}}
   <span class="nhsuk-caption-xl nhsuk-caption--bottom">Prototype kit {{version}}</span>
 </h1>
+
+<p>
+  Index page to link to bits of the prototype.
+</p>
+
+{{ button({
+  text: "Go to dashboard",
+  href: "/dashboard"
+}) }}
 
 {% endblock %}
