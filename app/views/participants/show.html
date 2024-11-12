@@ -1,0 +1,122 @@
+
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "Today’s clinics" %}
+
+
+{% block pageContent %}
+
+  {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
+
+  <h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">
+      {{ unit.name }} - {{ clinic.date | formatDate }}
+    </span>
+    {{ participant | getFullName }}
+  </h1>
+
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      <h2 class="nhsuk-heading-m">Current appointment</h2>
+
+      <dl class="nhsuk-summary-list">
+        <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">Time</dt>
+          <dd class="nhsuk-summary-list__value">
+            {{ event.statusHistory[0].timestamp | formatTime }}
+          </dd>
+        </div>
+        <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">Status</dt>
+          <dd class="nhsuk-summary-list__value">
+            {{ event.status | replace("_", " ") | capitalize }}
+          </dd>
+        </div>
+      </dl>
+
+      <h2 class="nhsuk-heading-m">Personal details</h2>
+
+      <dl class="nhsuk-summary-list">
+        <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">NHS number</dt>
+          <dd class="nhsuk-summary-list__value">
+            {{ participant.medicalInformation.nhsNumber }}
+          </dd>
+        </div>
+        <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">SX number</dt>
+          <dd class="nhsuk-summary-list__value">{{ participant.sxNumber }}</dd>
+        </div>
+        <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">Date of birth</dt>
+          <dd class="nhsuk-summary-list__value">
+            {{ participant.demographicInformation.dateOfBirth | formatDate }}
+          </dd>
+        </div>
+        <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">Address</dt>
+          <dd class="nhsuk-summary-list__value">
+            {{ participant.demographicInformation.address.line1 }}<br>
+            {% if participant.demographicInformation.address.line2 %}
+              {{ participant.demographicInformation.address.line2 }}<br>
+            {% endif %}
+            {{ participant.demographicInformation.address.city }}<br>
+            {{ participant.demographicInformation.address.postcode }}
+          </dd>
+        </div>
+        <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">Phone</dt>
+          <dd class="nhsuk-summary-list__value">
+            {{ participant.demographicInformation.phone }}
+          </dd>
+        </div>
+        <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">Email</dt>
+          <dd class="nhsuk-summary-list__value">
+            {{ participant.demographicInformation.email }}
+          </dd>
+        </div>
+      </dl>
+
+      <h2 class="nhsuk-heading-m">Medical information</h2>
+
+      <dl class="nhsuk-summary-list">
+        {% if participant.medicalInformation.riskFactors.length > 0 %}
+        <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">Risk factors</dt>
+          <dd class="nhsuk-summary-list__value">
+            <ul class="nhsuk-list nhsuk-list--bullet">
+              {% for factor in participant.medicalInformation.riskFactors %}
+                <li>{{ factor | replace("_", " ") | capitalize }}</li>
+              {% endfor %}
+            </ul>
+          </dd>
+        </div>
+        {% endif %}
+        
+        {% if participant.currentHealthInformation.medications.length > 0 %}
+        <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">Current medications</dt>
+          <dd class="nhsuk-summary-list__value">
+            <ul class="nhsuk-list nhsuk-list--bullet">
+              {% for medication in participant.currentHealthInformation.medications %}
+                <li>{{ medication | replace("_", " ") | capitalize }}</li>
+              {% endfor %}
+            </ul>
+          </dd>
+        </div>
+        {% endif %}
+      </dl>
+
+      {% if event.status === 'scheduled' %}
+        <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}" class="nhsuk-button">
+          Check in participant
+        </a>
+      {% endif %}
+
+      <p class="nhsuk-body">
+        <a href="/clinics/{{ clinicId }}" class="nhsuk-back-link">Back to clinic list</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

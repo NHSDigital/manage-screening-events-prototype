@@ -16,16 +16,17 @@
 
 {# {{ data.people[0].name() | log}} #}
 
-{{ data.participants }}
 
 {# {% set person = data.helpers.people.findById(personId) %} #}
 {{ person.fullName }}
 
-{{ data.utils | log}}
+
 
 {{ button({
   text: "Go to dashboard",
   href: "/dashboard"
 }) }}
+
+<p><a href="/clinics">Clinics</a></p>
 
 {% endblock %}

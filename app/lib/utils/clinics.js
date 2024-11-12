@@ -24,8 +24,12 @@ const getTodaysClinics = (clinics) => {
  * @param {string} clinicId - Clinic ID to filter by
  */
 const getClinicEvents = (events, clinicId) => {
+  if (!events || !clinicId) return [];
+  console.log(`Looking for events with clinicId: ${clinicId}`);
+  console.log(`Found ${events.filter(e => e.clinicId === clinicId).length} events`);
   return events.filter(e => e.clinicId === clinicId);
 };
+
 
 /**
  * Format clinic time slot
