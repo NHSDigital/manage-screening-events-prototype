@@ -1,0 +1,43 @@
+
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "Today’s clinics" %}
+
+
+{% block pageContent %}
+ {% set todaysClinics = data.clinics | getTodaysClinics %}
+
+  <h1 class="nhsuk-heading-l">Today's clinics</h1>
+
+  {% if todaysClinics.length === 0 %}
+    <p class="nhsuk-body">No clinics scheduled for today.</p>
+  {% else %}
+    <table class="nhsuk-table">
+      <thead class="nhsuk-table__head">
+        <tr>
+          <th class="nhsuk-table__header">Location</th>
+          <th class="nhsuk-table__header">Time</th>
+          <th class="nhsuk-table__header">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="nhsuk-table__body">
+        {% for clinic in todaysClinics %}
+          {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
+          {% set events = data.events | getClinicEvents(clinic.id) %}
+          <tr class="nhsuk-table__row">
+            <td class="nhsuk-table__cell">{{ unit.name }}</td>
+            <td class="nhsuk-table__cell">{{ clinic.date | formatDate }}</td>
+            <td class="nhsuk-table__cell">
+              <a href="/clinics/{{ clinic.id }}" class="nhsuk-link">View clinic</a>
+              ({{ events.length }} participants)
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  <p class="nhsuk-body">
+    <a href="/clinics" class="nhsuk-link">View all clinics</a>
+  </p>
+{% endblock %}

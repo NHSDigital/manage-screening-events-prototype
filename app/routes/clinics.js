@@ -35,6 +35,11 @@ function getClinicData(data, clinicId) {
 }
 
 module.exports = router => {
+
+  router.get('/clinics/today', (req, res) => {
+    res.render('clinics/today');
+  });
+
   // Single clinic view
   router.get('/clinics/:id', (req, res) => {
     const clinicData = getClinicData(req.session.data, req.params.id);
