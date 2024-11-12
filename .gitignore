@@ -4,6 +4,7 @@
 /dist
 /tmp
 /public
+/app/data/generated/
 
 # Runtime data
 pids
