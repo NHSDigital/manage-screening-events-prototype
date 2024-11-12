@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 module.exports = function (env) { /* eslint-disable-line func-names,no-unused-vars */
   /**
    * Instantiate object used to store the methods registered as a
@@ -7,39 +10,32 @@ module.exports = function (env) { /* eslint-disable-line func-names,no-unused-va
    */
   const filters = {};
 
-  /* ------------------------------------------------------------------
-    add your methods to the filters obj below this comment block:
-    @example:
+  // Get all files from utils directory
+  const utilsPath = path.join(__dirname, 'lib/utils');
+  
+  try {
+    // Read all files in the utils directory
+    const files = fs.readdirSync(utilsPath);
 
-    filters.sayHi = function(name) {
-        return 'Hi ' + name + '!'
-    }
+    files.forEach(file => {
+      // Only process .js files
+      if (path.extname(file) === '.js') {
+        // Get the utils module
+        const utils = require(path.join(utilsPath, file));
+        
+        // Add each exported function as a filter
+        Object.entries(utils).forEach(([name, func]) => {
+          // Only add if it's a function
+          if (typeof func === 'function') {
+            filters[name] = func;
+          }
+        });
+      }
+    });
+  } catch (err) {
+    console.warn('Error loading filters from utils:', err);
+  }
 
-    Which in your templates would be used as:
 
-    {{ 'Paul' | sayHi }} => 'Hi Paul'
-
-    Notice the first argument of your filters method is whatever
-    gets 'piped' via '|' to the filter.
-
-    Filters can take additional arguments, for example:
-
-    filters.sayHi = function(name,tone) {
-      return (tone == 'formal' ? 'Greetings' : 'Hi') + ' ' + name + '!'
-    }
-
-    Which would be used like this:
-
-    {{ 'Joel' | sayHi('formal') }} => 'Greetings Joel!'
-    {{ 'Gemma' | sayHi }} => 'Hi Gemma!'
-
-    For more on filters and how to write them see the Nunjucks
-    documentation.
-
-  ------------------------------------------------------------------ */
-
-  /* ------------------------------------------------------------------
-    keep the following line to return your filters to the app
-  ------------------------------------------------------------------ */
   return filters;
 };
