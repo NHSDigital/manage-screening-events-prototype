@@ -3,16 +3,19 @@
 
 
 {% block beforeContent %}
+{% if not hideBackLink %}
+  {{ backLink({
+    href: "javascript:history.back();",
+    text: "Go back"
+  }) }}
+{% endif %}
 
-{{ backLink({
-  href: "javascript:history.back();",
-  text: "Go back"
-}) }}
 
 {% endblock %}
 
 
 {% block content %}
+{{ data | log }}
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-two-thirds">
     {% if formAction or isForm %}
