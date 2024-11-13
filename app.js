@@ -10,6 +10,7 @@ const express = require('express');
 const nunjucks = require('nunjucks');
 const sessionInCookie = require('client-sessions');
 const sessionInMemory = require('express-session');
+const flash = require('connect-flash');
 
 // Run before other code to make sure variables from .env are available
 dotenv.config();
@@ -111,6 +112,9 @@ if (useAutoStoreData === 'true') {
   utils.addCheckedFunction(nunjucksAppEnv);
 }
 
+// Flash messages
+app.use(flash());
+
 // Warn if node_modules folder doesn't exist
 function checkFiles() {
   const nodeModulesExists = fs.existsSync(path.join(__dirname, '/node_modules'));
@@ -147,6 +151,8 @@ if (!sessionDataDefaultsFileExists) {
 
 // Local variables
 app.use(locals(config));
+
+
 
 // View engine
 app.set('view engine', 'html');

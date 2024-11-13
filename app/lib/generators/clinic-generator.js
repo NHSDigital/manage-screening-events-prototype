@@ -2,12 +2,7 @@
 
 const { faker } = require('@faker-js/faker');
 const generateId = require('../utils/id-generator');
-const weighted = require('weighted');
-
-const CLINIC_TYPES = [
-  { type: 'hospital', weight: 0.7 },
-  { type: 'mobile_unit', weight: 0.3 }
-];
+const dayjs = require('dayjs');
 
 const generateTimeSlots = (date, config) => {
   const slots = [];
@@ -29,29 +24,66 @@ const generateTimeSlots = (date, config) => {
   return slots;
 };
 
+const determineClinicStatus = (date) => {
+  const now = dayjs();
+  const clinicDate = dayjs(date);
+  const clinicStart = clinicDate.hour(8); // Assume clinic starts at 8am
+  const clinicEnd = clinicDate.hour(17); // Assume clinic ends at 5pm
+
+  if (clinicDate.isBefore(now, 'day')) {
+    return 'closed';
+  } else if (clinicDate.isAfter(now, 'day')) {
+    return 'scheduled';
+  } else {
+    // Today - check time
+    if (now.isBefore(clinicStart)) {
+      return 'scheduled';
+    } else if (now.isAfter(clinicEnd)) {
+      return 'closed';
+    } else {
+      return 'in_progress';
+    }
+  }
+};
+
+const generateMobileSiteName = () => {
+  const sites = [
+    "Tesco Extra Banbury",
+    "Witney Community Hospital",
+    "Thame Community Hospital",
+    "Bicester Community Hospital",
+    "Sainsbury's Kidlington",
+    "Carterton Health Centre",
+    "Wantage Community Hospital",
+    "Tesco Faringdon",
+    "Didcot Civic Hall",
+    "Chipping Norton Health Centre"
+  ];
+  
+  return faker.helpers.arrayElement(sites);
+};
+
 // Generate multiple clinics for a BSU on a given day
 const generateClinicsForBSU = ({ date, breastScreeningUnit, config }) => {
   // Determine number of clinics for this BSU today (1-2)
   const numberOfClinics = Math.random() < 0.3 ? 2 : 1;
   
-  return Array.from({ length: numberOfClinics }, () => {
-    // If this is the second clinic for the day, make it more likely to be a mobile unit
-    const isSecondClinic = numberOfClinics === 2;
-    const clinicType = weighted.select(
-      CLINIC_TYPES.map(t => t.type),
-      CLINIC_TYPES.map(t => isSecondClinic ? (t.type === 'mobile_unit' ? 0.7 : 0.3) : t.weight)
-    );
-
+  // Randomly select locations from available ones
+  const selectedLocations = faker.helpers.arrayElements(
+    breastScreeningUnit.locations,
+    { min: numberOfClinics, max: numberOfClinics }
+  );
+  
+  return selectedLocations.map(location => {
     return {
       id: generateId(),
       date: date.toISOString().split('T')[0],
       breastScreeningUnitId: breastScreeningUnit.id,
-      clinicType,
-      location: clinicType === 'hospital' ? 
-        breastScreeningUnit.address :
-        generateMobileLocation(breastScreeningUnit),
+      clinicType: location.type,
+      locationId: location.id,
+      siteName: location.type === 'mobile_unit' ? generateMobileSiteName() : null,
       slots: generateTimeSlots(date, config),
-      status: date < new Date() ? 'completed' : 'scheduled',
+      status: determineClinicStatus(date),
       staffing: {
         mamographers: [],
         radiologists: [],
@@ -62,26 +94,6 @@ const generateClinicsForBSU = ({ date, breastScreeningUnit, config }) => {
       notes: null
     };
   });
-};
-
-const generateMobileLocation = (bsu) => {
-  const locations = [
-    'Community Centre',
-    'Health Centre',
-    'Leisure Centre',
-    'Shopping Centre Car Park',
-    'Supermarket Car Park'
-  ];
-  
-  const location = faker.helpers.arrayElement(locations);
-  return {
-    name: `${faker.location.city()} ${location}`,
-    address: {
-      line1: faker.location.streetAddress(),
-      city: faker.location.city(),
-      postcode: faker.location.zipCode('??# #??')
-    }
-  };
 };
 
 module.exports = {

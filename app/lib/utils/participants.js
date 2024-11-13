@@ -1,15 +1,6 @@
 // app/lib/utils/participants.js
 
 /**
- * Find a participant by ID
- * @param {Array} participants - Array of all participants
- * @param {string} id - id of participant to find
- */
-const findById = (participants, id) => {
-  return participants.find(p => p.id === id);
-};
-
-/**
  * Get full name of participant
  * @param {Object} participant - Participant object
  */
@@ -55,7 +46,6 @@ const getAge = (participant) => {
 };
 
 module.exports = {
-  findById,
   getFullName,
   getShortName,
   findBySXNumber,

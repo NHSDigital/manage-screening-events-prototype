@@ -21,6 +21,7 @@
     "body-parser": "^1.20.3",
     "browser-sync": "^3.0.3",
     "client-sessions": "^0.8.0",
+    "connect-flash": "^0.1.1",
     "cookie-parser": "^1.4.7",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",

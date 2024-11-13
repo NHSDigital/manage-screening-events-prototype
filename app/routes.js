@@ -3,6 +3,7 @@ const express = require('express');
 
 const router = express.Router();
 
+require('./routes/settings')(router);
 require('./routes/clinics')(router);
 
 

@@ -33,6 +33,7 @@ The prototype will generate example data on first run.
 - Delete the generated folder to regenerate fresh example data
 - You can also run the generator directly with `node app/lib/generate-seed-data.js`
 - Uses NHS.UK design system components and patterns
+- Use `tree app` to generate a tree diagram of the project
 
 ## Security
 

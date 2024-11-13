@@ -5,8 +5,8 @@
 {% block beforeContent %}
 {% if not hideBackLink %}
   {{ backLink({
-    href: "javascript:history.back();",
-    text: "Go back"
+    href: back.href or "javascript:history.back();",
+    text: back.text or "Go back"
   }) }}
 {% endif %}
 
@@ -18,6 +18,14 @@
 {{ data | log }}
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-two-thirds">
+
+    {% if flash.error %}
+      {{ errorSummary({
+        "titleText": "There is a problem",
+        "errorList": flash.error
+      }) }}
+    {% endif %}
+
     {% if formAction or isForm %}
       <form action="{{formAction or 'GET'}}">
     {% endif %}

@@ -94,6 +94,14 @@ const generateData = async () => {
   writeData('participants.json', { participants });
   writeData('clinics.json', { clinics });
   writeData('events.json', { events });
+  writeData('generation-info.json', { 
+    generatedAt: new Date().toISOString(),
+    stats: {
+      participants: participants.length,
+      clinics: clinics.length,
+      events: events.length
+    }
+  });
 
   console.log('\nData generation complete!');
   console.log(`Generated:`);
@@ -102,5 +110,10 @@ const generateData = async () => {
   console.log(`- ${events.length} events`);
 };
 
-// Run the generator
-generateData().catch(console.error);
+// Export the function instead of running it immediately
+module.exports = generateData;
+
+// Only run if this file is being run directly
+if (require.main === module) {
+  generateData().catch(console.error);
+}

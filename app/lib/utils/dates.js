@@ -62,9 +62,9 @@ const formatRelativeDate = (dateString, withoutSuffix = false) => {
   if (!dateString) return '';
   const date = dayjs(dateString);
   
-  if (date.isToday()) return 'Today';
-  if (date.isTomorrow()) return 'Tomorrow';
-  if (date.isYesterday()) return 'Yesterday';
+  if (date.isToday()) return 'today';
+  if (date.isTomorrow()) return 'tomorrow';
+  if (date.isYesterday()) return 'yesterday';
   
   return date.fromNow(withoutSuffix);
 };

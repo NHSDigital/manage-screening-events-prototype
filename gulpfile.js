@@ -53,14 +53,28 @@ function compileAssets() {
     .pipe(gulp.dest('public'));
 }
 
-// Start nodemon
+// Start nodemon with enhanced watching
 function startNodemon(done) {
   const server = nodemon({
     script: 'app.js',
     stdout: true,
-    ext: 'js',
+    ext: 'js json', // Added json to watch for package.json changes
+    watch: [
+      'app/**/*.js',    // Watch all JS files in app directory
+      'app.js',         // Watch main app file
+      'routes/**/*.js', // Watch route files
+      'lib/**/*.js',    // Watch library files
+      'config/**/*.js'  // Watch configuration files
+    ],
+    ignore: [
+      'app/assets/**',  // Ignore asset files
+      'public/**',      // Ignore compiled files
+      'node_modules/**' // Ignore node_modules
+    ],
+    delay: 1000,        // Add a small delay to prevent rapid restarts
     quiet: false,
   });
+
   let starting = false;
 
   const onReady = () => {
@@ -79,38 +93,49 @@ function startNodemon(done) {
       onReady();
     }
   });
+
+  // Add restart event handler
+  server.on('restart', () => {
+    console.log('Restarting server due to changes...');
+  });
 }
 
 function reload() {
   browserSync.reload();
 }
 
-// Start browsersync
+// Start browsersync with enhanced configuration
 function startBrowserSync(done) {
   browserSync.init(
     {
       proxy: 'localhost:' + port,
       port: port + 1000,
       ui: false,
-      files: ['app/views/**/*.*', 'docs/views/**/*.*'],
+      files: [
+        'app/views/**/*.*',
+        'docs/views/**/*.*',
+        'public/**/*.*'
+      ],
       ghostMode: false,
       open: false,
       notify: true,
       watch: true,
+      reloadDelay: 1000, // Add delay before reload
+      reloadDebounce: 1000 // Debounce reloads
     },
     done
   );
   gulp.watch('public/**/*.*').on('change', reload);
 }
 
-// Watch for changes within assets/
+// Enhanced watch function
 function watch() {
-  gulp.watch('app/assets/sass/**/*.scss', compileStyles);
-  gulp.watch('app/assets/javascript/**/*.js', compileScripts);
-  gulp.watch('app/assets/**/**/*.*', compileAssets);
-  gulp.watch('docs/assets/sass/**/*.scss', compileStyles);
-  gulp.watch('docs/assets/javascript/**/*.js', compileScripts);
-  gulp.watch('docs/assets/**/**/*.*', compileAssets);
+  gulp.watch('app/assets/sass/**/*.scss', gulp.series(compileStyles, reload));
+  gulp.watch('app/assets/javascript/**/*.js', gulp.series(compileScripts, reload));
+  gulp.watch('app/assets/**/**/*.*', gulp.series(compileAssets, reload));
+  gulp.watch('docs/assets/sass/**/*.scss', gulp.series(compileStyles, reload));
+  gulp.watch('docs/assets/javascript/**/*.js', gulp.series(compileScripts, reload));
+  gulp.watch('docs/assets/**/**/*.*', gulp.series(compileAssets, reload));
 }
 
 exports.watch = watch;

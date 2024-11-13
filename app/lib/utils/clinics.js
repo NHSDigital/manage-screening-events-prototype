@@ -1,15 +1,6 @@
 // app/lib/utils/clinics.js
 
 /**
- * Find a clinic by ID
- * @param {Array} clinics - Array of all clinics
- * @param {string} id - id of clinic to find
- */
-const findById = (clinics, id) => {
-  return clinics.find(c => c.id === id);
-};
-
-/**
  * Get today's clinics
  * @param {Array} clinics - Array of all clinics
  */
@@ -43,9 +34,39 @@ const formatTimeSlot = (dateTime) => {
   });
 };
 
+/**
+ * Calculate the end time of a slot
+ * @param {string} slotDateTime - ISO date string
+ * @param {number} durationMinutes - Duration of slot in minutes
+ * @returns {Date} End time of slot
+ */
+const getSlotEndTime = (slotDateTime, durationMinutes = 8) => {
+  const date = new Date(slotDateTime);
+  date.setMinutes(date.getMinutes() + durationMinutes);
+  return date;
+};
+
+/**
+ * Get clinic opening hours
+ * @param {Object} clinic - Clinic object
+ * @returns {Object} Start and end times as Date objects
+ */
+const getClinicHours = (clinic) => {
+  if (!clinic?.slots?.length) return null;
+  
+  const firstSlot = clinic.slots[0];
+  const lastSlot = clinic.slots[clinic.slots.length - 1];
+  
+  return {
+    start: new Date(firstSlot.dateTime),
+    end: getSlotEndTime(lastSlot.dateTime)
+  };
+};
+
+
 module.exports = {
-  findById,
   getTodaysClinics,
   getClinicEvents,
-  formatTimeSlot
+  formatTimeSlot,
+  getClinicHours
 };

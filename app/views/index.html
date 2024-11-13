@@ -14,19 +14,9 @@
   Index page to link to bits of the prototype.
 </p>
 
-{# {{ data.people[0].name() | log}} #}
-
-
-{# {% set person = data.helpers.people.findById(personId) %} #}
-{{ person.fullName }}
-
-
-
 {{ button({
-  text: "Go to dashboard",
-  href: "/dashboard"
+  text: "Clinics",
+  href: "/clinics"
 }) }}
-
-<p><a href="/clinics">Clinics</a></p>
 
 {% endblock %}
