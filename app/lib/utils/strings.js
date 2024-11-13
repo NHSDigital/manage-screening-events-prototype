@@ -172,7 +172,7 @@ const stringLiteral = function(str) {
  * @param {string} input - String to wrap
  * @returns {string} HTML string with no-wrap class
  */
-const nowrap = (input) => {
+const noWrap = (input) => {
   if (!input) return '';
   return `<span class="app-nowrap">${input}</span>`;
 };
@@ -184,7 +184,7 @@ module.exports = {
   formatWords,
   isString,
   kebabCase,
-  nowrap,
+  noWrap,
   padDigits,
   possessive,
   sentenceCase,

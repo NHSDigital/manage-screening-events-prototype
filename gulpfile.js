@@ -25,12 +25,11 @@ sass.compiler = require('sass');
 function compileStyles() {
   return gulp
     .src(['app/assets/sass/**/*.scss', 'docs/assets/sass/**/*.scss'])
-    .pipe(sass())
-    .pipe(gulp.dest('public/css'))
-    .on('error', (err) => {
-      console.log(err);
-      process.exit(1);
-    });
+    .pipe(sass({
+      outputStyle: 'expanded',
+      sourceComments: true
+    }).on('error', sass.logError))
+    .pipe(gulp.dest('public/css'));
 }
 
 // Compile JavaScript (with ES6 support)
@@ -47,31 +46,31 @@ function compileAssets() {
     .src([
       'app/assets/**/**/*.*',
       'docs/assets/**/**/*.*',
-      '!**/assets/**/**/*.js', // Don't copy JS files
-      '!**/assets/**/**/*.scss', // Don't copy SCSS files
+      '!**/assets/**/**/*.js',
+      '!**/assets/**/**/*.scss',
     ], { encoding: false })
     .pipe(gulp.dest('public'));
 }
 
-// Start nodemon with enhanced watching
+// Start nodemon
 function startNodemon(done) {
   const server = nodemon({
     script: 'app.js',
     stdout: true,
-    ext: 'js json', // Added json to watch for package.json changes
+    ext: 'js json',
     watch: [
-      'app/**/*.js',    // Watch all JS files in app directory
-      'app.js',         // Watch main app file
-      'routes/**/*.js', // Watch route files
-      'lib/**/*.js',    // Watch library files
-      'config/**/*.js'  // Watch configuration files
+      'app/**/*.js',
+      'app.js',
+      'routes/**/*.js',
+      'lib/**/*.js',
+      'config/**/*.js'
     ],
     ignore: [
-      'app/assets/**',  // Ignore asset files
-      'public/**',      // Ignore compiled files
-      'node_modules/**' // Ignore node_modules
+      'app/assets/**',
+      'public/**',
+      'node_modules/**'
     ],
-    delay: 1000,        // Add a small delay to prevent rapid restarts
+    delay: 1000,
     quiet: false,
   });
 
@@ -94,7 +93,6 @@ function startNodemon(done) {
     }
   });
 
-  // Add restart event handler
   server.on('restart', () => {
     console.log('Restarting server due to changes...');
   });
@@ -104,31 +102,26 @@ function reload() {
   browserSync.reload();
 }
 
-// Start browsersync with enhanced configuration
+// Start browsersync
 function startBrowserSync(done) {
-  browserSync.init(
-    {
-      proxy: 'localhost:' + port,
-      port: port + 1000,
-      ui: false,
-      files: [
-        'app/views/**/*.*',
-        'docs/views/**/*.*',
-        'public/**/*.*'
-      ],
-      ghostMode: false,
-      open: false,
-      notify: true,
-      watch: true,
-      reloadDelay: 1000, // Add delay before reload
-      reloadDebounce: 1000 // Debounce reloads
-    },
-    done
-  );
-  gulp.watch('public/**/*.*').on('change', reload);
+  browserSync.init({
+    proxy: 'localhost:' + port,
+    port: port + 1000,
+    ui: false,
+    files: [
+      'public/css/**/*.css',
+      'public/js/**/*.js',
+      'app/views/**/*'
+    ],
+    ghostMode: false,
+    open: false,
+    notify: false,
+    logFileChanges: false,
+    reloadDebounce: 1000
+  }, done);
 }
 
-// Enhanced watch function
+// Watch files
 function watch() {
   gulp.watch('app/assets/sass/**/*.scss', gulp.series(compileStyles, reload));
   gulp.watch('app/assets/javascript/**/*.js', gulp.series(compileScripts, reload));
@@ -143,8 +136,8 @@ exports.compileStyles = compileStyles;
 exports.compileScripts = compileScripts;
 exports.cleanPublic = cleanPublic;
 
-gulp.task(
-  'build',
+gulp.task('build',
   gulp.series(cleanPublic, compileStyles, compileScripts, compileAssets)
 );
+
 gulp.task('default', gulp.series(startNodemon, startBrowserSync, watch));

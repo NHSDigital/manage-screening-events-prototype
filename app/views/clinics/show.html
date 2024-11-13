@@ -52,7 +52,7 @@
             </td>
             <td class="nhsuk-table__cell">
               {% if event.status === 'scheduled' %}
-                <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}" class="nhsuk-link">{{ "Check in" | nowrap | safe }}</a>
+                <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}" class="nhsuk-link">{{ "Check in" | noWrap }}</a>
               {% endif %}
             </td>
           </tr>

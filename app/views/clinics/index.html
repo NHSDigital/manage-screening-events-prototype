@@ -6,8 +6,9 @@
 {% set back = {
   href: "/"
   } %}
+
 {% block pageContent %}
-  <h1 class="nhsuk-heading-l">{{pageHeading}}</h1>
+  <h1>{{pageHeading}}</h1>
 
   {% if data.clinics.length === 0 %}
     <p>No clinics found.</p>
@@ -37,7 +38,7 @@
                 {% endif %}
               </a>
             </td>
-            <td>{{ clinic.date | formatDate }}</td>
+            <td>{{ clinic.date | formatDate |  noWrap }}</td>
             <td class="nhsuk-table__cell--numeric">
               {{ tag({
                 text: clinic.status | formatWords | sentenceCase,
