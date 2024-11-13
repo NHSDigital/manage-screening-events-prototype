@@ -1,5 +1,9 @@
 // app/lib/utils/clinics.js
 
+
+const config = require('../../config');
+
+
 /**
  * Get today's clinics
  * @param {Array} clinics - Array of all clinics
@@ -37,12 +41,11 @@ const formatTimeSlot = (dateTime) => {
 /**
  * Calculate the end time of a slot
  * @param {string} slotDateTime - ISO date string
- * @param {number} durationMinutes - Duration of slot in minutes
  * @returns {Date} End time of slot
  */
-const getSlotEndTime = (slotDateTime, durationMinutes = 8) => {
+const getSlotEndTime = (slotDateTime) => {
   const date = new Date(slotDateTime);
-  date.setMinutes(date.getMinutes() + durationMinutes);
+  date.setMinutes(date.getMinutes() + config.clinics.slotDurationMinutes);
   return date;
 };
 

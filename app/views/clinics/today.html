@@ -1,6 +1,12 @@
 {% extends 'layout-app.html' %}
 
-{% set pageHeading = "Today's clinics" %}
+{% set pageHeading = "Today’s clinics" %}
+
+{% set back = {
+  href: "/clinics",
+  text: "All clinics"
+} %}
+
 
 {% block pageContent %}
   {% set todaysClinics = data.clinics | getTodaysClinics %}

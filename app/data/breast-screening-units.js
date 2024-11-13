@@ -17,7 +17,7 @@ module.exports = [
     abbreviation: "OXF",
     locations: [
       {
-        id: generateId(),
+        id: "duif1ywp", // Must be hardcoded so it matches generated data
         name: "Churchill Hospital breast unit",
         type: "hospital",
         isMainSite: true,
@@ -43,14 +43,14 @@ module.exports = [
       //   }
       // },
       {
-        id: generateId(),
+        id: "2yt5dukk", // Must be hardcoded so it matches generated data
         name: "Mobile Unit WX71 HCP",
         type: "mobile_unit",
         isMainSite: false,
         registration: "WX71 HCP"
       },
       {
-        id: generateId(),
+        id: "acxcdcnj", // Must be hardcoded so it matches generated data
         name: "Mobile Unit WX71 HCR",
         type: "mobile_unit",
         isMainSite: false,

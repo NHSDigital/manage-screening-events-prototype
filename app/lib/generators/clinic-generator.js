@@ -3,6 +3,7 @@
 const { faker } = require('@faker-js/faker');
 const generateId = require('../utils/id-generator');
 const dayjs = require('dayjs');
+const config = require('../../config');
 
 const generateTimeSlots = (date, config) => {
   const slots = [];
@@ -26,24 +27,16 @@ const generateTimeSlots = (date, config) => {
 
 const determineClinicStatus = (date) => {
   const now = dayjs();
-  const clinicDate = dayjs(date);
-  const clinicStart = clinicDate.hour(8); // Assume clinic starts at 8am
-  const clinicEnd = clinicDate.hour(17); // Assume clinic ends at 5pm
+  const clinicDate = dayjs(date).startOf('day');
+  const today = now.startOf('day');
 
-  if (clinicDate.isBefore(now, 'day')) {
+  if (clinicDate.isBefore(today)) {
     return 'closed';
-  } else if (clinicDate.isAfter(now, 'day')) {
-    return 'scheduled';
-  } else {
-    // Today - check time
-    if (now.isBefore(clinicStart)) {
-      return 'scheduled';
-    } else if (now.isAfter(clinicEnd)) {
-      return 'closed';
-    } else {
-      return 'in_progress';
-    }
   }
+  if (clinicDate.isAfter(today)) {
+    return 'scheduled';
+  }
+  return 'in_progress';  // it's today
 };
 
 const generateMobileSiteName = () => {
@@ -64,7 +57,7 @@ const generateMobileSiteName = () => {
 };
 
 // Generate multiple clinics for a BSU on a given day
-const generateClinicsForBSU = ({ date, breastScreeningUnit, config }) => {
+const generateClinicsForBSU = ({ date, breastScreeningUnit, config: clinicConfig }) => {
   // Determine number of clinics for this BSU today (1-2)
   const numberOfClinics = Math.random() < 0.3 ? 2 : 1;
   
@@ -82,15 +75,15 @@ const generateClinicsForBSU = ({ date, breastScreeningUnit, config }) => {
       clinicType: location.type,
       locationId: location.id,
       siteName: location.type === 'mobile_unit' ? generateMobileSiteName() : null,
-      slots: generateTimeSlots(date, config),
+      slots: generateTimeSlots(date, clinicConfig),
       status: determineClinicStatus(date),
       staffing: {
         mamographers: [],
         radiologists: [],
         support: []
       },
-      targetBookings: 60,
-      targetAttendance: 40,
+      targetBookings: clinicConfig.targetBookings,
+      targetAttendance: clinicConfig.targetAttendance,
       notes: null
     };
   });

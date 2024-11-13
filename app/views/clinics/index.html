@@ -3,7 +3,9 @@
 
 {% set pageHeading = "All clinics" %}
 
-
+{% set back = {
+  href: "/"
+  } %}
 {% block pageContent %}
   <h1 class="nhsuk-heading-l">{{pageHeading}}</h1>
 
@@ -21,6 +23,7 @@
       </thead>
       <tbody class="nhsuk-table__body">
         {% for clinic in data.clinics | sort(false, false, 'date') %}
+        {{ clinic | log }}
           {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
           {% set location = unit.locations | findById(clinic.locationId) %}
           {% set events = data.events | getClinicEvents(clinic.id) %}

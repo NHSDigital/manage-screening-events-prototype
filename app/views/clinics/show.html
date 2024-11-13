@@ -45,11 +45,14 @@
               {{ participant.sxNumber }}
             </td>
             <td class="nhsuk-table__cell">
-              {{ event.status | replace("_", " ") | capitalize }}
+              {{ tag({
+                text: event.status | formatWords | sentenceCase,
+                classes: "nhsuk-tag--" + event.status | getStatusTagColour
+              })}}
             </td>
             <td class="nhsuk-table__cell">
               {% if event.status === 'scheduled' %}
-                <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}" class="nhsuk-link">Check in</a>
+                <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}" class="nhsuk-link">{{ "Check in" | nowrap | safe }}</a>
               {% endif %}
             </td>
           </tr>

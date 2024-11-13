@@ -4,6 +4,7 @@ const { faker } = require('@faker-js/faker');
 const weighted = require('weighted');
 const fs = require('fs');
 const path = require('path');
+const config = require('../config');
 
 const { generateParticipant } = require('./generators/participant-generator');
 const { generateClinicsForBSU } = require('./generators/clinic-generator');
@@ -13,33 +14,17 @@ const { generateEvent } = require('./generators/event-generator');
 const breastScreeningUnits = require('../data/breast-screening-units');
 const ethnicities = require('../data/ethnicities');
 
-const CONFIG = {
-  numberOfParticipants: 1000,
-  outputPath: path.join(__dirname, '../data/generated'),
-  clinicDefaults: {
-    slotsPerDay: 32,
-    daysToGenerate: 5,
-    startTime: '09:00',
-    endTime: '17:00',
-    slotDurationMinutes: 8
-  },
-  eventOutcomes: {
-    'clear': 0.95,
-    'needs_further_tests': 0.04,
-    'cancer_detected': 0.01
-  }
-};
-
 const generateData = async () => {
   // Create output directory if it doesn't exist
-  if (!fs.existsSync(CONFIG.outputPath)) {
-    fs.mkdirSync(CONFIG.outputPath, { recursive: true });
+  if (!fs.existsSync(config.paths.generatedData)) {
+    fs.mkdirSync(config.paths.generatedData, { recursive: true });
   }
 
   // Generate base data
   console.log('Generating participants...');
-  const participants = Array.from({ length: CONFIG.numberOfParticipants }, () => 
-    generateParticipant({ ethnicities, breastScreeningUnits })
+  const participants = Array.from(
+    { length: config.generation.numberOfParticipants }, 
+    () => generateParticipant({ ethnicities, breastScreeningUnits })
   );
 
   console.log('Generating clinics and events...');
@@ -48,31 +33,31 @@ const generateData = async () => {
 
   // Calculate date range
   const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 3);
+  startDate.setDate(startDate.getDate() - config.clinics.daysBeforeToday);
 
-  for (let i = 0; i < CONFIG.clinicDefaults.daysToGenerate; i++) {
+  for (let i = 0; i < config.clinics.daysToGenerate; i++) {
     const clinicDate = new Date(startDate);
     clinicDate.setDate(clinicDate.getDate() + i);
 
-    // Generate clinics for each BSU (currently just Oxford)
+    // Generate clinics for each BSU
     breastScreeningUnits.forEach(unit => {
       const newClinics = generateClinicsForBSU({
         date: clinicDate,
         breastScreeningUnit: unit,
-        config: CONFIG.clinicDefaults
+        config: config.clinics
       });
 
       // Generate events for each clinic
       newClinics.forEach(clinic => {
         const clinicEvents = clinic.slots
-          .filter(slot => Math.random() > 0.2)
+          .filter(() => Math.random() < config.generation.bookingProbability)
           .map(slot => {
             const participant = faker.helpers.arrayElement(participants);
             return generateEvent({
               slot,
               participant,
               clinic,
-              outcomeWeights: CONFIG.eventOutcomes
+              outcomeWeights: config.screening.outcomes
             });
           });
 
@@ -86,7 +71,7 @@ const generateData = async () => {
   // Write generated data to files
   const writeData = (filename, data) => {
     fs.writeFileSync(
-      path.join(CONFIG.outputPath, filename),
+      path.join(config.paths.generatedData, filename),
       JSON.stringify(data, null, 2)
     );
   };
