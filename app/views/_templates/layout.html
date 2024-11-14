@@ -7,6 +7,8 @@
 <!-- Extends the layout from /docs/views/template.html -->
 {% extends "template.html" %}
 
+{%- from '_components/header/macro.njk' import headerNew %}
+
 <!-- Add your custom CSS or Sass in /app/assets/sass/main.scss -->
 {% block headCSS %}
   <link href="/css/main.css" rel="stylesheet">
@@ -17,7 +19,7 @@
   {%- if pageHeading -%}
     {{- pageHeading }} -
   {%- endif -%}
-  {{- serviceName }} - NHS
+  {{ " " + serviceName }} - NHS
 {%- endblock %}
 
 <!-- Edit the header -->

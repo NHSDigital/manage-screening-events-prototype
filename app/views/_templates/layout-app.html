@@ -2,6 +2,7 @@
 {% extends "layout.html" %}
 
 
+
 {% block beforeContent %}
 {% if not hideBackLink %}
   {{ backLink({
@@ -11,6 +12,60 @@
 {% endif %}
 
 
+{% endblock %}
+
+{% block header %}
+  {{ headerNew({
+    account: {
+      items: [
+        {
+          href: "#",
+          text: data.currentUser.email,
+          icon: true
+        },
+        {
+          href: "#",
+          text: "Log out"
+        }
+      ]
+    },
+    service: {
+      name: serviceName
+    },
+    primaryLinks: [
+      {
+        url: "/dashboard",
+        label: "Home"
+      },
+      {
+        url: "/clinics",
+        label: "Clinics",
+        current: true
+      },
+      {
+        url: "#",
+        label: "Participants"
+      },
+      {
+        url: "#",
+        label: "Messages"
+      }, {
+        url: "#",
+        label: "Help and support"
+      }
+    ]
+  }) }}
+ {#  {{ serviceheader({
+    service: {
+      name: serviceName,
+      href: "/home" if not public else "/"
+    } if not transactionalService,
+    homeHref: "/home" if not public else "/",
+    transactional: true if transactionalService,
+    transactionalService: transactionalService,
+    primaryLinks: navigation.primaryLinks if not public,
+    account: navigation.account if not public
+  }) }} #}
 {% endblock %}
 
 
