@@ -177,6 +177,22 @@ const noWrap = (input) => {
   return `<span class="app-nowrap">${input}</span>`;
 };
 
+/**
+ * Format phone number for display with spaces
+ * @param {string} phoneNumber - Raw phone number string
+ * @returns {string} Formatted phone number
+ */
+const formatPhoneNumber = (phoneNumber) => {
+  if (!phoneNumber) return '';
+  if (typeof phoneNumber !== 'string') return phoneNumber;
+
+  if (phoneNumber.startsWith('07')) {
+    return `${phoneNumber.slice(0, 5)} ${phoneNumber.slice(5)}`;
+  }
+
+  return `${phoneNumber.slice(0, 4)} ${phoneNumber.slice(4, 7)} ${phoneNumber.slice(7)}`;
+};
+
 module.exports = {
   addIndefiniteArticle,
   formatCurrency,
@@ -193,4 +209,5 @@ module.exports = {
   startLowerCase,
   startsWith,
   stringLiteral,
+  formatPhoneNumber,
 };

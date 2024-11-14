@@ -40,7 +40,7 @@ if (fs.existsSync(generationInfoPath)) {
 // Generate or load data
 if (needsRegeneration) {
   console.log('Generating new seed data...');
-  require('../lib/generate-seed-data.js');
+  require('../lib/generate-seed-data.js')();
   
   // Save generation info
   fs.writeFileSync(

@@ -6,24 +6,20 @@ const { generateBSUAppropriateAddress } = require('./address-generator');
 
 // Generate a UK phone number
 const generateUKPhoneNumber = () => {
-  // 80% mobile, 20% landline
-  if (Math.random() < 0.8) {
-    // Mobile number formats
-    const formats = [
-      '07### ######',  // Standard UK mobile
-      '07#########',   // No spaces
-      '+447### ######' // International format
-    ];
-    return faker.phone.number(faker.helpers.arrayElement(formats));
+  const numberTypes = {
+    'mobile': 0.8,
+    'landline': 0.2
+  }
+
+  if (weighted.select(numberTypes) === 'mobile') {
+    const suffix = faker.number.int({ min: 900000, max: 900999 });
+    return `07700${suffix}`; // Ofcom reserved range
   } else {
-    // Get the BSU's area code from their phone number
-    // Fallback to standard area codes if not available
-    const areaCodes = ['0118', '01865', '0114', '020'];
-    const areaCode = faker.helpers.arrayElement(areaCodes);
-    return faker.phone.number(areaCode + ' ### ####');
+    const areaCode = faker.helpers.arrayElement(['0118', '01865']);
+    const suffix = faker.number.int({ min: 0, max: 999 }).toString().padStart(3, '0');
+    return `${areaCode}4960${suffix}`; // Ofcom reserved range
   }
 };
-
 // Helper functions for name formatting
 const formatName = (person) => ({
   get fullName() {
@@ -96,7 +92,7 @@ const generateParticipant = ({ ethnicities, breastScreeningUnits }) => {
       }).toISOString(),
       address: generateBSUAppropriateAddress(assignedBSU),
       phone: generateUKPhoneNumber(),
-      email: `${faker.internet.userName().toLowerCase()}@example.com`,
+      email: `${faker.internet.username().toLowerCase()}@example.com`,
       ethnicGroup,
       ethnicBackground
     },

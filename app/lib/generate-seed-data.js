@@ -1,4 +1,5 @@
 // app/lib/generate-seed-data.js
+// node app/lib/generate-seed-data.js
 
 const { faker } = require('@faker-js/faker');
 const weighted = require('weighted');
