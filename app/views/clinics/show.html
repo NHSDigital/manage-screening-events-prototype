@@ -1,8 +1,5 @@
-
 {% extends 'layout-app.html' %}
-
-{% set pageHeading = "Today’s clinics" %}
-
+{% set pageHeading = "Today's clinics" %}
 
 {% block pageContent %}
   {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
@@ -14,36 +11,33 @@
   </h1>
 
   {% if events.length === 0 %}
-    <p class="nhsuk-body">No participants scheduled for this clinic.</p>
+    <p>No participants scheduled for this clinic.</p>
   {% else %}
+    <p>{{ events.length }} scheduled participants</p>
+
     <table class="nhsuk-table">
-      <caption class="nhsuk-table__caption">
-        {{ events.length }} scheduled participants
-      </caption>
       <thead class="nhsuk-table__head">
         <tr>
-          <th scope="col" class="nhsuk-table__header">Time</th>
-          <th scope="col" class="nhsuk-table__header">Name</th>
-          <th scope="col" class="nhsuk-table__header">SX number</th>
-          <th scope="col" class="nhsuk-table__header">Status</th>
-          <th scope="col" class="nhsuk-table__header">Actions</th>
+          <th class="nhsuk-table__header">Time</th>
+          <th class="nhsuk-table__header">Name</th>
+          <th class="nhsuk-table__header">Postcode</th>
+          <th class="nhsuk-table__header">SX number</th>
+          <th class="nhsuk-table__header">Status</th>
+          <th class="nhsuk-table__header">Actions</th>
         </tr>
       </thead>
       <tbody class="nhsuk-table__body">
         {% for event in events %}
           {% set participant = data.participants | findById(event.participantId) %}
-          <tr class="nhsuk-table__row">
-            <td class="nhsuk-table__cell">
-              {{ event.statusHistory[0].timestamp | formatTime }}
-            </td>
+          <tr>
+            <td class="nhsuk-table__cell">{{ event.statusHistory[0].timestamp | formatTime }}</td>
             <td class="nhsuk-table__cell">
               <a href="/clinics/{{ clinicId }}/participants/{{ participant.id }}" class="nhsuk-link">
                 {{ participant | getFullName }}
               </a>
             </td>
-            <td class="nhsuk-table__cell">
-              {{ participant.sxNumber }}
-            </td>
+            <td class="nhsuk-table__cell">{{ participant.demographicInformation.address.postcode | noWrap }}</td>
+            <td class="nhsuk-table__cell">{{ participant.sxNumber }}</td>
             <td class="nhsuk-table__cell">
               {{ tag({
                 text: event.status | formatWords | sentenceCase,
@@ -52,7 +46,9 @@
             </td>
             <td class="nhsuk-table__cell">
               {% if event.status === 'scheduled' %}
-                <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}" class="nhsuk-link">{{ "Check in" | noWrap }}</a>
+                <a href="#/clinics/{{ clinicId }}/check-in/{{ event.id }}" class="nhsuk-link">
+                  {{ "Check in" | noWrap }}
+                </a>
               {% endif %}
             </td>
           </tr>
@@ -62,6 +58,7 @@
   {% endif %}
 
   <h2 class="nhsuk-heading-m">Details</h2>
+  
   <dl class="nhsuk-summary-list">
     <div class="nhsuk-summary-list__row">
       <dt class="nhsuk-summary-list__key">Location</dt>
@@ -70,22 +67,22 @@
         {{ unit.address | replace("\n", "<br>") | safe }}
       </dd>
     </div>
+    
     <div class="nhsuk-summary-list__row">
       <dt class="nhsuk-summary-list__key">Phone</dt>
       <dd class="nhsuk-summary-list__value">{{ unit.phoneNumber }}</dd>
     </div>
+    
     <div class="nhsuk-summary-list__row">
       <dt class="nhsuk-summary-list__key">Date</dt>
       <dd class="nhsuk-summary-list__value">{{ clinic.date | formatDate }}</dd>
     </div>
+    
     <div class="nhsuk-summary-list__row">
       <dt class="nhsuk-summary-list__key">Type</dt>
-      <dd class="nhsuk-summary-list__value">
-        {{ clinic.clinicType | replace("_", " ") | capitalize }}
-      </dd>
+      <dd class="nhsuk-summary-list__value">{{ clinic.clinicType | replace("_", " ") | capitalize }}</dd>
     </div>
   </dl>
 
   <a href="/clinics" class="nhsuk-back-link">Back to today's clinics</a>
-
 {% endblock %}

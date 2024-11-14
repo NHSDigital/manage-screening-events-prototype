@@ -2,25 +2,25 @@
 const { faker } = require('@faker-js/faker');
 const generateId = require('../utils/id-generator');
 const weighted = require('weighted');
+const { generateBSUAppropriateAddress } = require('./address-generator');
 
 // Generate a UK phone number
 const generateUKPhoneNumber = () => {
   // 80% mobile, 20% landline
   if (Math.random() < 0.8) {
-    // Mobile number in range 07700900000 to 07700900999
-    const suffix = faker.number.int({ min: 0, max: 999 }).toString().padStart(3, '0');
-    return `07700900${suffix}`;
+    // Mobile number formats
+    const formats = [
+      '07### ######',  // Standard UK mobile
+      '07#########',   // No spaces
+      '+447### ######' // International format
+    ];
+    return faker.phone.number(faker.helpers.arrayElement(formats));
   } else {
-    // 50/50 split between London and Sheffield landlines
-    if (Math.random() < 0.5) {
-      // London: 02079460000 to 02079460999
-      const suffix = faker.number.int({ min: 0, max: 999 }).toString().padStart(3, '0');
-      return `02079460${suffix}`;
-    } else {
-      // Sheffield: 01144960000 to 01144960999
-      const suffix = faker.number.int({ min: 0, max: 999 }).toString().padStart(3, '0');
-      return `01144960${suffix}`;
-    }
+    // Get the BSU's area code from their phone number
+    // Fallback to standard area codes if not available
+    const areaCodes = ['0118', '01865', '0114', '020'];
+    const areaCode = faker.helpers.arrayElement(areaCodes);
+    return faker.phone.number(areaCode + ' ### ####');
   }
 };
 
@@ -94,14 +94,9 @@ const generateParticipant = ({ ethnicities, breastScreeningUnits }) => {
         max: 70, 
         mode: 'age' 
       }).toISOString(),
-      address: {
-        line1: faker.location.streetAddress(),
-        line2: faker.location.secondaryAddress(),
-        city: faker.location.city(),
-        postcode: faker.location.zipCode('??# #??')
-      },
+      address: generateBSUAppropriateAddress(assignedBSU),
       phone: generateUKPhoneNumber(),
-      email: `${faker.internet.username().toLowerCase()}@example.com`,
+      email: `${faker.internet.userName().toLowerCase()}@example.com`,
       ethnicGroup,
       ethnicBackground
     },
@@ -120,6 +115,7 @@ const generateParticipant = ({ ethnicities, breastScreeningUnits }) => {
     }
   };
 };
+
 
 const generateRiskFactors = () => {
   const factors = [];
