@@ -3,17 +3,39 @@
 
 {% block pageContent %}
   {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
-  {% set events = data.events | getClinicEvents(clinicId) %}
+  {# {% set events = data.events | getClinicEvents(clinicId) %} #}
+  {% set events = allEvents %}
 
   <h1 class="nhsuk-heading-l">
     <span class="nhsuk-caption-l">{{ unit.name }}</span>
     {{ clinic.serviceType | sentenceCase }} clinic on {{ clinic.date | formatDate }}
   </h1>
 
-  {% if events.length === 0 %}
+  <nav class="nhsuk-tabs">
+    <ul class="nhsuk-tabs__list">
+      {% for filter in [
+        { id: 'all', label: 'All participants' },
+        { id: 'scheduled', label: 'Scheduled' },
+        { id: 'checked-in', label: 'Checked in' },
+        { id: 'attended', label: 'Attended' }
+      ] %}
+        <li class="nhsuk-tabs__list-item">
+          <a class="nhsuk-tabs__tab {% if currentFilter === filter.id %}nhsuk-tabs__tab--selected{% endif %}" 
+             href="/clinics/{{ clinicId }}/{{ filter.id if filter.id !== 'all' }}">
+            {{ filter.label }}
+            <span class="nhsuk-tag nhsuk-tag--grey">
+              {{ events | filterEventsByStatus(filter.id) | length }}
+            </span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  {% if filteredEvents.length === 0 %}
     <p>No participants scheduled for this clinic.</p>
   {% else %}
-    <p>{{ events.length }} scheduled participants</p>
+    <p>{{ filteredEvents.length }} scheduled participants</p>
 
     <table class="nhsuk-table">
       <thead class="nhsuk-table__head">
@@ -27,7 +49,7 @@
         </tr>
       </thead>
       <tbody class="nhsuk-table__body">
-        {% for event in events %}
+        {% for event in filteredEvents %}
           {% set participant = data.participants | findById(event.participantId) %}
           <tr>
             <td class="nhsuk-table__cell">{{ event.statusHistory[0].timestamp | formatTime }}</td>

@@ -40,25 +40,6 @@ module.exports = router => {
     res.render('clinics/today');
   });
 
-  // Single clinic view
-  router.get('/clinics/:id', (req, res) => {
-    const clinicData = getClinicData(req.session.data, req.params.id);
-    
-    if (!clinicData) {
-      res.redirect('/clinics');
-      return;
-    }
-
-    res.render('clinics/show', {
-      clinicId: req.params.id,
-      clinic: clinicData.clinic,
-      events: clinicData.events,
-      unit: clinicData.unit,
-      formatDate: (date) => dayjs(date).format('D MMMM YYYY'),
-      formatTime: (date) => dayjs(date).format('HH:mm')
-    });
-  });
-
   // View participant within clinic context
   router.get('/clinics/:clinicId/participants/:participantId', (req, res) => {
     const participant = req.session.data.participants.find(p => p.id === req.params.participantId);
@@ -82,6 +63,53 @@ module.exports = router => {
     });
   });
 
+  function filterEvents(events, filter) {
+    switch(filter) {
+      case 'scheduled':
+        return events.filter(e => e.status === 'scheduled');
+      case 'checked-in':
+        console.log('filtering checked in')
+        return events.filter(e => e.status === 'checked_in');
+      case 'attended':
+        return events.filter(e => ['attended', 'attended_not_screened'].includes(e.status));
+      default:
+        return events;
+    }
+  }
 
+  // Single clinic view
+  const VALID_FILTERS = ['scheduled', 'checked-in', 'attended', 'all'];
+
+  // Support both /clinics/:id and /clinics/:id/:filter
+  router.get(['/clinics/:id', '/clinics/:id/:filter'], (req, res) => {
+    const clinicData = getClinicData(req.session.data, req.params.id);
+    
+    if (!clinicData) {
+      return res.redirect('/clinics');
+    }
+
+    // Check filter from either URL param or query string
+    let filter = req.params.filter || req.query.filter || 'all';
+
+    // Validate filter
+    if (!VALID_FILTERS.includes(filter)) {
+      return res.redirect(`/clinics/${req.params.id}`);
+    }
+
+    console.log(`Events before: ${clinicData.events.length}`)
+    const filteredEvents = filterEvents(clinicData.events, filter);
+    console.log(`Events after: ${filteredEvents.length}`)
+
+    res.render('clinics/show', {
+      clinicId: req.params.id,
+      clinic: clinicData.clinic,
+      allEvents: clinicData.events,
+      filteredEvents: filteredEvents,
+      unit: clinicData.unit,
+      currentFilter: filter,
+      formatDate: (date) => dayjs(date).format('D MMMM YYYY'),
+      formatTime: (date) => dayjs(date).format('HH:mm')
+    });
+  });
 
 };

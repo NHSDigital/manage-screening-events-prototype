@@ -45,7 +45,22 @@ const getStatusDescription = (status) => {
   return descriptions[status] || status;
 }
 
+
+  const filterEventsByStatus = (events, filter) => {
+    switch(filter) {
+      case 'scheduled':
+        return events.filter(e => e.status === 'scheduled');
+      case 'checked-in':
+        return events.filter(e => e.status === 'checked_in');
+      case 'attended':
+        return events.filter(e => ['attended', 'attended_not_screened'].includes(e.status));
+      default:
+        return events;
+    }
+  }
+
 module.exports = {
   getStatusTagColour,
-  getStatusDescription
+  getStatusDescription,
+  filterEventsByStatus
 };
