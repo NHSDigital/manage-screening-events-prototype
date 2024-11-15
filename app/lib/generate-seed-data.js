@@ -44,8 +44,7 @@ const generateData = async () => {
     breastScreeningUnits.forEach(unit => {
       const newClinics = generateClinicsForBSU({
         date: clinicDate,
-        breastScreeningUnit: unit,
-        config: config.clinics
+        breastScreeningUnit: unit
       });
 
       // Generate events for each clinic

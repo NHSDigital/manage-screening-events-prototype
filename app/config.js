@@ -25,15 +25,12 @@ module.exports = {
 
   // Clinic settings
   clinics: {
-    // Timing
-    startTime: '09:00',
-    endTime: '17:00',
+    // Timings
     slotDurationMinutes: 8,
-    slotsPerDay: 32,
 
-    // Capacity
-    targetBookings: 60,
-    targetAttendance: 40,
+    // Target percentages
+    targetBookingPercent: 150, // 150% represents overbooking (e.g. 60 bookings for 40 slots)
+    targetAttendancePercent: 100, // 100% of original capacity (not overbooking)
 
     // Date range for generating data
     daysToGenerate: 7,
