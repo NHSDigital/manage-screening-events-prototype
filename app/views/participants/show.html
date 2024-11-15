@@ -24,6 +24,10 @@
 
       <dl class="nhsuk-summary-list">
         <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">Service</dt>
+          <dd class="nhsuk-summary-list__value">{{ clinic.serviceType | replace("_", " ") | capitalize }}</dd>
+        </div>
+        <div class="nhsuk-summary-list__row">
           <dt class="nhsuk-summary-list__key">Time</dt>
           <dd class="nhsuk-summary-list__value">
             {{ event.statusHistory[0].timestamp | formatTime }}
@@ -53,7 +57,12 @@
         <div class="nhsuk-summary-list__row">
           <dt class="nhsuk-summary-list__key">Date of birth</dt>
           <dd class="nhsuk-summary-list__value">
-            {{ participant.demographicInformation.dateOfBirth | formatDate }}
+            {% set dob = participant.demographicInformation.dateOfBirth %}
+            {% set age -%}
+              ({{dob | formatRelativeDate(true)}} old)
+            {%- endset %}
+            {{ dob | formatDate }}<br>
+            {{ age | asHint}}
           </dd>
         </div>
         <div class="nhsuk-summary-list__row">

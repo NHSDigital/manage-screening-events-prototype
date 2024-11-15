@@ -38,15 +38,18 @@ module.exports = {
   },
 
   screening: {
-    // Outcomes and their probabilities
     outcomes: {
-      clear: 0.95,
-      needs_further_tests: 0.04,
-      cancer_detected: 0.01
-    },
-    
-    // Standard images taken during screening
-    standardImages: ['RCC', 'LCC', 'RMLO', 'LMLO']
+      screening: {
+        'clear': 0.95,
+        'needs_further_tests': 0.04,
+        'cancer_detected': 0.01
+      },
+      assessment: {
+        'clear': 0.4,
+        'needs_further_tests': 0.45,
+        'cancer_detected': 0.15
+      }
+    }
   },
 
   // Data generation settings

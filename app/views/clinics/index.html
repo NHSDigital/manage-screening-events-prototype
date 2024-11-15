@@ -18,6 +18,7 @@
         <tr>
           <th scope="col">Location</th>
           <th scope="col">Date</th>
+          <th scope="col">Service type</th>
           <th scope="col" class="nhsuk-table__cell--numeric">Status</th>
           <th scope="col" class="nhsuk-table__cell--numeric">Participants</th>
         </tr>
@@ -39,6 +40,7 @@
               </a>
             </td>
             <td>{{ clinic.date | formatDate |  noWrap }}</td>
+            <td>{{ clinic.serviceType | sentenceCase }}</td>
             <td class="nhsuk-table__cell--numeric">
               {{ tag({
                 text: clinic.status | formatWords | sentenceCase,

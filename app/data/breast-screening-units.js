@@ -15,6 +15,7 @@ module.exports = [
     },
     phoneNumber: "01865235621",
     abbreviation: "OXF",
+    serviceTypes: ['screening', 'assessment'],  // Can do both
     // Default operating hours for the BSU
     sessionPatterns: [
       {
@@ -62,10 +63,11 @@ module.exports = [
       // },
       {
         id: "2yt5dukk", // Must be hardcoded so it matches generated data
-        name: "Mobile Unit WX71 HCP",
+        name: "Mobile Unit JA1 CP7",
         type: "mobile_unit",
         isMainSite: false,
-        registration: "WX71 HCP",
+        serviceTypes: ['screening'],  // Can only do screening
+        registration: "JA1 CP7",
         // Override BSU session patterns for this location
         sessionPatterns: [
           {
@@ -82,6 +84,7 @@ module.exports = [
         name: "Mobile Unit WX71 HCR",
         type: "mobile_unit",
         isMainSite: false,
+        serviceTypes: ['screening'],  // Can only do screening
         registration: "WX71 HCR",
         // Override BSU session patterns for this location
         sessionPatterns: [

@@ -7,7 +7,7 @@
 
   <h1 class="nhsuk-heading-l">
     <span class="nhsuk-caption-l">{{ unit.name }}</span>
-    Clinic on {{ clinic.date | formatDate }}
+    {{ clinic.serviceType | sentenceCase }} clinic on {{ clinic.date | formatDate }}
   </h1>
 
   {% if events.length === 0 %}
@@ -21,7 +21,7 @@
           <th class="nhsuk-table__header">Time</th>
           <th class="nhsuk-table__header">Name</th>
           <th class="nhsuk-table__header">Postcode</th>
-          <th class="nhsuk-table__header">SX number</th>
+          <th class="nhsuk-table__header">NHS number</th>
           <th class="nhsuk-table__header">Status</th>
           <th class="nhsuk-table__header">Actions</th>
         </tr>
@@ -37,7 +37,7 @@
               </a>
             </td>
             <td class="nhsuk-table__cell">{{ participant.demographicInformation.address.postcode | noWrap }}</td>
-            <td class="nhsuk-table__cell">{{ participant.sxNumber }}</td>
+            <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber }}</td>
             <td class="nhsuk-table__cell">
               {{ tag({
                 text: event.status | formatWords | sentenceCase,
@@ -81,6 +81,11 @@
     <div class="nhsuk-summary-list__row">
       <dt class="nhsuk-summary-list__key">Type</dt>
       <dd class="nhsuk-summary-list__value">{{ clinic.clinicType | replace("_", " ") | capitalize }}</dd>
+    </div>
+
+    <div class="nhsuk-summary-list__row">
+      <dt class="nhsuk-summary-list__key">Service</dt>
+      <dd class="nhsuk-summary-list__value">{{ clinic.serviceType | sentenceCase }}</dd>
     </div>
   </dl>
 

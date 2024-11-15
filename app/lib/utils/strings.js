@@ -178,6 +178,16 @@ const noWrap = (input) => {
 };
 
 /**
+ * Wrap string in a no-wrap span
+ * @param {string} input - String to wrap
+ * @returns {string} HTML string with no-wrap class
+ */
+const asHint = (input) => {
+  if (!input) return '';
+  return `<span class="nhsuk-hint">${input}</span>`;
+};
+
+/**
  * Format phone number for display with spaces
  * @param {string} phoneNumber - Raw phone number string
  * @returns {string} Formatted phone number
@@ -201,6 +211,7 @@ module.exports = {
   isString,
   kebabCase,
   noWrap,
+  asHint,
   padDigits,
   possessive,
   sentenceCase,

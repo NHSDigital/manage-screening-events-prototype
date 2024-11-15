@@ -21,6 +21,7 @@
         <tr>
           <th scope="col">Location</th>
           <th scope="col">Opening hours</th>
+          <th scope="col">Service type</th>
           <th scope="col" class="nhsuk-table__cell--numeric">Status</th>
           <th scope="col" class="nhsuk-table__cell--numeric">Participants</th>
         </tr>
@@ -42,6 +43,7 @@
               </a>
             </td>
             <td>{{ hours.start | formatTime }} to {{ hours.end | formatTime }}</td>
+            <td>{{ clinic.serviceType | sentenceCase }}</td>
             <td class="nhsuk-table__cell--numeric">
               {{ tag({
                 text: clinic.status | formatWords | sentenceCase,

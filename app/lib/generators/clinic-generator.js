@@ -3,10 +3,31 @@
 const { faker } = require('@faker-js/faker');
 const generateId = require('../utils/id-generator');
 const dayjs = require('dayjs');
+const weighted = require('weighted');
 const config = require('../../config');
 
+const determineServiceType = (location, breastScreeningUnit) => {
+  // First check location-specific service types
+  const serviceTypes = location.serviceTypes || breastScreeningUnit.serviceTypes;
 
-const generateTimeSlots = (date, sessionTimes) => {
+  // If still no service types, default to screening
+  if (!serviceTypes) {
+    return 'screening';
+  }
+
+  // If location/BSU only supports one service type, use that
+  if (serviceTypes.length === 1) {
+    return serviceTypes[0];
+  }
+
+  // For locations that can do both, weight towards screening
+  return weighted.select({
+    'screening': 0.8,
+    'assessment': 0.2
+  });
+};
+
+const generateTimeSlots = (date, sessionTimes, serviceType) => {
   const { slotDurationMinutes } = config.clinics;
   
   const slots = [];
@@ -19,8 +40,8 @@ const generateTimeSlots = (date, sessionTimes) => {
     slots.push({
       id: slotId,
       dateTime: new Date(currentTime).toISOString(),
-      type: 'screening',
-      capacity: 2,
+      type: serviceType,  // Use the clinic's service type
+      capacity: serviceType === 'assessment' ? 1 : 2, // Assessment clinics don't double book
       bookedCount: 0,
       period: `${sessionTimes.startTime}-${sessionTimes.endTime}`
     });
@@ -66,13 +87,15 @@ const determineSessionType = (sessionTimes) => {
 };
 
 const generateClinic = (date, location, breastScreeningUnit, sessionTimes) => {
-  const slots = generateTimeSlots(date, sessionTimes);
+  const serviceType = determineServiceType(location, breastScreeningUnit);
+  const slots = generateTimeSlots(date, sessionTimes, serviceType);
   
   return {
     id: generateId(),
     date: date.toISOString().split('T')[0],
     breastScreeningUnitId: breastScreeningUnit.id,
     clinicType: location.type,
+    serviceType,
     locationId: location.id,
     siteName: location.type === 'mobile_unit' ? generateMobileSiteName() : null,
     slots,
@@ -83,9 +106,9 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes) => {
       support: []
     },
     targetCapacity: {
-      bookingPercent: config.clinics.targetBookingPercent,
-      attendancePercent: config.clinics.targetAttendancePercent,
-      totalSlots: slots.length * 2
+      bookingPercent: serviceType === 'assessment' ? 100 : config.clinics.targetBookingPercent,
+      attendancePercent: serviceType === 'assessment' ? 95 : config.clinics.targetAttendancePercent,
+      totalSlots: slots.length * (serviceType === 'assessment' ? 1 : 2)
     },
     notes: null,
     sessionTimes,
