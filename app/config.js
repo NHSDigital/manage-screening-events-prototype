@@ -34,7 +34,9 @@ module.exports = {
 
     // Date range for generating data
     daysToGenerate: 7,
-    daysBeforeToday: 3
+    daysBeforeToday: 3,
+
+    simulatedTime: '11:30', // 24h format
   },
 
   screening: {

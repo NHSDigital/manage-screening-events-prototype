@@ -4,6 +4,8 @@ const generateId = require('../utils/id-generator');
 const { faker } = require('@faker-js/faker');
 const weighted = require('weighted');
 const dayjs = require('dayjs');
+const config = require('../../config');
+
 
 const NOT_SCREENED_REASONS = [
  "Recent mammogram at different facility",
@@ -14,7 +16,57 @@ const NOT_SCREENED_REASONS = [
  "Recent breast surgery"
 ];
 
+const determineEventStatus = (slotDateTime, currentDateTime, attendanceWeights) => {
+  slotDateTime = dayjs(slotDateTime);
+
+  const simulatedTime = dayjs(currentDateTime);
+  const slotDate = slotDateTime.startOf('day');
+  const currentDate = simulatedTime.startOf('day');
+
+  // For future dates or future slots today, always return scheduled
+  if (slotDateTime.isAfter(simulatedTime)) {
+    return 'scheduled';
+  }
+
+  if (slotDate.isBefore(currentDate)){
+    const finalStatuses = ['attended', 'did_not_attend', 'attended_not_screened'];
+    return weighted.select(finalStatuses, attendanceWeights);
+  }
+
+  // For past slots, generate a status based on how long ago the slot was
+  const minutesPassed = simulatedTime.diff(slotDateTime, 'minute');
+  
+  // Define probability weights for different statuses based on time passed
+  if (minutesPassed <= 60) {
+    // Within 30 mins of appointment
+    return weighted.select({
+      'checked_in': 0.6,
+      'attended': 0.1,
+      'attended_not_screened': 0.1,
+      'scheduled': 0.2,
+    });
+  } else {
+    // More than 30 mins after appointment
+    return weighted.select({
+      'attended': 0.6,
+      'attended_not_screened': 0.1,
+      'scheduled': 0.2,
+    });
+  }
+};
+
 const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
+
+  // Get simulated current time
+  const [hours, minutes] = config.clinics.simulatedTime.split(':');
+  const currentDateTime = dayjs().hour(parseInt(hours)).minute(parseInt(minutes));
+
+  // Check if the event is from yesterday or before
+  const eventDate = dayjs(slot.dateTime).startOf('day');
+  const today = dayjs(currentDateTime).startOf('day');
+  const isPast = dayjs(slot.dateTime).isBefore(currentDateTime);
+  const isTodayBeforeCurrentTime = eventDate.isBefore(currentDateTime)
+
  // If it's an assessment clinic, override the outcome weights to reflect higher probability of findings
  const eventWeights = clinic.serviceType === 'assessment' ? 
    {
@@ -28,11 +80,6 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
    [0.9, 0.08, 0.02] :  // [attended, dna, attended_not_screened]
    [0.65, 0.25, 0.1];   // Original weights for screening
 
- // Check if the event is from yesterday or before
- const eventDate = dayjs(slot.dateTime).startOf('day');
- const today = dayjs().startOf('day');
- const isPast = eventDate.isBefore(today);
- 
  // All future events and today's events start as scheduled
  if (!isPast) {
    return {
@@ -55,11 +102,10 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
    };
  }
 
- // For past events, generate final status with clinic-appropriate weights
- const finalStatuses = ['attended', 'did_not_attend', 'attended_not_screened'];
- const status = weighted.select(finalStatuses, attendanceWeights);
+  // For past events, generate final status with clinic-appropriate weights
+  const status = determineEventStatus(slot.dateTime, currentDateTime, attendanceWeights);
 
- const event = {
+  const event = {
    id: generateId(),
    participantId: participant.id,
    clinicId: clinic.id,
@@ -75,7 +121,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
        faker.helpers.arrayElement(NOT_SCREENED_REASONS) : null
    },
    statusHistory: generateStatusHistory(status, slot.dateTime)
- };
+  };
 
  // Add outcome for completed events where participant attended
  if (status === 'attended') {
@@ -108,13 +154,13 @@ const generateStatusHistory = (finalStatus, dateTime) => {
  if (finalStatus === 'attended') {
    history.push(
      {
-       status: 'pre_screening',
+       status: 'checked_in',
        timestamp: new Date(baseDate.getTime() - (10 * 60 * 1000)).toISOString() // 10 mins before
      },
-     {
-       status: 'in_progress',
-       timestamp: new Date(baseDate).toISOString()
-     },
+     // {
+     //   status: 'in_progress',
+     //   timestamp: new Date(baseDate).toISOString()
+     // },
      {
        status: finalStatus,
        timestamp: new Date(baseDate.getTime() + (15 * 60 * 1000)).toISOString() // 15 mins after

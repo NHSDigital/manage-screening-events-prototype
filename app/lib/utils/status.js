@@ -14,7 +14,7 @@ const getStatusTagColour = (status) => {
     closed: 'grey',
 
     // Event statuses
-    pre_screening: 'yellow',
+    checked_in: 'yellow',
     attended: 'green',
     did_not_attend: 'red',
     attended_not_screened: 'orange'
