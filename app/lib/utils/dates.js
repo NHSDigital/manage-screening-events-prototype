@@ -38,7 +38,7 @@ const formatDate = (dateString, format = 'D MMMM YYYY') => {
  * @param {string} dateString - ISO date string
  * @param {string} format - Optional format string
  */
-const formatTime = (dateString, format = 'HH:mm') => {
+const formatTime = (dateString, format = 'H:mm') => {
   if (!dateString) return '';
   return dayjs(dateString).format(format);
 };

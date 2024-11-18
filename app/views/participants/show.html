@@ -4,6 +4,8 @@
 
 {% set pageHeading = participant | getFullName %}
 
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
 
 
 {% set back = {
@@ -22,135 +24,201 @@
     {{ pageHeading }}
   </h1>
 
-  <h2 class="nhsuk-heading-m">Current appointment</h2>
+  <h2 class="nhsuk-heading-m">Appointment</h2>
 
-  <dl class="nhsuk-summary-list">
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Clinic type</dt>
-      <dd class="nhsuk-summary-list__value">{{ clinic.clinicType | replace("_", " ") | capitalize }}</dd>
-    </div>
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Time</dt>
-      <dd class="nhsuk-summary-list__value">
-        {{ event.statusHistory[0].timestamp | formatTime }}
-      </dd>
-    </div>
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Status</dt>
-      <dd class="nhsuk-summary-list__value">
-        {{ tag({
-          text: event.status | formatWords | sentenceCase,
-          classes: "nhsuk-tag--" + event.status | getStatusTagColour
-        })}}
-      </dd>
-    </div>
-  </dl>
+  {% set statusHtml %}
+    {{ tag({
+      text: event.status | formatWords | sentenceCase,
+      classes: "nhsuk-tag--" + event.status | getStatusTagColour
+    }) }}
+    {% if event.status === 'scheduled' %}
+      {% set href -%}
+        /clinics/{{ clinicId }}/check-in/{{ event.id }}?returnTo=/clinics/{{ clinicId }}/participants/{{ participantId }}
+      {%- endset %}
+      <p class="nhsuk-u-margin-top-2"><a href="{{href | trim}}">Check in participant</a></p>
 
-  <h2 class="nhsuk-heading-m">Personal details</h2>
+    {% endif %}
+  {% endset %}
 
-  <dl class="nhsuk-summary-list">
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Full name</dt>
-      <dd class="nhsuk-summary-list__value">
-        {{ participant | getFullName }}
-      </dd>
-    </div>
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Gender</dt>
-      <dd class="nhsuk-summary-list__value">
-        Female
-      </dd>
-    </div>
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">NHS number</dt>
-      <dd class="nhsuk-summary-list__value">
-        {{ participant.medicalInformation.nhsNumber | formatNhsNumber }}
-      </dd>
-    </div>
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">SX number</dt>
-      <dd class="nhsuk-summary-list__value">{{ participant.sxNumber }}</dd>
-    </div>
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Date of birth</dt>
-      <dd class="nhsuk-summary-list__value">
-        {% set dob = participant.demographicInformation.dateOfBirth %}
-        {% set age -%}
-          ({{dob | formatRelativeDate(true)}} old)
-        {%- endset %}
-        {{ dob | formatDate }}<br>
-        {{ age | asHint}}
-      </dd>
-    </div>
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Address</dt>
-      <dd class="nhsuk-summary-list__value">
-        {{ participant.demographicInformation.address.line1 }}<br>
-        {% if participant.demographicInformation.address.line2 %}
-          {{ participant.demographicInformation.address.line2 }}<br>
-        {% endif %}
-        {{ participant.demographicInformation.address.city }}<br>
-        {{ participant.demographicInformation.address.postcode }}
-      </dd>
-    </div>
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Phone</dt>
-      <dd class="nhsuk-summary-list__value">
-        {{ participant.demographicInformation.phone | formatPhoneNumber }}
-      </dd>
-    </div>
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Email</dt>
-      <dd class="nhsuk-summary-list__value">
-        {{ participant.demographicInformation.email }}
-      </dd>
-    </div>
-  </dl>
+  {% set appointmentHtml %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Clinic type"
+          },
+          value: {
+            text: clinic.clinicType | formatWords | sentenceCase
+          }
+        },
+        {
+          key: {
+            text: "Appointment time"  
+          },
+          value: {
+            text: event.statusHistory[0].timestamp | formatTime
+          }
+        },
+        {
+          key: {
+            text: "Status"
+          },
+          value: {
+            html: statusHtml
+          }
+        }
+      ]
+    }) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Appointment",
+    headingLevel: "2",
+    descriptionHtml: appointmentHtml
+  }) }}
+
+  {% set personalDetailsHtml %}
+    {% set dob %}
+      {{ participant.demographicInformation.dateOfBirth | formatDate }}<br>
+      <span class="nhsuk-hint">({{ participant.demographicInformation.dateOfBirth | formatRelativeDate(true) }} old)</span>
+    {% endset %}
+
+    {% set address %}
+      {{ participant.demographicInformation.address.line1 }}<br>
+      {% if participant.demographicInformation.address.line2 %}
+        {{ participant.demographicInformation.address.line2 }}<br>
+      {% endif %}
+      {{ participant.demographicInformation.address.city }}<br>
+      {{ participant.demographicInformation.address.postcode }}
+    {% endset %}
+
+    {{ summaryList({
+      rows: [
+       {
+         key: {
+           text: "Full name"
+         },
+         value: {
+           text: participant | getFullName
+         }
+       },
+       {
+         key: {
+           text: "Gender"  
+         },
+         value: {
+           text: "Female"
+         }
+       },
+       {
+         key: {
+           text: "NHS number"
+         },
+         value: {
+           text: participant.medicalInformation.nhsNumber | formatNhsNumber
+         }
+       },
+       {
+         key: {
+           text: "SX number"
+         },
+         value: {
+           text: participant.sxNumber
+         }
+       },
+       {
+         key: {
+           text: "Date of birth"
+         },
+         value: {
+           html: dob
+         }
+       },
+       {
+         key: {
+           text: "Address"
+         },
+         value: {
+           html: address
+         }
+       },
+       {
+         key: {
+           text: "Phone"
+         },
+         value: {
+           text: participant.demographicInformation.phone | formatPhoneNumber
+         }
+       },
+       {
+         key: {
+           text: "Email"
+         },
+         value: {
+           text: participant.demographicInformation.email
+         }
+       }
+      ]
+    }) }}
+  {% endset %}
+
+
+
+  {{ card({
+    heading: "Personal details",
+    headingLevel: "2",
+    descriptionHtml: personalDetailsHtml
+  }) }}
+
+  {% set medicalInformationHtml %}
+    {% set riskFactorsList %}
+      <ul class="nhsuk-list nhsuk-list--bullet">
+       {% for factor in participant.medicalInformation.riskFactors %}
+         <li>{{ factor | formatWords | sentenceCase }}</li>
+       {% endfor %}
+      </ul>
+    {% endset %}
+
+    {% set medicationsList %}
+      <ul class="nhsuk-list nhsuk-list--bullet">
+       {% for medication in participant.currentHealthInformation.medications %}
+         <li>{{ medication | formatWords | sentenceCase }}</li>
+       {% endfor %}
+      </ul>
+    {% endset %}
+
+    {{ summaryList({
+      rows: [
+       {
+         key: {
+           text: "Risk factors"
+         },
+         value: {
+           html: riskFactorsList
+         }
+       } if participant.medicalInformation.riskFactors.length > 0,
+       {
+         key: {
+           text: "Current medications"
+         }, 
+         value: {
+           html: medicationsList
+         }
+       } if participant.currentHealthInformation.medications.length > 0
+      ] | removeEmpty
+    }) }}
+  {% endset %}
+
+
+
+
 
   {% if participant.medicalInformation.riskFactors | length or participant.currentHealthInformation.medications | length %}
-    <h2 class="nhsuk-heading-m">Medical information</h2>
-  {% endif %}
-
-
-  <dl class="nhsuk-summary-list">
-    {% if participant.medicalInformation.riskFactors.length > 0 %}
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Risk factors</dt>
-      <dd class="nhsuk-summary-list__value">
-        <ul class="nhsuk-list nhsuk-list--bullet">
-          {% for factor in participant.medicalInformation.riskFactors %}
-            <li>{{ factor | replace("_", " ") | capitalize }}</li>
-          {% endfor %}
-        </ul>
-      </dd>
-    </div>
-    {% endif %}
-    
-    {% if participant.currentHealthInformation.medications.length > 0 %}
-    <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Current medications</dt>
-      <dd class="nhsuk-summary-list__value">
-        <ul class="nhsuk-list nhsuk-list--bullet">
-          {% for medication in participant.currentHealthInformation.medications %}
-            <li>{{ medication | replace("_", " ") | capitalize }}</li>
-          {% endfor %}
-        </ul>
-      </dd>
-    </div>
-    {% endif %}
-  </dl>
-
-  {% if event.status === 'scheduled' %}
-  {% set href %}
-    /clinics/{{ clinicId }}/check-in/{{ event.id }}?returnTo=/clinics/{{ clinicId }}/participants/{{ participantId }}
-  {% endset %}
-    {{ button({
-      text: "Check in participant",
-      href: href | trim
+    {{ card({
+      heading: "Medical information",
+      headingLevel: "2",
+      descriptionHtml: medicalInformationHtml
     }) }}
-    {# <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}" class="nhsuk-button">
-      Check in participant
-    </a> #}
   {% endif %}
 
 {% endblock %}

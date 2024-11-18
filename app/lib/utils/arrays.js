@@ -19,7 +19,26 @@ const push = (array, item) => {
   return newArray
 }
 
+/**
+ * Remove empty items from arrays or strings
+ * @param {Array|string} items - Items to filter
+ * @returns {Array|string|undefined} Filtered items or undefined if empty
+ */
+const removeEmpty = (items) => {
+  if (!items) return;
+  
+  if (_.isString(items)) {
+    return items.trim() || undefined;
+  }
+  
+  if (_.isArray(items)) {
+    const filtered = items.filter(item => item && item !== "");
+    return filtered.length ? filtered : undefined;
+  }
+};
+
 module.exports = {
   push,
+  removeEmpty,
   findById
 };

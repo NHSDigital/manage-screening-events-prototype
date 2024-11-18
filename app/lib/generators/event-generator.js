@@ -77,8 +77,8 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
 
  // Adjust attendance probability for assessment clinics
  const attendanceWeights = clinic.clinicType === 'assessment' ? 
-   [0.9, 0.08, 0.02] :  // [attended, dna, attended_not_screened]
-   [0.65, 0.25, 0.1];   // Original weights for screening
+   [0.9, 0.015, 0] :  // [attended, dna, attended_not_screened]
+   [0.70, 0.25, 0.05];   // Original weights for screening
 
  // All future events and today's events start as scheduled
  if (!isPast) {
