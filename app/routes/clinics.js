@@ -94,7 +94,12 @@ module.exports = router => {
       return;
     }
 
-    res.render('clinics.index', {
+    res.render('participants/show', {
+      participant,
+      clinic,
+      event,
+      clinicId: req.params.clinicId,
+      participantId: req.params.participantId
     });
   });
 
