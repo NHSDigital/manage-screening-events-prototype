@@ -49,6 +49,11 @@
           },
           value: {
             text: clinic.clinicType | formatWords | sentenceCase
+          },
+          actions: {
+            items: [
+              
+            ]
           }
         },
         {
@@ -57,6 +62,15 @@
           },
           value: {
             text: event.statusHistory[0].timestamp | formatTime
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Reschedule appointment",
+                visuallyHiddenText: "name"
+              } if event.status == "scheduled"
+            ]
           }
         },
         {
@@ -65,6 +79,11 @@
           },
           value: {
             html: statusHtml
+          },
+          actions: {
+            items: [
+              
+            ]
           }
         }
       ]
