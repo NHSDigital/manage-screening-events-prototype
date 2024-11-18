@@ -1,16 +1,30 @@
 
 {% extends 'layout-app.html' %}
 
-{% set pageHeading = "Clinics" %}
+{% set pageHeading %}
+  {% switch filter %}
+    {% case 'today' %}
+     Today’s clinics
+    {% case 'upcoming' %}
+     Upcoming clinics
+    {% case 'completed' %}
+     Completed clinics
+    {% default %}
+     All clinics
+  {% endswitch %}
+{% endset %}
+
+{% set hideBackLink = true %}
+
 {% set gridColumn = "nhsuk-grid-column-full" %}
 
-{% set back = {
+{# {% set back = {
   href: "/dashboard",
   text: "Dashboard"
-} %}
+} %} #}
 
 {% block pageContent %}
-  <h1>{{pageHeading}} ({{filter}})</h1>
+  <h1>{{pageHeading}}</h1>
 
   {% set secondaryNavItems = [] %}
 

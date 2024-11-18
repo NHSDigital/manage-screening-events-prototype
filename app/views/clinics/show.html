@@ -5,7 +5,7 @@
 
 {% set back = {
   href: "/clinics",
-  text: "All clinics"
+  text: "Clinics"
 } %}
 
 {% block pageContent %}
@@ -45,7 +45,7 @@
   {% if filteredEvents.length === 0 %}
     <p>No participants scheduled for this clinic.</p>
   {% else %}
-    <p>{{ filteredEvents.length }} scheduled participants</p>
+    {# <p>{{ filteredEvents.length }} scheduled participants</p> #}
 
     <table class="nhsuk-table">
       <thead class="nhsuk-table__head">
@@ -78,7 +78,7 @@
             </td>
             <td class="nhsuk-table__cell">
               {% if event.status === 'scheduled' %}
-                <a href="#/clinics/{{ clinicId }}/check-in/{{ event.id }}" class="nhsuk-link">
+                <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}?currentFilter={{ currentFilter }}" class="nhsuk-link">
                   {{ "Check in" | noWrap }}
                 </a>
               {% endif %}

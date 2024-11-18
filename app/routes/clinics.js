@@ -67,7 +67,7 @@ module.exports = router => {
       };
     });
 
-    // Get filtered clinics
+    // Filter for just the clinics we want
     const filteredClinics = getFilteredClinics(clinicsWithData, filter);
 
     res.render('clinics/index', {
@@ -76,7 +76,6 @@ module.exports = router => {
       filteredClinics,
       formatDate: (date) => dayjs(date).format('D MMMM YYYY')
     });
-
 
   });
 
@@ -101,6 +100,49 @@ module.exports = router => {
       clinicId: req.params.clinicId,
       participantId: req.params.participantId
     });
+  });
+
+  // Handle check-in
+  router.get('/clinics/:clinicId/check-in/:eventId', (req, res) => {
+    const { clinicId, eventId } = req.params;
+    const data = req.session.data;
+    
+    // Get current filter from query param, or default to the current page's filter
+    const currentFilter = req.query.filter || req.query.currentFilter || 'all';
+    
+    // Find the event
+    const eventIndex = data.events.findIndex(e => e.id === eventId && e.clinicId === clinicId);
+    
+    if (eventIndex === -1) {
+      return res.redirect(`/clinics/${clinicId}/${currentFilter}`);
+    }
+
+    // Update the event status
+    const event = data.events[eventIndex];
+    
+    // Only allow check-in if currently scheduled
+    if (event.status !== 'scheduled') {
+      return res.redirect(`/clinics/${clinicId}/${currentFilter}`);
+    }
+
+    // Update the event
+    data.events[eventIndex] = {
+      ...event,
+      status: 'checked_in',
+      statusHistory: [
+        ...event.statusHistory,
+        {
+          status: 'checked_in',
+          timestamp: new Date().toISOString()
+        }
+      ]
+    };
+
+    // Save back to session
+    req.session.data = data;
+
+    // Redirect back to the same filter view
+    res.redirect(`/clinics/${clinicId}/${currentFilter}`);
   });
 
   function filterEvents(events, filter) {

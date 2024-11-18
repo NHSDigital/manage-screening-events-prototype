@@ -1,11 +1,14 @@
 
 {% extends 'layout-app.html' %}
 
-{% set pageHeading = "Today’s clinics" %}
+
+{% set pageHeading = participant | getFullName %}
+
+
 
 {% set back = {
   href: "/clinics",
-  text: "All clinics"
+  text: "Clinics"
 } %}
 
 {% block pageContent %}
@@ -16,7 +19,7 @@
     <span class="nhsuk-caption-l">
       {{ unit.name }} - {{ clinic.date | formatDate }}
     </span>
-    {{ participant | getFullName }}
+    {{ pageHeading }}
   </h1>
 
 
