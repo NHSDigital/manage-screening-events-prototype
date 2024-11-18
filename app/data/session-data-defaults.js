@@ -6,6 +6,7 @@ const ethnicities = require("./ethnicities");
 const path = require('path');
 const fs = require('fs');
 const dayjs = require('dayjs');
+const { needsRegeneration } = require('../lib/utils/regenerate-data');
 
 // Check if generated data folder exists and create if needed
 const generatedDataPath = path.join(__dirname, 'generated');
@@ -21,24 +22,18 @@ let generationInfo = {
   stats: { participants: 0, clinics: 0, events: 0 }
 };
 
-// Check if we need to regenerate data
+// Load generation info
 const generationInfoPath = path.join(generatedDataPath, 'generation-info.json');
-let needsRegeneration = true;
-
 if (fs.existsSync(generationInfoPath)) {
   try {
     generationInfo = JSON.parse(fs.readFileSync(generationInfoPath));
-    const generatedDate = dayjs(generationInfo.generatedAt).startOf('day');
-    const today = dayjs().startOf('day');
-    needsRegeneration = !generatedDate.isSame(today, 'day');
   } catch (err) {
     console.warn('Error reading generation info:', err);
-    needsRegeneration = true;
   }
 }
 
 // Generate or load data
-if (needsRegeneration) {
+if (needsRegeneration(generationInfo)) {
   console.log('Generating new seed data...');
   require('../lib/generate-seed-data.js')();
   
