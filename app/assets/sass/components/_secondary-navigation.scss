@@ -13,7 +13,7 @@ $govuk-spacing4: 20px;
 }
 
 .app-secondary-navigation__list-item--current {
-  border-bottom-width: $govuk-sacing1;
+  border-bottom-width: $govuk-spacing1;
 }
 
 .app-secondary-navigation__link {
@@ -82,7 +82,7 @@ $govuk-spacing4: 20px;
 
 .app-secondary-navigation__list-item--current {
   border-bottom: $nhsuk-border-width solid $color_nhsuk-blue;
-  padding-bottom: $govuk-sacing1;
+  padding-bottom: $govuk-spacing1;
 
   // More generous padding beneath items on wider screens
   @include mq($from: tablet) {
