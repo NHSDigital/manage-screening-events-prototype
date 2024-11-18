@@ -8,6 +8,8 @@
 {% extends "template.html" %}
 
 {%- from '_components/header/macro.njk' import headerNew %}
+{%- from '_components/count/macro.njk' import appCount %}
+{%- from '_components/secondary-navigation/macro.njk' import appSecondaryNavigation %}
 
 <!-- Add your custom CSS or Sass in /app/assets/sass/main.scss -->
 {% block headCSS %}
@@ -48,6 +50,10 @@
       {
         "URL": "/settings",
         "label": "Settings"
+      },
+      {
+        "URL": "https://github.com/NHSDigital/manage-screening-events-prototype",
+        "label": "Github"
       }
     ]
   })}}

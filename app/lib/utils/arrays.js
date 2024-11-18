@@ -1,4 +1,6 @@
 // app/lib/utils/arrays.js
+var _ = require('lodash');
+
 
 /**
  * Find an object by ID in an array
@@ -11,6 +13,13 @@ const findById = (array, id) => {
   return array.find(item => item.id === id);
 };
 
+const push = (array, item) => {
+  let newArray = [...array]
+  newArray.push(_.cloneDeep(item)) // clone needed to stop this mutating original
+  return newArray
+}
+
 module.exports = {
+  push,
   findById
 };

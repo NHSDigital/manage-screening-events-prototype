@@ -45,6 +45,18 @@
 
       <dl class="nhsuk-summary-list">
         <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">Full name</dt>
+          <dd class="nhsuk-summary-list__value">
+            {{ participant | getFullName }}
+          </dd>
+        </div>
+        <div class="nhsuk-summary-list__row">
+          <dt class="nhsuk-summary-list__key">Gender</dt>
+          <dd class="nhsuk-summary-list__value">
+            Female
+          </dd>
+        </div>
+        <div class="nhsuk-summary-list__row">
           <dt class="nhsuk-summary-list__key">NHS number</dt>
           <dd class="nhsuk-summary-list__value">
             {{ participant.medicalInformation.nhsNumber }}

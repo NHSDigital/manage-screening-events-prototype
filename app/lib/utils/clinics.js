@@ -1,4 +1,5 @@
 // app/lib/utils/clinics.js
+const dayjs = require('dayjs');
 
 
 const config = require('../../config');
@@ -66,9 +67,40 @@ const getClinicHours = (clinic) => {
   };
 };
 
+/**
+ * Get clinics filtered by time period
+ * @param {Array} clinics - Array of all clinics
+ * @param {string} filter - Filter to apply (today, upcoming, completed, all)
+ */
+const getFilteredClinics = (clinics, filter = 'all') => {
+  const today = dayjs().startOf('day');
+  
+  switch(filter) {
+    case 'today':
+      return clinics.filter(clinic => 
+        dayjs(clinic.date).isSame(today, 'day')
+      );
+      
+    case 'upcoming':
+      return clinics.filter(clinic => 
+        dayjs(clinic.date).isAfter(today, 'day')
+      ).sort((a, b) => new Date(a.date) - new Date(b.date));
+      
+    case 'completed':
+      return clinics.filter(clinic => 
+        dayjs(clinic.date).isBefore(today, 'day')
+      ).sort((a, b) => new Date(b.date) - new Date(a.date)); // Most recent first
+      
+    case 'all':
+    default:
+      return [...clinics].sort((a, b) => new Date(a.date) - new Date(b.date));
+  }
+};
+
 
 module.exports = {
   getTodaysClinics,
+  getFilteredClinics,
   getClinicEvents,
   formatTimeSlot,
   getClinicHours

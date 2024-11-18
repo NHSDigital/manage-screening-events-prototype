@@ -72,7 +72,7 @@
 {% block content %}
 {{ data | log }}
 <div class="nhsuk-grid-row">
-  <div class="nhsuk-grid-column-two-thirds">
+  <div class="{{ gridColumn or 'nhsuk-grid-column-two-thirds' }}">
 
     {% if flash.error %}
       {{ errorSummary({

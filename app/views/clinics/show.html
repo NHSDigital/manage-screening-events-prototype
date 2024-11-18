@@ -1,5 +1,12 @@
 {% extends 'layout-app.html' %}
-{% set pageHeading = "Today's clinics" %}
+{% set pageHeading = "Today’s clinics" %}
+
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
+{% set back = {
+  href: "/clinics",
+  text: "All clinics"
+} %}
 
 {% block pageContent %}
   {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
@@ -11,26 +18,29 @@
     {{ clinic.serviceType | sentenceCase }} clinic on {{ clinic.date | formatDate }}
   </h1>
 
-  <nav class="nhsuk-tabs">
-    <ul class="nhsuk-tabs__list">
-      {% for filter in [
-        { id: 'all', label: 'All participants' },
-        { id: 'scheduled', label: 'Scheduled' },
-        { id: 'checked-in', label: 'Checked in' },
-        { id: 'attended', label: 'Attended' }
-      ] %}
-        <li class="nhsuk-tabs__list-item">
-          <a class="nhsuk-tabs__tab {% if currentFilter === filter.id %}nhsuk-tabs__tab--selected{% endif %}" 
-             href="/clinics/{{ clinicId }}/{{ filter.id if filter.id !== 'all' }}">
-            {{ filter.label }}
-            <span class="nhsuk-tag nhsuk-tag--grey">
-              {{ events | filterEventsByStatus(filter.id) | length }}
-            </span>
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
-  </nav>
+  {% set secondaryNavItems = [] %}
+
+  {% for filter in [
+    { id: 'all', label: 'All participants' },
+    { id: 'scheduled', label: 'Scheduled' },
+    { id: 'checked-in', label: 'Checked in' },
+    { id: 'attended', label: 'Attended' }
+  ] %}
+    {% set href -%}
+      /clinics/{{ clinicId }}/{{ filter.id if filter.id !== 'all' }}
+    {% endset %}
+    {% set secondaryNavItems = secondaryNavItems | push({
+      text: (filter.label + " " + appCount(events | filterEventsByStatus(filter.id) | length)) | safe,
+      href: href | trim,
+      current: true if filter.id == status
+    }) %}
+
+  {% endfor %}
+
+  {{ appSecondaryNavigation({
+    visuallyHiddenTitle: "Secondary menu",
+    items: secondaryNavItems
+  }) }}
 
   {% if filteredEvents.length === 0 %}
     <p>No participants scheduled for this clinic.</p>
@@ -42,7 +52,7 @@
         <tr>
           <th class="nhsuk-table__header">Time</th>
           <th class="nhsuk-table__header">Name</th>
-          <th class="nhsuk-table__header">Postcode</th>
+          {# <th class="nhsuk-table__header">Postcode</th> #}
           <th class="nhsuk-table__header">NHS number</th>
           <th class="nhsuk-table__header">Status</th>
           <th class="nhsuk-table__header">Actions</th>
@@ -58,7 +68,7 @@
                 {{ participant | getFullName }}
               </a>
             </td>
-            <td class="nhsuk-table__cell">{{ participant.demographicInformation.address.postcode | noWrap }}</td>
+            {# <td class="nhsuk-table__cell">{{ participant.demographicInformation.address.postcode | noWrap }}</td> #}
             <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber }}</td>
             <td class="nhsuk-table__cell">
               {{ tag({

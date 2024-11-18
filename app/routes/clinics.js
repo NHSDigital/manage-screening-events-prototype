@@ -1,6 +1,7 @@
 // app/routes/clinics.js
 
 const dayjs = require('dayjs');
+const { getFilteredClinics, getClinicEvents } = require('../lib/utils/clinics');
 
 /**
  * Get clinic and its related data from id
@@ -36,8 +37,47 @@ function getClinicData(data, clinicId) {
 
 module.exports = router => {
 
-  router.get('/clinics/today', (req, res) => {
-    res.render('clinics/today');
+  router.get('/clinics', (req, res) => {
+    res.redirect('/clinics/today');
+  });
+
+  const clinicViews = ['/clinics/today', '/clinics/upcoming', '/clinics/completed', '/clinics/all'];
+
+  router.get(clinicViews, (req, res) => {
+
+    const data = req.session.data
+
+    // Extract filter from the URL path
+    let filter = req.path.split('/').pop();
+
+    // Check filter from either URL param or query string
+    filter = filter || req.query.filter || 'all';
+
+    // Add additional data needed for each clinic
+    const clinicsWithData = data.clinics.map(clinic => {
+      const unit = data.breastScreeningUnits.find(u => u.id === clinic.breastScreeningUnitId);
+      const location = unit.locations.find(l => l.id === clinic.locationId);
+      const events = getClinicEvents(data.events, clinic.id);
+
+      return {
+        ...clinic,
+        unit,
+        location,
+        events
+      };
+    });
+
+    // Get filtered clinics
+    const filteredClinics = getFilteredClinics(clinicsWithData, filter);
+
+    res.render('clinics/index', {
+      filter,
+      clinics: clinicsWithData,
+      filteredClinics,
+      formatDate: (date) => dayjs(date).format('D MMMM YYYY')
+    });
+
+
   });
 
   // View participant within clinic context
@@ -54,12 +94,7 @@ module.exports = router => {
       return;
     }
 
-    res.render('participants/show', {
-      participant,
-      clinic,
-      event,
-      clinicId: req.params.clinicId,
-      participantId: req.params.participantId
+    res.render('clinics.index', {
     });
   });
 
@@ -96,15 +131,14 @@ module.exports = router => {
       return res.redirect(`/clinics/${req.params.id}`);
     }
 
-    console.log(`Events before: ${clinicData.events.length}`)
     const filteredEvents = filterEvents(clinicData.events, filter);
-    console.log(`Events after: ${filteredEvents.length}`)
 
     res.render('clinics/show', {
       clinicId: req.params.id,
       clinic: clinicData.clinic,
       allEvents: clinicData.events,
       filteredEvents: filteredEvents,
+      status: filter,
       unit: clinicData.unit,
       currentFilter: filter,
       formatDate: (date) => dayjs(date).format('D MMMM YYYY'),
