@@ -141,8 +141,13 @@ module.exports = router => {
     // Save back to session
     req.session.data = data;
 
-    // Redirect back to the same filter view
-    res.redirect(`/clinics/${clinicId}/${currentFilter}`);
+    // If there's a returnTo path, use that, otherwise go back to the filter view
+    const returnTo = req.query.returnTo;
+    if (returnTo) {
+      res.redirect(returnTo);
+    } else {
+      res.redirect(`/clinics/${clinicId}/${currentFilter}`);
+    }
   });
 
   function filterEvents(events, filter) {
