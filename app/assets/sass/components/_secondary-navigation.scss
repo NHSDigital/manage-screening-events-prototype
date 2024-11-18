@@ -1,3 +1,9 @@
+$govuk-spacing1: 5px;
+$govuk-spacing2: 10px;
+$govuk-spacing3: 15px;
+$govuk-spacing4: 20px;
+
+
 .app-secondary-navigation {
   @include nhsuk-responsive-margin(4, "bottom");
 }
@@ -7,12 +13,12 @@
 }
 
 .app-secondary-navigation__list-item--current {
-  border-bottom-width: nhsuk-spacing(1);
+  border-bottom-width: $govuk-sacing1;
 }
 
 .app-secondary-navigation__link {
-  padding-left: nhsuk-spacing(3);
-  padding-right: nhsuk-spacing(3);
+  padding-left: $govuk-spacing3;
+  padding-right: $govuk-spacing3;
 }
 
 // --------
@@ -56,14 +62,14 @@
   box-sizing: border-box;
   display: block;
   float: left;
-  margin-right: nhsuk-spacing(4);
-  padding-bottom: nhsuk-spacing(2);
-  padding-top: nhsuk-spacing(2);
+  margin-right: $govuk-spacing4;
+  padding-bottom: $govuk-spacing2;
+  padding-top: $govuk-spacing2;
   position: relative;
 
   // More generous padding beneath items on wider screens
   @include mq($from: tablet) {
-    padding-bottom: nhsuk-spacing(3);
+    padding-bottom: $govuk-spacing3;
   }
 }
 
@@ -76,11 +82,11 @@
 
 .app-secondary-navigation__list-item--current {
   border-bottom: $nhsuk-border-width solid $color_nhsuk-blue;
-  padding-bottom: nhsuk-spacing(1);
+  padding-bottom: $govuk-sacing1;
 
   // More generous padding beneath items on wider screens
   @include mq($from: tablet) {
-    padding-bottom: nhsuk-spacing(2);
+    padding-bottom: $govuk-spacing2;
   }
 }
 

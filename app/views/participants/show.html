@@ -107,7 +107,10 @@
     </div>
   </dl>
 
-  <h2 class="nhsuk-heading-m">Medical information</h2>
+  {% if participant.medicalInformation.riskFactors | length or participant.currentHealthInformation.medications | length %}
+    <h2 class="nhsuk-heading-m">Medical information</h2>
+  {% endif %}
+
 
   <dl class="nhsuk-summary-list">
     {% if participant.medicalInformation.riskFactors.length > 0 %}

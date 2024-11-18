@@ -96,7 +96,9 @@
       <dt class="nhsuk-summary-list__key">Location</dt>
       <dd class="nhsuk-summary-list__value">
         {{ unit.name }}<br>
-        {{ unit.address | replace("\n", "<br>") | safe }}
+        {% for item, line in unit.address %}
+          {{ line }}{% if not loop.last %}<br>{% endif %}
+        {% endfor %}
       </dd>
     </div>
     

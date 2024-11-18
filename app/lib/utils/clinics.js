@@ -21,8 +21,8 @@ const getTodaysClinics = (clinics) => {
  */
 const getClinicEvents = (events, clinicId) => {
   if (!events || !clinicId) return [];
-  console.log(`Looking for events with clinicId: ${clinicId}`);
-  console.log(`Found ${events.filter(e => e.clinicId === clinicId).length} events`);
+  // console.log(`Looking for events with clinicId: ${clinicId}`);
+  // console.log(`Found ${events.filter(e => e.clinicId === clinicId).length} events`);
   return events.filter(e => e.clinicId === clinicId);
 };
 

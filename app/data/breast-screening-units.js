@@ -4,17 +4,17 @@ const generateId = require('../lib/utils/id-generator');
 module.exports = [
   {
     id: "m5ekcxvu", // Must be hardcoded so it matches generated data
-    name: "Oxford Breast Imaging Centre",
+    name: "West Sussex BSS",
     address: {
-      line1: "Surgery and Diagnostics Centre",
-      line2: "Churchill Hospital",
-      line3: "Old Road",
+      line1: "Breast Screening Unit",
+      line2: "Worthing Hospital",
+      line3: "Lyndhurst Rd",
       line4: "Headington",
-      city: "Oxford",
-      postcode: "OX3 7LE"
+      city: "Worthing",
+      postcode: "BN11 2DH"
     },
     phoneNumber: "01865235621",
-    abbreviation: "OXF",
+    abbreviation: "WSB",
     serviceTypes: ['screening', 'assessment'],  // Can do both
     // Default operating hours for the BSU
     sessionPatterns: [
@@ -37,16 +37,16 @@ module.exports = [
     locations: [
       {
         id: "duif1ywp", // Must be hardcoded so it matches generated data
-        name: "Churchill Hospital breast unit",
+        name: "West Sussex BSS",
         type: "hospital",
         isMainSite: true,
         address: {
-          line1: "Surgery and Diagnostics Centre",
-          line2: "Churchill Hospital",
-          line3: "Old Road",
+          line1: "Breast Screening Unit",
+          line2: "Worthing Hospital",
+          line3: "Lyndhurst Rd",
           line4: "Headington",
-          city: "Oxford",
-          postcode: "OX3 7LE"
+          city: "Worthing",
+          postcode: "BN11 2DH"
         }
       },
       // {
