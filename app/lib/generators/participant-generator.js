@@ -45,13 +45,14 @@ const generateSXNumber = (bsuAbbreviation) => {
 
 // NHS Number Generator
 const generateNHSNumber = () => {
-  // Generate 9 random digits
-  const baseNumber = Array.from({ length: 9 }, () => 
+  // Generate 6 random digits
+  // NHS numbers starting with 999 are never issued.
+  // https://digital.nhs.uk/services/e-referral-service/document-library/synthetic-data-in-live-environments#synthetic-data-naming-convention
+  const baseNumber = '999' + Array.from({ length: 6 }, () => 
     faker.number.int(9)
   ).join('');
   
   // Calculate check digit
-  // NHS number validation: multiply each digit by (11 - position)
   let sum = 0;
   for (let i = 0; i < 9; i++) {
     sum += parseInt(baseNumber[i]) * (11 - (i + 1));
