@@ -68,7 +68,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
   const isTodayBeforeCurrentTime = eventDate.isBefore(currentDateTime)
 
  // If it's an assessment clinic, override the outcome weights to reflect higher probability of findings
- const eventWeights = clinic.serviceType === 'assessment' ? 
+ const eventWeights = clinic.clinicType === 'assessment' ? 
    {
      'clear': 0.4,                  // Lower chance of clear results
      'needs_further_tests': 0.45,   // Higher chance of needing more tests
@@ -76,7 +76,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
    } : outcomeWeights;
 
  // Adjust attendance probability for assessment clinics
- const attendanceWeights = clinic.serviceType === 'assessment' ? 
+ const attendanceWeights = clinic.clinicType === 'assessment' ? 
    [0.9, 0.08, 0.02] :  // [attended, dna, attended_not_screened]
    [0.65, 0.25, 0.1];   // Original weights for screening
 
@@ -87,7 +87,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
      participantId: participant.id,
      clinicId: clinic.id,
      slotId: slot.id,
-     type: clinic.serviceType,
+     type: clinic.clinicType,
      status: 'scheduled',
      details: {
        screeningType: 'mammogram',
@@ -110,7 +110,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
    participantId: participant.id,
    clinicId: clinic.id,
    slotId: slot.id,
-   type: clinic.serviceType,
+   type: clinic.clinicType,
    status,
    details: {
      screeningType: 'mammogram',

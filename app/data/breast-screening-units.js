@@ -15,7 +15,7 @@ module.exports = [
     },
     phoneNumber: "01865235621",
     abbreviation: "WSB",
-    serviceTypes: ['screening', 'assessment'],  // Can do both
+    clinicTypes: ['screening', 'assessment'],  // Can do both
     // Default operating hours for the BSU
     sessionPatterns: [
       {
@@ -66,7 +66,7 @@ module.exports = [
         name: "Mobile Unit JA1 CP7",
         type: "mobile_unit",
         isMainSite: false,
-        serviceTypes: ['screening'],  // Can only do screening
+        clinicTypes: ['screening'],  // Can only do screening
         registration: "JA1 CP7",
         // Override BSU session patterns for this location
         sessionPatterns: [
@@ -84,7 +84,7 @@ module.exports = [
         name: "Mobile Unit WX71 HCR",
         type: "mobile_unit",
         isMainSite: false,
-        serviceTypes: ['screening'],  // Can only do screening
+        clinicTypes: ['screening'],  // Can only do screening
         registration: "WX71 HCR",
         // Override BSU session patterns for this location
         sessionPatterns: [

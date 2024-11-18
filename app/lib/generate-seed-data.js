@@ -57,7 +57,7 @@ const generateData = async () => {
               slot,
               participant,
               clinic,
-              outcomeWeights: config.screening.outcomes[clinic.serviceType]
+              outcomeWeights: config.screening.outcomes[clinic.clinicType]
             });
           });
 

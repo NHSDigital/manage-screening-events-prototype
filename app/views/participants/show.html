@@ -26,8 +26,8 @@
 
   <dl class="nhsuk-summary-list">
     <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Service</dt>
-      <dd class="nhsuk-summary-list__value">{{ clinic.serviceType | replace("_", " ") | capitalize }}</dd>
+      <dt class="nhsuk-summary-list__key">Clinic type</dt>
+      <dd class="nhsuk-summary-list__value">{{ clinic.clinicType | replace("_", " ") | capitalize }}</dd>
     </div>
     <div class="nhsuk-summary-list__row">
       <dt class="nhsuk-summary-list__key">Time</dt>
@@ -64,7 +64,7 @@
     <div class="nhsuk-summary-list__row">
       <dt class="nhsuk-summary-list__key">NHS number</dt>
       <dd class="nhsuk-summary-list__value">
-        {{ participant.medicalInformation.nhsNumber }}
+        {{ participant.medicalInformation.nhsNumber | formatNhsNumber }}
       </dd>
     </div>
     <div class="nhsuk-summary-list__row">

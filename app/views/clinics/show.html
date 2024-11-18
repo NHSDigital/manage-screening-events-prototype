@@ -15,7 +15,7 @@
 
   <h1 class="nhsuk-heading-l">
     <span class="nhsuk-caption-l">{{ unit.name }}</span>
-    {{ clinic.serviceType | sentenceCase }} clinic on {{ clinic.date | formatDate }}
+    {{ clinic.clinicType | sentenceCase }} clinic on {{ clinic.date | formatDate }}
   </h1>
 
   {% set secondaryNavItems = [] %}
@@ -69,7 +69,7 @@
               </a>
             </td>
             {# <td class="nhsuk-table__cell">{{ participant.demographicInformation.address.postcode | noWrap }}</td> #}
-            <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber }}</td>
+            <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber | formatNhsNumber}}</td>
             <td class="nhsuk-table__cell">
               {{ tag({
                 text: event.status | formatWords | sentenceCase,
@@ -113,13 +113,13 @@
     </div>
     
     <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Type</dt>
-      <dd class="nhsuk-summary-list__value">{{ clinic.clinicType | replace("_", " ") | capitalize }}</dd>
+      <dt class="nhsuk-summary-list__key">Location</dt>
+      <dd class="nhsuk-summary-list__value">{{ clinic.locationType | formatWords | sentenceCase }}</dd>
     </div>
 
     <div class="nhsuk-summary-list__row">
-      <dt class="nhsuk-summary-list__key">Service</dt>
-      <dd class="nhsuk-summary-list__value">{{ clinic.serviceType | sentenceCase }}</dd>
+      <dt class="nhsuk-summary-list__key">Type</dt>
+      <dd class="nhsuk-summary-list__value">{{ clinic.clinicType | sentenceCase }}</dd>
     </div>
   </dl>
 

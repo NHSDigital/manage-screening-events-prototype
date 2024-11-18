@@ -6,18 +6,18 @@ const dayjs = require('dayjs');
 const weighted = require('weighted');
 const config = require('../../config');
 
-const determineServiceType = (location, breastScreeningUnit) => {
+const determineclinicType = (location, breastScreeningUnit) => {
   // First check location-specific service types
-  const serviceTypes = location.serviceTypes || breastScreeningUnit.serviceTypes;
+  const clinicTypes = location.clinicTypes || breastScreeningUnit.clinicTypes;
 
   // If still no service types, default to screening
-  if (!serviceTypes) {
+  if (!clinicTypes) {
     return 'screening';
   }
 
   // If location/BSU only supports one service type, use that
-  if (serviceTypes.length === 1) {
-    return serviceTypes[0];
+  if (clinicTypes.length === 1) {
+    return clinicTypes[0];
   }
 
   // For locations that can do both, weight towards screening
@@ -27,7 +27,7 @@ const determineServiceType = (location, breastScreeningUnit) => {
   });
 };
 
-const generateTimeSlots = (date, sessionTimes, serviceType) => {
+const generateTimeSlots = (date, sessionTimes, clinicType) => {
   const { slotDurationMinutes } = config.clinics;
   
   const slots = [];
@@ -40,8 +40,8 @@ const generateTimeSlots = (date, sessionTimes, serviceType) => {
     slots.push({
       id: slotId,
       dateTime: new Date(currentTime).toISOString(),
-      type: serviceType,  // Use the clinic's service type
-      capacity: serviceType === 'assessment' ? 1 : 2, // Assessment clinics don't double book
+      type: clinicType,  // Use the clinic's service type
+      capacity: clinicType === 'assessment' ? 1 : 2, // Assessment clinics don't double book
       bookedCount: 0,
       period: `${sessionTimes.startTime}-${sessionTimes.endTime}`
     });
@@ -87,15 +87,15 @@ const determineSessionType = (sessionTimes) => {
 };
 
 const generateClinic = (date, location, breastScreeningUnit, sessionTimes) => {
-  const serviceType = determineServiceType(location, breastScreeningUnit);
-  const slots = generateTimeSlots(date, sessionTimes, serviceType);
+  const clinicType = determineclinicType(location, breastScreeningUnit);
+  const slots = generateTimeSlots(date, sessionTimes, clinicType);
   
   return {
     id: generateId(),
     date: date.toISOString().split('T')[0],
     breastScreeningUnitId: breastScreeningUnit.id,
-    clinicType: location.type,
-    serviceType,
+    locationType: location.type,
+    clinicType,
     locationId: location.id,
     siteName: location.type === 'mobile_unit' ? generateMobileSiteName() : null,
     slots,
@@ -106,9 +106,9 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes) => {
       support: []
     },
     targetCapacity: {
-      bookingPercent: serviceType === 'assessment' ? 100 : config.clinics.targetBookingPercent,
-      attendancePercent: serviceType === 'assessment' ? 95 : config.clinics.targetAttendancePercent,
-      totalSlots: slots.length * (serviceType === 'assessment' ? 1 : 2)
+      bookingPercent: clinicType === 'assessment' ? 100 : config.clinics.targetBookingPercent,
+      attendancePercent: clinicType === 'assessment' ? 95 : config.clinics.targetAttendancePercent,
+      totalSlots: slots.length * (clinicType === 'assessment' ? 1 : 2)
     },
     notes: null,
     sessionTimes,

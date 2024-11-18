@@ -203,10 +203,32 @@ const formatPhoneNumber = (phoneNumber) => {
   return `${phoneNumber.slice(0, 4)} ${phoneNumber.slice(4, 7)} ${phoneNumber.slice(7)}`;
 };
 
+/**
+ * Format NHS number with spaces (3-3-4 format)
+ * @param {string|number} input - NHS number to format
+ * @returns {string} Formatted NHS number or original input if invalid
+ */
+const formatNhsNumber = (input) => {
+  if (!input) return '';
+  const nhsStr = input.toString().replace(/\s/g, '');
+  
+  if (!/^\d{10}$/.test(nhsStr)) {
+    return input;
+  }
+
+  return `${nhsStr.slice(0,3)} ${nhsStr.slice(3,6)} ${nhsStr.slice(6)}`;
+};
+
+// Example usage:
+// formatNhsNumber('4857773456') // returns '485 777 3456'
+// formatNhsNumber(4857773456)   // returns '485 777 3456'
+// formatNhsNumber('485 777 3456') // returns '485 777 3456'
+
 module.exports = {
   addIndefiniteArticle,
   formatCurrency,
   formatCurrencyForCsv,
+  formatNhsNumber,
   formatWords,
   isString,
   kebabCase,
