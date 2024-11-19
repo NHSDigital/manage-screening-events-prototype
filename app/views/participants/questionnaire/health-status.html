@@ -1,0 +1,180 @@
+
+{% extends 'layout.html' %}
+
+{% set pageHeading = "Health status" %}
+
+{% set formAction = "./health-status" %}
+
+{% set hideBackLink = true %}
+
+{% block content %}
+<div class="nhsuk-grid-row">
+  <div class="{{ gridColumn or 'nhsuk-grid-column-two-thirds' }}">
+
+    {% if flash.error %}
+      {{ errorSummary({
+        "titleText": "There is a problem",
+        "errorList": flash.error
+      }) }}
+    {% endif %}
+
+    <form action="{{formAction or './'}}" method="POST">
+      <h1>
+        <span class="nhsuk-caption-l">{{( participant | getFullName ) or "Jane Smith" }} pre-screening questionnaire</span>
+        {{ pageHeading }}
+      </h1>
+
+      {% set mobilityYesHtml %}
+        {{ textarea({
+          name: "questionnaire[mobilityYes]",
+          id: "mobilityYes",
+          label: {
+            text: "Can you provide more detail?"
+          },
+          _hint: {
+            text: "Do not include personal or financial information, for example, your National Insurance number or credit card details."
+          }
+        }) }}
+      {% endset -%}
+
+      {{ radios({
+        idPrefix: "mobilityIssues",
+        name: "questionnaire[mobilityIssues]",
+        fieldset: {
+          legend: {
+            text: "Do you have any mobility issues?",
+            classes: "nhsuk-fieldset__legend--s",
+            isPageHeading: "false"
+          }
+        },
+        hint: {
+          text: "We only need to know about things that may affect your visit"
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            conditional: {
+              html: mobilityYesHtml
+            }
+          },
+          {
+            value: "no",
+            text: "No"
+          }
+        ]
+      }) }}
+
+      {{ radios({
+        idPrefix: "pregnantOrBreastFeeding",
+        name: "questionnaire[pregnantOrBreastFeeding]",
+        fieldset: {
+          legend: {
+            text: "Are you pregnant or breast feeding?",
+            classes: "nhsuk-fieldset__legend--s",
+            isPageHeading: "false"
+          }
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes, I’m currently pregnant or breastfeeding"
+          },
+          {
+            value: "no",
+            text: "No"
+          }
+        ]
+      }) }}
+
+      {# Medical devices question #}
+      {% set medicalDevicesYesHtml %}
+        {{ checkboxes({
+          name: "questionnaire[medicalDeviceTypes]",
+          items: [
+            {
+              value: "pacemaker",
+              text: "Pacemaker"
+            },
+            {
+              value: "insulin_pump",
+              text: "Insulin pump"
+            },
+            {
+              value: "other",
+              text: "Other implanted device"
+            }
+          ]
+        }) }}
+      {% endset -%}
+
+      {{ radios({
+        idPrefix: "medicalDevices",
+        name: "questionnaire[medicalDevices]",
+        fieldset: {
+          legend: {
+            text: "Do you have any implanted medical devices or pacemakers?",
+            classes: "nhsuk-fieldset__legend--s",
+            isPageHeading: false
+          }
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            conditional: {
+              html: medicalDevicesYesHtml
+            }
+          },
+          {
+            value: "no",
+            text: "No"
+          }
+        ]
+      }) }}
+
+      {# HRT question #}
+      {% set hrtYesHtml %}
+        {{ input({
+          label: {
+            text: "What type of HRT are you taking?"
+          },
+          id: "hrtType",
+          name: "questionnaire[hrtType]"
+        }) }}
+      {% endset -%}
+
+      {{ radios({
+        idPrefix: "takingHRT",
+        name: "questionnaire[takingHRT]",
+        fieldset: {
+          legend: {
+            text: "Are you taking HRT (hormone replacement therapy)?",
+            classes: "nhsuk-fieldset__legend--s",
+            isPageHeading: false
+          }
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            conditional: {
+              html: hrtYesHtml
+            }
+          },
+          {
+            value: "no",
+            text: "No"
+          }
+        ]
+      }) }}
+
+      {{ button({
+        text: "Continue"
+      }) }}
+    </form>
+  </div>
+</div>
+
+
+{% endblock %}

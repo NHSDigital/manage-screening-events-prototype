@@ -1,0 +1,332 @@
+
+{% extends 'layout.html' %}
+
+{% set pageHeading = "Medical history" %}
+
+{% set formAction = "./medical-history" %}
+
+
+{% set hideBackLink = true %}
+
+{% block content %}
+{{ data | log }}
+<div class="nhsuk-grid-row">
+  <div class="{{ gridColumn or 'nhsuk-grid-column-two-thirds' }}">
+
+    {% if flash.error %}
+      {{ errorSummary({
+        "titleText": "There is a problem",
+        "errorList": flash.error
+      }) }}
+    {% endif %}
+
+    <form action="{{formAction or './'}}" method="POST">
+      <h1>
+        <span class="nhsuk-caption-l">{{( participant | getFullName ) or "Jane Smith" }} pre-screening questionnaire</span>
+        {{ pageHeading }}
+      </h1>
+
+      {# Previous breast cancer diagnosis #}
+      {% set previousCancerHtml %}
+        {{ dateInput({
+          id: "diagnosisDate",
+          namePrefix: "questionnaire[diagnosisDate]",
+          fieldset: {
+            legend: {
+              text: "When were you diagnosed?",
+              classes: "nhsuk-fieldset__legend--s"
+            }
+          },
+          hint: {
+            text: "For example, 15 3 2020"
+          },
+          items: [
+            {
+              name: "day",
+              classes: "nhsuk-input--width-2"
+            },
+            {
+              name: "month",
+              classes: "nhsuk-input--width-2"
+            },
+            {
+              name: "year",
+              classes: "nhsuk-input--width-4"
+            }
+          ]
+        }) }}
+
+        {{ input({
+          label: {
+            text: "What was the diagnosis?"
+          },
+          classes: "nhsuk-input--width-20",
+          id: "diagnosis",
+          name: "questionnaire[diagnosis]"
+        }) }}
+
+        {{ input({
+          label: {
+            text: "Where was the cancer located?"
+          },
+          classes: "nhsuk-input--width-20",
+          id: "position",
+          name: "questionnaire[position]"
+        }) }}
+
+        {{ checkboxes({
+          name: "questionnaire[treatments]",
+          fieldset: {
+            legend: {
+              text: "What treatments did you receive?",
+              classes: "nhsuk-fieldset__legend--s"
+            }
+          },
+          items: [
+            {
+              value: "radiotherapy",
+              text: "Radiotherapy"
+            },
+            {
+              value: "mastectomy",
+              text: "Mastectomy"
+            },
+            {
+              value: "lumpectomy",
+              text: "Lumpectomy"
+            },
+            {
+              value: "other_surgery",
+              text: "Other surgery"
+            }
+          ]
+        }) }}
+
+        {{ input({
+          label: {
+            text: "Which hospital provided your treatment?"
+          },
+          classes: "nhsuk-input--width-20",
+          id: "treatmentHospital",
+          name: "questionnaire[treatmentHospital]"
+        }) }}
+
+      {% endset -%}
+
+      {{ radios({
+        idPrefix: "previousCancer",
+        name: "questionnaire[previousCancer]",
+        fieldset: {
+          legend: {
+            text: "Have you been diagnosed with breast cancer before?",
+            classes: "nhsuk-fieldset__legend--s",
+            isPageHeading: false
+          }
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            conditional: {
+              html: previousCancerHtml
+            }
+          },
+          {
+            value: "no",
+            text: "No"
+          }
+        ]
+      }) }}
+
+      {# Current hormone therapy #}
+      {{ radios({
+        idPrefix: "hormoneTherapy",
+        name: "questionnaire[hormoneTherapy]",
+        fieldset: {
+          legend: {
+            text: "Are you currently receiving hormone therapy treatment for breast cancer?",
+            classes: "nhsuk-fieldset__legend--s"
+          }
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes"
+          },
+          {
+            value: "no",
+            text: "No"
+          }
+        ]
+      }) }}
+
+      {# Family history #}
+      {% set familyHistoryYesHtml %}
+        {{ textarea({
+          name: "questionnaire[familyHistoryDetails]",
+          id: "familyHistoryDetails",
+          label: {
+            text: "Please tell us about your family history of breast cancer"
+          }
+        }) }}
+      {% endset -%}
+
+      {{ radios({
+        idPrefix: "familyHistory",
+        name: "questionnaire[familyHistory]",
+        fieldset: {
+          legend: {
+            text: "Do you have a family history of breast cancer?",
+            classes: "nhsuk-fieldset__legend--s"
+          }
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes",
+            conditional: {
+              html: familyHistoryYesHtml
+            }
+          },
+          {
+            value: "no",
+            text: "No"
+          }
+        ]
+      }) }}
+
+      {# Previous non-cancerous procedures #}
+      {% set benignLumpHtml %}
+        {{ dateInput({
+          id: "benignLumpDate",
+          namePrefix: "questionnaire[benignLumpDate]",
+          fieldset: {
+            legend: {
+              text: "When was it discovered?",
+              classes: "nhsuk-fieldset__legend--s"
+            }
+          },
+          hint: {
+            text: "For example, 15 3 2020"
+          },
+          items: [
+            {
+              name: "day",
+              classes: "nhsuk-input--width-2"
+            },
+            {
+              name: "month",
+              classes: "nhsuk-input--width-2"
+            },
+            {
+              name: "year",
+              classes: "nhsuk-input--width-4"
+            }
+          ]
+        }) }}
+
+        {{ input({
+          label: {
+            text: "Where was it located?"
+          },
+          classes: "nhsuk-input--width-20",
+          id: "benignLumpPosition",
+          name: "questionnaire[benignLumpPosition]"
+        }) }}
+
+        {{ radios({
+          idPrefix: "benignLumpExcision",
+          name: "questionnaire[benignLumpExcision]",
+          fieldset: {
+            legend: {
+              text: "Was it removed?",
+              classes: "nhsuk-fieldset__legend--s"
+            }
+          },
+          items: [
+            {
+              value: "yes",
+              text: "Yes"
+            },
+            {
+              value: "no",
+              text: "No"
+            }
+          ]
+        }) }}
+
+        {{ textarea({
+          name: "questionnaire[benignLumpOutcome]",
+          id: "benignLumpOutcome",
+          label: {
+            text: "What was the outcome/pathology?"
+          }
+        }) }}
+      {% endset -%}
+
+      {{ checkboxes({
+        name: "questionnaire[previousProcedures]",
+        fieldset: {
+          legend: {
+            text: "Have you had any of the following non-cancerous procedures or diagnoses?",
+            classes: "nhsuk-fieldset__legend--s"
+          }
+        },
+        hint: {
+          text: "Select all that apply"
+        },
+        items: [
+          {
+            value: "benign_lump",
+            text: "Benign lump",
+            conditional: {
+              html: benignLumpHtml
+            }
+          },
+          {
+            value: "cyst_aspiration",
+            text: "Cyst aspiration"
+          },
+          {
+            value: "augmentation",
+            text: "Non implant based augmentation"
+          },
+          {
+            value: "other_surgery",
+            text: "Other breast surgery (reductions/asymmetrical/fat distribution)"
+          },
+          {
+            value: "biopsies",
+            text: "Previous biopsies"
+          },
+          {
+            value: "skin_lesions",
+            text: "Skin lesions"
+          },
+          {
+            value: "none",
+            text: "None of the above",
+            behaviour: "exclusive"
+          }
+        ]
+      }) }}
+
+      {# Other medical history #}
+      {{ textarea({
+        name: "questionnaire[otherMedicalHistory]",
+        id: "otherMedicalHistory",
+        label: {
+          text: "Do you have any other relevant medical history you'd like to tell us about?",
+          classes: "nhsuk-label--s"
+        }
+      }) }}
+
+      {{ button({
+        text: "Continue"
+      }) }}
+    </form>
+  </div>
+</div>
+
+
+{% endblock %}

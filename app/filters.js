@@ -12,30 +12,30 @@ module.exports = function (env) { /* eslint-disable-line func-names,no-unused-va
 
   // Get all files from utils directory
   const utilsPath = path.join(__dirname, 'lib/utils');
+  const filtersPath = path.join(__dirname, 'filters');
+
+  const folderPaths = [utilsPath, filtersPath]
   
   try {
-    // Read all files in the utils directory
-    const files = fs.readdirSync(utilsPath);
-
-    files.forEach(file => {
-      // Only process .js files
-      if (path.extname(file) === '.js') {
-        // Get the utils module
-        const utils = require(path.join(utilsPath, file));
-        
-        // Add each exported function as a filter
-        Object.entries(utils).forEach(([name, func]) => {
-          // Only add if it's a function
-          if (typeof func === 'function') {
-            filters[name] = func;
-          }
-        });
-      }
+    folderPaths.forEach(folderPath => {
+      const files = fs.readdirSync(folderPath);
+      
+      files.forEach(file => {
+        if (path.extname(file) === '.js') {
+          const module = require(path.join(folderPath, file));
+          
+          Object.entries(module).forEach(([name, func]) => {
+            if (typeof func === 'function') {
+              filters[name] = func;
+            }
+          });
+        }
+      });
     });
-  } catch (err) {
-    console.warn('Error loading filters from utils:', err);
+  } 
+  catch (err) {
+    console.warn('Error loading filters:', err);
   }
-
 
   return filters;
 };
