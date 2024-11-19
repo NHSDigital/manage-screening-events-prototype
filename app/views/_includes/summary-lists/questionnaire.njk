@@ -1,332 +1,330 @@
-      <h2>Health status</h2>
+<h2>Health status</h2>
 
+{% set mobilityValue %}
+  {{ questionnaire.mobilityIssues | formatAnswer({ yesValue: questionnaire.mobilityYes }) }}
+{% endset %}
 
+{% set medicalDevicesValue %}
+  {% if questionnaire.medicalDevices === "yes" and questionnaire.medicalDeviceTypes %}
+    <ul class="nhsuk-list nhsuk-list--bullet">
+    {% for device in questionnaire.medicalDeviceTypes %}
+      <li>{{ device | replace("_", " ") | capitalize }}</li>
+    {% endfor %}
+    </ul>
+  {% else %}
+    {{ questionnaire.medicalDevices | formatAnswer }}
+  {% endif %}
+{% endset %}
 
-      {% set mobilityValue %}
-        {{ data.questionnaire.mobilityIssues | formatAnswer({ yesValue: data.questionnaire.mobilityYes }) }}
-      {% endset %}
-
-      {% set medicalDevicesValue %}
-        {% if data.questionnaire.medicalDevices === "yes" and data.questionnaire.medicalDeviceTypes %}
-          <ul class="nhsuk-list nhsuk-list--bullet">
-          {% for device in data.questionnaire.medicalDeviceTypes %}
-            <li>{{ device | replace("_", " ") | capitalize }}</li>
-          {% endfor %}
-          </ul>
-        {% else %}
-          {{ data.questionnaire.medicalDevices | formatAnswer }}
-        {% endif %}
-      {% endset %}
-
-      {{ summaryList({
-        rows: [
+{{ summaryList({
+  rows: [
+    {
+      key: {
+        text: "Mobility issues"
+      },
+      value: {
+        html: mobilityValue
+      },
+      actions: {
+        items: [
           {
-            key: {
-              text: "Mobility issues"
-            },
-            value: {
-              html: mobilityValue
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/health-status#mobilityIssues",
-                  text: "Change",
-                  visuallyHiddenText: "mobility issues"
-                }
-              ]
-            }
-          },
-          {
-            key: {
-              text: "Pregnant or breastfeeding"
-            },
-            value: {
-              text: data.questionnaire.pregnantOrBreastFeeding | formatAnswer
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/health-status#pregnantOrBreastFeeding",
-                  text: "Change",
-                  visuallyHiddenText: "pregnancy status"
-                }
-              ]
-            }
-          },
-          {
-            key: {
-              text: "Medical devices"
-            },
-            value: {
-              html: medicalDevicesValue
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/health-status#medicalDevices",
-                  text: "Change",
-                  visuallyHiddenText: "medical devices"
-                }
-              ]
-            }
-          },
-          {
-            key: {
-              text: "Taking HRT"
-            },
-            value: {
-              text: data.questionnaire.takingHRT | formatAnswer({ yesValue: data.questionnaire.hrtType })
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/health-status#takingHRT",
-                  text: "Change",
-                  visuallyHiddenText: "HRT status"
-                }
-              ]
-            }
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/health-status#mobilityIssues",
+            text: "Change",
+            visuallyHiddenText: "mobility issues"
           }
         ]
-      }) }}
-
-      <h2>Medical history</h2>
-
-      {% set previousCancerValue %}
-        {% if data.questionnaire.previousCancer === "yes" %}
-          <p>Yes</p>
-          <ul class="nhsuk-list nhsuk-list--bullet">
-            <li>Diagnosed: {{data.questionnaire.diagnosisDate.day}}/{{data.questionnaire.diagnosisDate.month}}/{{data.questionnaire.diagnosisDate.year}}</li>
-            <li>Diagnosis: {{data.questionnaire.diagnosis}}</li>
-            <li>Position: {{data.questionnaire.position}}</li>
-            <li>Treatments: {{data.questionnaire.treatments | join(", ")}}</li>
-            <li>Hospital: {{data.questionnaire.treatmentHospital}}</li>
-          </ul>
-        {% else %}
-          {{ data.questionnaire.previousCancer | formatAnswer }}
-        {% endif %}
-      {% endset %}
-
-      {% set previousProceduresValue %}
-        {% if data.questionnaire.previousProcedures %}
-          {% if data.questionnaire.previousProcedures.includes("none") %}
-            None
-          {% else %}
-            <ul class="nhsuk-list nhsuk-list--bullet">
-            {% for procedure in data.questionnaire.previousProcedures %}
-              {% set procedureText = {
-                "benign_lump": "Benign lump",
-                "cyst_aspiration": "Cyst aspiration",
-                "non_implant_augmentation": "Non implant based augmentation",
-                "other_surgery": "Other breast surgery",
-                "biopsies": "Previous biopsies",
-                "skin_lesions": "Skin lesions"
-              }[procedure] %}
-              <li>{{ procedureText }}
-              {% if procedure === "benign_lump" and data.questionnaire.benignLumpDate %}
-                <ul class="nhsuk-list">
-                  <li>Date: {{data.questionnaire.benignLumpDate.day}}/{{data.questionnaire.benignLumpDate.month}}/{{data.questionnaire.benignLumpDate.year}}</li>
-                  <li>Position: {{data.questionnaire.benignLumpPosition}}</li>
-                  <li>Removed: {{data.questionnaire.benignLumpExcision | formatAnswer}}</li>
-                  <li>Outcome: {{data.questionnaire.benignLumpOutcome}}</li>
-                </ul>
-              {% endif %}
-              </li>
-            {% endfor %}
-            </ul>
-          {% endif %}
-        {% else %}
-          Not answered
-        {% endif %}
-      {% endset %}
-
-      {{ summaryList({
-        rows: [
+      }
+    },
+    {
+      key: {
+        text: "Pregnant or breastfeeding"
+      },
+      value: {
+        text: questionnaire.pregnantOrBreastFeeding | formatAnswer
+      },
+      actions: {
+        items: [
           {
-            key: {
-              text: "Previous breast cancer"
-            },
-            value: {
-              html: previousCancerValue
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/medical-history#previousCancer",
-                  text: "Change",
-                  visuallyHiddenText: "previous cancer history"
-                }
-              ]
-            }
-          },
-          {
-            key: {
-              text: "Current hormone therapy"
-            },
-            value: {
-              text: data.questionnaire.hormoneTherapy | formatAnswer
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/medical-history#hormoneTherapy",
-                  text: "Change",
-                  visuallyHiddenText: "hormone therapy status"
-                }
-              ]
-            }
-          },
-          {
-            key: {
-              text: "Family history"
-            },
-            value: {
-              text: data.questionnaire.familyHistory | formatAnswer({ yesValue: data.questionnaire.familyHistoryDetails })
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/medical-history#familyHistory",
-                  text: "Change",
-                  visuallyHiddenText: "family history"
-                }
-              ]
-            }
-          },
-          {
-            key: {
-              text: "Previous procedures"
-            },
-            value: {
-              html: previousProceduresValue
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/medical-history#previousProcedures",
-                  text: "Change",
-                  visuallyHiddenText: "previous procedures"
-                }
-              ]
-            }
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/health-status#pregnantOrBreastFeeding",
+            text: "Change",
+            visuallyHiddenText: "pregnancy status"
           }
         ]
-      }) }}
-
-      <h2>Current symptoms</h2>
-
-      {% set skinChangesValue %}
-        {% if data.questionnaire.skinChanges === "yes" and data.questionnaire.skinChangeTypes %}
-          <ul class="nhsuk-list nhsuk-list--bullet">
-            <li>Types: {{data.questionnaire.skinChangeTypes | join(", ")}}</li>
-            <li>Details: {{data.questionnaire.skinChangeDetails}}</li>
-          </ul>
-        {% else %}
-          {{ data.questionnaire.skinChanges | formatAnswer({ noText: "No changes reported" }) }}
-        {% endif %}
-      {% endset %}
- 
-      {% set nippleSymptomsValue %}
-        {% if data.questionnaire.nippleSymptoms %}
-          {% if data.questionnaire.nippleSymptoms.includes("none") %}
-            No symptoms reported
-          {% else %}
-            <ul class="nhsuk-list nhsuk-list--bullet">
-            {% for symptom in data.questionnaire.nippleSymptoms %}
-              {% set symptomText = {
-                "distortion": "Change in shape or position",
-                "eczema": "Dry, red, itchy or scaly skin",
-                "blood_stained_discharge": "Blood-stained discharge",
-                "inversion": "Nipple pulling inward or changing direction"
-              }[symptom] %}
-              <li>{{ symptomText }}</li>
-            {% endfor %}
-            </ul>
-            {% if data.questionnaire.nippleSymptomDetails %}
-              <p>Additional details: {{data.questionnaire.nippleSymptomDetails}}</p>
-            {% endif %}
-          {% endif %}
-        {% else %}
-          Not answered
-        {% endif %}
-      {% endset %}
-
-      {{ summaryList({
-        rows: [
+      }
+    },
+    {
+      key: {
+        text: "Medical devices"
+      },
+      value: {
+        html: medicalDevicesValue
+      },
+      actions: {
+        items: [
           {
-            key: {
-              text: "Skin changes"
-            },
-            value: {
-              html: skinChangesValue
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/current-symptoms#skinChanges",
-                  text: "Change",
-                  visuallyHiddenText: "skin changes"
-                }
-              ]
-            }
-          },
-          {
-            key: {
-              text: "Lumps"
-            },
-            value: {
-              text: data.questionnaire.lumpsNoticed | formatAnswer({ 
-                yesValue: data.questionnaire.lumpDetails,
-                noText: "No lumps reported" 
-              })
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/current-symptoms#lumpsNoticed",
-                  text: "Change",
-                  visuallyHiddenText: "lumps"
-                }
-              ]
-            }
-          },
-          {
-            key: {
-              text: "Breast shape changes"
-            },
-            value: {
-              text: data.questionnaire.shapeChanges | formatAnswer({ 
-                yesValue: data.questionnaire.shapeChangeDetails,
-                noText: "No changes reported" 
-              })
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/current-symptoms#shapeChanges",
-                  text: "Change",
-                  visuallyHiddenText: "shape changes"
-                }
-              ]
-            }
-          },
-          {
-            key: {
-              text: "Nipple symptoms"
-            },
-            value: {
-              html: nippleSymptomsValue
-            },
-            actions: {
-              items: [
-                {
-                  href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/current-symptoms#nippleSymptoms",
-                  text: "Change",
-                  visuallyHiddenText: "nipple symptoms"
-                }
-              ]
-            }
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/health-status#medicalDevices",
+            text: "Change",
+            visuallyHiddenText: "medical devices"
           }
         ]
-      }) }}
+      }
+    },
+    {
+      key: {
+        text: "Taking HRT"
+      },
+      value: {
+        text: questionnaire.takingHRT | formatAnswer({ yesValue: questionnaire.hrtType })
+      },
+      actions: {
+        items: [
+          {
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/health-status#takingHRT",
+            text: "Change",
+            visuallyHiddenText: "HRT status"
+          }
+        ]
+      }
+    }
+  ]
+}) }}
+
+<h2>Medical history</h2>
+
+{% set previousCancerValue %}
+  {% if questionnaire.previousCancer === "yes" %}
+    <p>Yes</p>
+    <ul class="nhsuk-list nhsuk-list--bullet">
+      <li>Diagnosed: {{questionnaire.diagnosisDate.day}}/{{questionnaire.diagnosisDate.month}}/{{questionnaire.diagnosisDate.year}}</li>
+      <li>Diagnosis: {{questionnaire.diagnosis}}</li>
+      <li>Position: {{questionnaire.position}}</li>
+      <li>Treatments: {{questionnaire.treatments | join(", ")}}</li>
+      <li>Hospital: {{questionnaire.treatmentHospital}}</li>
+    </ul>
+  {% else %}
+    {{ questionnaire.previousCancer | formatAnswer }}
+  {% endif %}
+{% endset %}
+
+{% set previousProceduresValue %}
+  {% if questionnaire.previousProcedures %}
+    {% if questionnaire.previousProcedures.includes("none") %}
+      None
+    {% else %}
+      <ul class="nhsuk-list nhsuk-list--bullet">
+      {% for procedure in questionnaire.previousProcedures %}
+        {% set procedureText = {
+          "benign_lump": "Benign lump",
+          "cyst_aspiration": "Cyst aspiration",
+          "non_implant_augmentation": "Non implant based augmentation",
+          "other_surgery": "Other breast surgery",
+          "biopsies": "Previous biopsies",
+          "skin_lesions": "Skin lesions"
+        }[procedure] %}
+        <li>{{ procedureText }}
+        {% if procedure === "benign_lump" and questionnaire.benignLumpDate %}
+          <ul class="nhsuk-list">
+            <li>Date: {{questionnaire.benignLumpDate.day}}/{{questionnaire.benignLumpDate.month}}/{{questionnaire.benignLumpDate.year}}</li>
+            <li>Position: {{questionnaire.benignLumpPosition}}</li>
+            <li>Removed: {{questionnaire.benignLumpExcision | formatAnswer}}</li>
+            <li>Outcome: {{questionnaire.benignLumpOutcome}}</li>
+          </ul>
+        {% endif %}
+        </li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% else %}
+    Not answered
+  {% endif %}
+{% endset %}
+
+{{ summaryList({
+  rows: [
+    {
+      key: {
+        text: "Previous breast cancer"
+      },
+      value: {
+        html: previousCancerValue
+      },
+      actions: {
+        items: [
+          {
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/medical-history#previousCancer",
+            text: "Change",
+            visuallyHiddenText: "previous cancer history"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Current hormone therapy"
+      },
+      value: {
+        text: questionnaire.hormoneTherapy | formatAnswer
+      },
+      actions: {
+        items: [
+          {
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/medical-history#hormoneTherapy",
+            text: "Change",
+            visuallyHiddenText: "hormone therapy status"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Family history"
+      },
+      value: {
+        text: questionnaire.familyHistory | formatAnswer({ yesValue: questionnaire.familyHistoryDetails })
+      },
+      actions: {
+        items: [
+          {
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/medical-history#familyHistory",
+            text: "Change",
+            visuallyHiddenText: "family history"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Previous procedures"
+      },
+      value: {
+        html: previousProceduresValue
+      },
+      actions: {
+        items: [
+          {
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/medical-history#previousProcedures",
+            text: "Change",
+            visuallyHiddenText: "previous procedures"
+          }
+        ]
+      }
+    }
+  ]
+}) }}
+
+<h2>Current symptoms</h2>
+
+{% set skinChangesValue %}
+  {% if questionnaire.skinChanges === "yes" and questionnaire.skinChangeTypes %}
+    <ul class="nhsuk-list nhsuk-list--bullet">
+      <li>Types: {{questionnaire.skinChangeTypes | join(", ")}}</li>
+      <li>Details: {{questionnaire.skinChangeDetails}}</li>
+    </ul>
+  {% else %}
+    {{ questionnaire.skinChanges | formatAnswer({ noText: "No changes reported" }) }}
+  {% endif %}
+{% endset %}
+
+{% set nippleSymptomsValue %}
+  {% if questionnaire.nippleSymptoms %}
+    {% if questionnaire.nippleSymptoms.includes("none") %}
+      No symptoms reported
+    {% else %}
+      <ul class="nhsuk-list nhsuk-list--bullet">
+      {% for symptom in questionnaire.nippleSymptoms %}
+        {% set symptomText = {
+          "distortion": "Change in shape or position",
+          "eczema": "Dry, red, itchy or scaly skin",
+          "blood_stained_discharge": "Blood-stained discharge",
+          "inversion": "Nipple pulling inward or changing direction"
+        }[symptom] %}
+        <li>{{ symptomText }}</li>
+      {% endfor %}
+      </ul>
+      {% if questionnaire.nippleSymptomDetails %}
+        <p>Additional details: {{questionnaire.nippleSymptomDetails}}</p>
+      {% endif %}
+    {% endif %}
+  {% else %}
+    Not answered
+  {% endif %}
+{% endset %}
+
+{{ summaryList({
+  rows: [
+    {
+      key: {
+        text: "Skin changes"
+      },
+      value: {
+        html: skinChangesValue
+      },
+      actions: {
+        items: [
+          {
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/current-symptoms#skinChanges",
+            text: "Change",
+            visuallyHiddenText: "skin changes"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Lumps"
+      },
+      value: {
+        text: questionnaire.lumpsNoticed | formatAnswer({ 
+          yesValue: questionnaire.lumpDetails,
+          noText: "No lumps reported" 
+        })
+      },
+      actions: {
+        items: [
+          {
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/current-symptoms#lumpsNoticed",
+            text: "Change",
+            visuallyHiddenText: "lumps"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Breast shape changes"
+      },
+      value: {
+        text: questionnaire.shapeChanges | formatAnswer({ 
+          yesValue: questionnaire.shapeChangeDetails,
+          noText: "No changes reported" 
+        })
+      },
+      actions: {
+        items: [
+          {
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/current-symptoms#shapeChanges",
+            text: "Change",
+            visuallyHiddenText: "shape changes"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Nipple symptoms"
+      },
+      value: {
+        html: nippleSymptomsValue
+      },
+      actions: {
+        items: [
+          {
+            href: "/clinics/" + clinicId + "/participants/" + participantId + "/questionnaire/current-symptoms#nippleSymptoms",
+            text: "Change",
+            visuallyHiddenText: "nipple symptoms"
+          }
+        ]
+      }
+    }
+  ]
+}) }}

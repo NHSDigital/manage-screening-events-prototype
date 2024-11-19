@@ -354,6 +354,7 @@
 
   {% set preAppointmentQuestionnaireHtml %}
     {% if participant.questionnaire %}
+      {% set questionnaire = participant.questionnaire %}
       {% include "summary-lists/questionnaire.njk" %}
     {% else %}
 

@@ -25,6 +25,8 @@
         {{ pageHeading }}
       </h1>
 
+      {% set questionnaire = data.questionnaire %}
+
       {% include "summary-lists/questionnaire.njk" %}
 
       {{ button({
