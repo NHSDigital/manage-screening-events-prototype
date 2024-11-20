@@ -1,4 +1,9 @@
-<h2>Health status</h2>
+{{ questionnaire | log }}
+
+{% set headingLevel = headingLevel or 'h2' %}
+{% set allowEdits = allowEdits | default(true) %}
+
+<{{ headingLevel }}>Health status</{{ headingLevel }}>
 
 {% set mobilityValue %}
   {{ questionnaire.mobilityIssues | formatAnswer({ yesValue: questionnaire.mobilityYes }) }}
@@ -33,7 +38,7 @@
             visuallyHiddenText: "mobility issues"
           }
         ]
-      }
+      } if allowEdits
     },
     {
       key: {
@@ -50,7 +55,7 @@
             visuallyHiddenText: "pregnancy status"
           }
         ]
-      }
+      } if allowEdits
     },
     {
       key: {
@@ -67,7 +72,7 @@
             visuallyHiddenText: "medical devices"
           }
         ]
-      }
+      } if allowEdits
     },
     {
       key: {
@@ -84,12 +89,12 @@
             visuallyHiddenText: "HRT status"
           }
         ]
-      }
+      } if allowEdits
     }
   ]
 }) }}
 
-<h2>Medical history</h2>
+<{{ headingLevel }}>Medical history</{{ headingLevel }}>
 
 {% set previousCancerValue %}
   {% if questionnaire.previousCancer === "yes" %}
@@ -156,7 +161,7 @@
             visuallyHiddenText: "previous cancer history"
           }
         ]
-      }
+      } if allowEdits
     },
     {
       key: {
@@ -173,7 +178,7 @@
             visuallyHiddenText: "hormone therapy status"
           }
         ]
-      }
+      } if allowEdits
     },
     {
       key: {
@@ -190,7 +195,7 @@
             visuallyHiddenText: "family history"
           }
         ]
-      }
+      } if allowEdits
     },
     {
       key: {
@@ -207,12 +212,12 @@
             visuallyHiddenText: "previous procedures"
           }
         ]
-      }
+      } if allowEdits
     }
   ]
 }) }}
 
-<h2>Current symptoms</h2>
+<{{ headingLevel }}>Current symptoms</{{ headingLevel }}>
 
 {% set skinChangesValue %}
   {% if questionnaire.skinChanges === "yes" and questionnaire.skinChangeTypes %}
@@ -267,7 +272,7 @@
             visuallyHiddenText: "skin changes"
           }
         ]
-      }
+      } if allowEdits
     },
     {
       key: {
@@ -287,7 +292,7 @@
             visuallyHiddenText: "lumps"
           }
         ]
-      }
+      } if allowEdits
     },
     {
       key: {
@@ -307,7 +312,7 @@
             visuallyHiddenText: "shape changes"
           }
         ]
-      }
+      } if allowEdits
     },
     {
       key: {
@@ -324,7 +329,7 @@
             visuallyHiddenText: "nipple symptoms"
           }
         ]
-      }
+      } if allowEdits
     }
   ]
 }) }}

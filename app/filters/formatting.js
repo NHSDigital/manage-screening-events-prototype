@@ -21,8 +21,13 @@ const formatAnswer = (value, options = {}) => {
     yesPrefix = "Yes"
   } = options;
 
-  // Handle null/undefined/empty string
-  if (!value || value === "no" || value === "false") {
+  // Handle not answered cases
+  if (value === null || value === undefined || value === '') {
+    return notAnsweredText;
+  }
+
+  // Handle explicit no values
+  if (value === "no" || value === "false" || value === false) {
     return noText;
   }
   

@@ -340,10 +340,6 @@
 
   {% endset %}
 
-
-
-
-
   {# {% if participant.medicalInformation.riskFactors | length or participant.currentHealthInformation.medications | length %} #}
     {{ card({
       heading: "Medical information",
@@ -355,6 +351,8 @@
   {% set preAppointmentQuestionnaireHtml %}
     {% if participant.questionnaire %}
       {% set questionnaire = participant.questionnaire %}
+      {% set headingLevel = 'h3' %}
+      {% set allowEdits = false %}
       {% include "summary-lists/questionnaire.njk" %}
     {% else %}
 
