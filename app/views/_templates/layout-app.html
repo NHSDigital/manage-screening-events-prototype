@@ -34,24 +34,28 @@
     },
     primaryLinks: [
       {
-        url: "#",
-        label: "Home"
+        url: "/dashboard",
+        label: "Home",
+        current: true if navActive == "home"
       },
       {
         url: "/clinics",
         label: "Clinics",
-        current: true
+        current: true if navActive == "clinics"
       },
       {
         url: "#",
-        label: "Participants"
+        label: "Participants",
+        current: true if navActive == "participants"
       },
       {
         url: "#",
-        label: "Messages"
+        label: "Messages",
+        current: true if navActive == "messages"
       }, {
         url: "#",
-        label: "Help and support"
+        label: "Help and support",
+        current: true if navActive == "help"
       }
     ]
   }) }}

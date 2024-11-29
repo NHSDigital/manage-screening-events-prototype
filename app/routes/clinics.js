@@ -37,6 +37,46 @@ function getClinicData(data, clinicId) {
 
 module.exports = router => {
 
+  router.use('/clinics', (req, res, next) => {
+    const data = req.session.data;
+
+    res.locals.navActive = "clinics"
+    
+    // Add commonly used data to locals
+    // res.locals.breastScreeningUnits = data.breastScreeningUnits;
+    
+    // // Add helper functions for formatting
+    // res.locals.formatters = {
+    //   // Format a date using dayjs
+    //   date: (date) => dayjs(date).format('D MMMM YYYY'),
+    //   // Format time using dayjs
+    //   time: (date) => dayjs(date).format('HH:mm'),
+    //   // Format date and time together
+    //   dateTime: (date) => dayjs(date).format('D MMMM YYYY, HH:mm')
+    // };
+
+    // // Add helper functions for data lookups
+    // res.locals.lookups = {
+    //   // Find a breast screening unit by ID
+    //   getUnit: (unitId) => data.breastScreeningUnits.find(u => u.id === unitId),
+    //   // Find a clinic location within a unit
+    //   getLocation: (unitId, locationId) => {
+    //     const unit = data.breastScreeningUnits.find(u => u.id === unitId);
+    //     return unit?.locations.find(l => l.id === locationId);
+    //   },
+    //   // Get events for a specific clinic
+    //   getClinicEvents: (clinicId) => data.events.filter(e => e.clinicId === clinicId),
+    //   // Get a participant by ID
+    //   getParticipant: (participantId) => data.participants.find(p => p.id === participantId)
+    // };
+
+    next();
+  });
+
+  router.get('/clinics', (req, res) => {
+    res.redirect('/clinics/today');
+  });
+
   router.get('/clinics', (req, res) => {
     res.redirect('/clinics/today');
   });

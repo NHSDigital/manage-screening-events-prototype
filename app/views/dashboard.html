@@ -3,13 +3,54 @@
 
 {% set pageHeading = "Dashboard" %}
 
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
 {% set hideBackLink = true %}
+
+{% set navActive = "home" %}
 
 {% block pageContent %}
 
 <h1>
   {{pageHeading}}
 </h1>
+
+<ul class="nhsuk-grid-row nhsuk-card-group">
+  <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+    {% set clinicCardDescriptionHtml %}
+      <p>{{ data.clinics | length }} clinics scheduled this week</p>
+    {% endset %}
+    {{ card({
+      clickable: true,
+      heading: "Clinics",
+      headingClasses: "nhsuk-heading-m",
+      href: "/clinics",
+      descriptionHtml: clinicCardDescriptionHtml
+    }) }}
+  </li>
+  <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+
+    {% set participantCardDescriptionHtml %}
+      <p>72k participants registered</p>
+    {% endset %}
+    {{ card({
+      clickable: true,
+      heading: "Participants",
+      headingClasses: "nhsuk-heading-m",
+      href: "#",
+      descriptionHtml: participantCardDescriptionHtml
+    }) }}
+  </li>
+  <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+    {{ card({
+      clickable: true,
+      heading: "Messages",
+      headingClasses: "nhsuk-heading-m",
+      href: "/patients",
+      descriptionHtml: false
+    }) }}
+  </li>
+</ul>
 
 
 {% endblock %}
