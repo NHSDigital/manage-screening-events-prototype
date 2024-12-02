@@ -1,0 +1,87 @@
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "All participants" %}
+
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
+{% set back = {
+  href: "/dashboard",
+  text: "Home"
+} %}
+
+{% block pageContent %}
+
+  <h1 class="nhsuk-heading-l">
+    {{ pageHeading }}
+  </h1>
+
+
+
+  {% if filteredParticipants.length === 0 %}
+    <p>No participants found</p>
+  {% else %}
+
+    {# Truncate particpants until we have filtering / pagination #}
+    {% set limitedParticipants = filteredParticipants | limitTo(100) %}
+
+    {{ limitedParticipants | log }}
+
+    <form method="get" action="/participants">
+      {{ input({
+        label: {
+          text: "Search",
+          classes: "nhsuk-label--m"
+        },
+        hint: {
+          text: "Search by name, postcode, NHS or SX number"
+        },
+        classes: "nhsuk-u-width-two-thirds",
+        id: "example",
+        value: search,
+        name: "search"
+      }) }}
+
+      <button type="submit" class="nhsuk-button">Search</button>
+      {% if search %}
+        <p><a href="/participants">Clear search</a></p>
+      {% endif %}
+
+    </form>
+
+
+    <table class="nhsuk-table">
+      <thead class="nhsuk-table__head">
+        <tr>
+          <th class="nhsuk-table__header">Name</th>
+          <th class="nhsuk-table__header">Postcode</th>
+          <th class="nhsuk-table__header">NHS number</th>
+        </tr>
+      </thead>
+      <tbody class="nhsuk-table__body">
+        {% for participant in limitedParticipants %}
+          <tr>
+            <td class="nhsuk-table__cell">
+              <a href="/participants/{{ participant.id }}" class="nhsuk-link">
+                {{ participant | getFullNameReversed }}
+              </a>
+            </td>
+            <td class="nhsuk-table__cell">
+              {{ participant.demographicInformation.address.postcode }}
+            </td>
+            <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber | formatNhsNumber | noWrap }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if limitedParticipants | length === 100 %}
+      {{ pagination({
+        nextUrl: "#",
+        nextPage: " "
+      }) }}
+    {% endif %}
+
+  {% endif %}
+
+
+{% endblock %}

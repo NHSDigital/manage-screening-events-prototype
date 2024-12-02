@@ -9,19 +9,100 @@
 
 
 {% set back = {
-  href: "/participants",
-  text: "Back to participants"
+  href: "/clinics/" + clinicId,
+  text: "Back to clinic"
 } %}
 
 {% block pageContent %}
 
-  {{ participant | log }}
+{{ participant | log }}
+
+  {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
 
   <h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">
+      {{ unit.name }} - {{ clinic.date | formatDate }}
+    </span>
     {{ pageHeading }}
   </h1>
 
-  {{ screeningHistoryHtml | safe }}
+  <h2 class="nhsuk-heading-m">Appointment</h2>
+
+  {% set statusHtml %}
+    {{ tag({
+      text: event.status | formatWords | sentenceCase,
+      classes: "nhsuk-tag--" + event.status | getStatusTagColour
+    }) }}
+    {% if event.status === 'scheduled' %}
+      {% set href -%}
+        /clinics/{{ clinicId }}/check-in/{{ event.id }}?returnTo=/clinics/{{ clinicId }}/participants/{{ participantId }}
+      {%- endset %}
+      <p class="nhsuk-u-margin-top-2"><a href="{{href | trim}}">Check in participant</a></p>
+
+    {% endif %}
+  {% endset %}
+
+  {{event | log}}
+
+  {% set appointmentTimeHtml -%}
+    {{ event.timing | formatTimeRange }} ({{ event.timing.duration }} minutes)
+  {% endset %}
+
+  {% set appointmentHtml %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Clinic type"
+          },
+          value: {
+            text: clinic.clinicType | formatWords | sentenceCase
+          },
+          actions: {
+            items: [
+              
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Time"
+          },
+          value: {
+            text: appointmentTimeHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Reschedule appointment",
+                visuallyHiddenText: "name"
+              } if event.status == "scheduled"
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Status"
+          },
+          value: {
+            html: statusHtml
+          },
+          actions: {
+            items: [
+              
+            ]
+          }
+        }
+      ]
+    }) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Appointment",
+    headingLevel: "2",
+    descriptionHtml: appointmentHtml
+  }) }}
 
   {% set personalDetailsHtml %}
     {% set dob %}
@@ -116,7 +197,7 @@
     descriptionHtml: personalDetailsHtml
   }) }}
 
-  {# {% set screeningHistoryHtml %}
+  {% set screeningHistoryHtml %}
 
     {% set lastMamogramDateHtml %}
       {% set lastMamogramDate = "2021-12-27T12:54:27.756Z" %}
@@ -134,100 +215,6 @@
         }
       ] | removeEmpty
     }) }}
-  {% endset %} #}
-
-{% set screeningHistoryHtml %}
-  {% set today = "" | today %}
-  {% set upcomingAppointments = [] %}
-  {% set pastAppointments = [] %}
-
-  {% for record in clinicHistory %}
-   {% if not record.event.timing.startTime | isPast %}
-     {% set upcomingAppointments = (upcomingAppointments.push(record), upcomingAppointments) %}
-   {% else %}
-     {% set pastAppointments = (pastAppointments.push(record), pastAppointments) %}
-   {% endif %}
-  {% endfor %}
-
-  {% if upcomingAppointments.length > 0 %}
-   <h3>Upcoming appointments</h3>
-   <table class="nhsuk-table">
-     <thead>
-       <tr>
-         <th>Date</th>
-         <th>Type</th>
-         <th>Status</th>
-         <th></th>
-       </tr>
-     </thead>
-     <tbody>
-       {% for record in upcomingAppointments | sort(false, false, 'event.slot.dateTime') %}
-         {% set event = record.event %}
-         {% set clinic = record.clinic %}
-         <tr>
-           <td>{{ event.timing.startTime | formatDate }}</td>
-           <td>{{ clinic.clinicType | formatWords | sentenceCase }}</td>
-           <td>
-             {{ tag({
-               text: event.status | formatWords | sentenceCase,
-               classes: "nhsuk-tag--" + event.status | getStatusTagColour
-             }) }}
-           </td>
-           <td>
-             <a href="/clinics/{{ clinic.id }}/participants/{{ participant.id }}">
-               View details
-             </a>
-           </td>
-         </tr>
-       {% endfor %}
-     </tbody>
-   </table>
-  {% endif %}
-
-  {% if pastAppointments.length > 0 %}
-   <h3>Screening history</h3>
-   <table class="nhsuk-table">
-     <thead>
-       <tr>
-         <th>Date</th>
-         <th>Type</th>
-         <th>Status</th>
-         {# <th>Outcome</th> #}
-         <th></th>
-       </tr>
-     </thead>
-     <tbody>
-       {% for record in pastAppointments | sort(true, false, 'event.timing.startTime') %}
-         {% set event = record.event %}
-         {% set clinic = record.clinic %}
-         <tr>
-           <td>{{ event.timing.startTime | formatDate }}</td>
-           <td>{{ clinic.clinicType | formatWords | sentenceCase }}</td>
-           <td>
-             {{ tag({
-               text: event.status | formatWords | sentenceCase,
-               classes: "nhsuk-tag--" + event.status | getStatusTagColour
-             }) }}
-           </td>
-           {# <td>
-             {% if event.outcome %}
-               {{ event.outcome.status | formatWords | sentenceCase }}
-             {% endif %}
-           </td> #}
-           <td>
-             <a href="/clinics/{{ clinic.id }}/participants/{{ participant.id }}">
-               View details
-             </a>
-           </td>
-         </tr>
-       {% endfor %}
-     </tbody>
-   </table>
-  {% endif %}
-
-  {% if upcomingAppointments.length === 0 and pastAppointments.length === 0 %}
-   <p>No screening history found</p>
-  {% endif %}
   {% endset %}
 
   {{ card({
@@ -366,7 +353,74 @@
     }) }}
   {# {% endif %} #}
 
+  {% set preAppointmentQuestionnaireHtml %}
+    {% if participant.questionnaire %}
+      {% set questionnaire = participant.questionnaire %}
+      {% set headingLevel = 'h3' %}
+      {% set allowEdits = false %}
+      {% include "summary-lists/questionnaire.njk" %}
+    {% else %}
 
+      {% set insetHtml %}
+        <p>The pre-appointment questionnaire has not been completed yet.</p>
+      {% endset %}
+      {{ insetText({
+        html: insetHtml,
+        classes: "nhsuk-u-margin-top-2 nhsuk-u-margin-bottom-4"
+      }) }}
+
+      {{ button({
+        text: "Open participant pre-appointment questionnaire",
+        href: "./" + participantId + "/questionnaire"
+      }) }}
+    {% endif %}
+
+  {% endset %}
+
+  {{ card({
+    heading: "Pre-appointment questionnaire",
+    headingLevel: "2",
+    descriptionHtml: preAppointmentQuestionnaireHtml
+  }) }}
+
+  {% set screeningHtml %}
+
+    {{ radios({
+      idPrefix: "beginScreening",
+      name: "beginScreening",
+      fieldset: {
+        legend: {
+          text: "Are you ready to begin screening?",
+          classes: "nhsuk-fieldset__legend--s",
+          isPageHeading: false
+        }
+      },
+      items: [
+        {
+          value: "yes",
+          text: "Yes"
+        },
+        {
+          value: "no",
+          text: "No, screening cannot proceed"
+        }
+      ]
+    }) }}
+
+    {{ button({
+      text: "Continue",
+      html: ""
+    }) }}
+
+  {% endset %}
+
+  {% if event.status == 'checked_in' and participant.questionnaire %}
+    {{ card({
+      heading: "Screening",
+      headingLevel: "2",
+      descriptionHtml: screeningHtml
+    }) }}
+  {% endif %}
 
 
 {% endblock %}

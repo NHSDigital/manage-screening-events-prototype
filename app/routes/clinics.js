@@ -101,7 +101,7 @@ module.exports = router => {
       return;
     }
 
-    res.render('participants/show', {
+    res.render('clinics/participant', {
       participant,
       clinic,
       event,

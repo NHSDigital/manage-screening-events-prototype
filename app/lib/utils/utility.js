@@ -87,9 +87,35 @@ const normaliseString = (value, property) => {
   return output
 }
 
+/**
+ * Limit array or string to first x items/characters with support for negative indices
+ * @param {Array|string} input - Array or string to limit
+ * @param {number|string} limit - Number of items/chars to return. Negative numbers slice from end
+ * @returns {Array|string} Limited subset of input
+ */
+const limitTo = (input, limit) => {
+  if (typeof limit !== 'number') {
+    limit = parseInt(limit);
+  }
+
+  if (typeof input === 'string') {
+    return limit >= 0 ? input.substring(0, limit) : input.substr(limit);
+  }
+
+  if (Array.isArray(input)) {
+    limit = Math.min(limit, input.length);
+    return limit >= 0 ?
+      input.slice(0, limit) :
+      input.slice(input.length + limit, input.length);
+  }
+
+  return input;
+};
+
 
 module.exports = {
   falsify,
-  normaliseString
+  normaliseString,
+  limitTo
 };
 
