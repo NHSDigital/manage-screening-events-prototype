@@ -113,6 +113,36 @@ const isFuture = (dateString) => {
 };
 
 /**
+* Check if a date is before another date (at day precision)
+* @param {string} inputDate - ISO date string to check
+* @param {string|dayjs} compareDate - Optional date to compare against (defaults to today)
+* @returns {boolean} True if inputDate is before compareDate
+*/
+const isBeforeDate = (inputDate, compareDate = dayjs()) => {
+ if (!inputDate) return false;
+ return dayjs(inputDate).isBefore(dayjs(compareDate), 'day');
+};
+
+/**
+* Check if a date is after another date (at day precision)
+* @param {string} inputDate - ISO date string to check
+* @param {string|dayjs} compareDate - Optional date to compare against (defaults to today)
+* @returns {boolean} True if inputDate is after compareDate
+*/
+const isAfterDate = (inputDate, compareDate = dayjs()) => {
+ if (!inputDate) return false;
+ return dayjs(inputDate).isAfter(dayjs(compareDate), 'day');
+};
+
+/**
+* Get today's date at midnight
+* @returns {string} Today's date as ISO string
+*/
+const today = () => {
+ return dayjs().startOf('day').toISOString();
+};
+
+/**
  * Format a date range
  * @param {string} startDate - ISO date string
  * @param {string} endDate - ISO date string
@@ -175,6 +205,9 @@ module.exports = {
   formatDateRange,
   isPast,
   isFuture,
+  isBeforeDate,
+  isAfterDate,
+  today,
   getWeekDates,
   // Export dayjs instance for direct use if needed
   dayjs

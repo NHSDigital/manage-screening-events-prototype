@@ -11,6 +11,16 @@ const getFullName = (participant) => {
 };
 
 /**
+ * Get full name of participant
+ * @param {Object} participant - Participant object
+ */
+const getFullNameReversed = (participant) => {
+  if (!participant?.demographicInformation) return '';
+  const { firstName, middleName, lastName } = participant.demographicInformation;
+  return [`${lastName},`, firstName, middleName].filter(Boolean).join(' ');
+};
+
+/**
  * Get short name (first + last) of participant
  * @param {Object} participant - Participant object
  */
@@ -45,9 +55,24 @@ const getAge = (participant) => {
   return age;
 };
 
+/**
+ * Sort participants by surname
+ * @param {Array} participants - Array of participants to sort
+ * @returns {Array} Sorted participants array
+ */
+const sortBySurname = (participants) => {
+  return [...participants].sort((a, b) => {
+    const surnameA = a.demographicInformation?.lastName?.toLowerCase() || '';
+    const surnameB = b.demographicInformation?.lastName?.toLowerCase() || '';
+    return surnameA.localeCompare(surnameB);
+  });
+};
+
 module.exports = {
   getFullName,
+  getFullNameReversed,
   getShortName,
   findBySXNumber,
-  getAge
+  getAge,
+  sortBySurname
 };
