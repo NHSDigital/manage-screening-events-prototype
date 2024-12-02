@@ -4,7 +4,6 @@ const dayjs = require('dayjs');
 
 const config = require('../../config');
 
-
 /**
  * Get today's clinics
  * @param {Array} clinics - Array of all clinics
@@ -25,7 +24,6 @@ const getClinicEvents = (events, clinicId) => {
   // console.log(`Found ${events.filter(e => e.clinicId === clinicId).length} events`);
   return events.filter(e => e.clinicId === clinicId);
 };
-
 
 /**
  * Format clinic time slot

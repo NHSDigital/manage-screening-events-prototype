@@ -37,10 +37,16 @@ const generateTimeSlots = (date, sessionTimes, clinicType) => {
   let currentTime = new Date(startTime);
   while (currentTime < endTime) {
     const slotId = generateId();
+    const slotStartTime = new Date(currentTime);
+    const slotEndTime = new Date(currentTime);
+    slotEndTime.setMinutes(slotEndTime.getMinutes() + slotDurationMinutes);
+
     slots.push({
       id: slotId,
-      dateTime: new Date(currentTime).toISOString(),
-      type: clinicType,  // Use the clinic's service type
+      dateTime: slotStartTime.toISOString(),
+      endDateTime: slotEndTime.toISOString(),
+      duration: slotDurationMinutes,
+      type: clinicType,
       capacity: clinicType === 'assessment' ? 1 : 2, // Assessment clinics don't double book
       bookedCount: 0,
       period: `${sessionTimes.startTime}-${sessionTimes.endTime}`
@@ -49,6 +55,7 @@ const generateTimeSlots = (date, sessionTimes, clinicType) => {
   }
   return slots;
 };
+
 
 const determineClinicStatus = (date) => {
   const now = dayjs();
@@ -83,6 +90,15 @@ const generateMobileSiteName = () => {
 
 const determineSessionType = (sessionTimes) => {
   const startHour = parseInt(sessionTimes.startTime.split(':')[0], 10);
+  const endHour = parseInt(sessionTimes.endTime.split(':')[0], 10);
+  
+  // If clinic spans 6 or more hours, consider it all day
+  const duration = endHour - startHour;
+  if (duration >= 6) {
+    return 'all day';
+  }
+  
+  // For shorter sessions, determine morning or afternoon based on start time
   return startHour < 12 ? 'morning' : 'afternoon';
 };
 
@@ -117,16 +133,10 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes) => {
 };
 
 const generateClinicsForBSU = ({ date, breastScreeningUnit }) => {
-  // Determine number of clinic locations for this day (1-2)
-  const numberOfLocations = Math.random() < 0.3 ? 2 : 1;
+  // Each location has an 95% chance of running clinics on any given day
+  const selectedLocations = breastScreeningUnit.locations.filter(() => Math.random() < 0.95);
   
-  // Randomly select locations
-  const selectedLocations = faker.helpers.arrayElements(
-    breastScreeningUnit.locations,
-    { min: numberOfLocations, max: numberOfLocations }
-  );
-  
-  // Generate clinics for each location
+  // Generate clinics for each selected location
   return selectedLocations.flatMap(location => {
     // Use location-specific patterns if available, otherwise use BSU patterns
     const sessionPatterns = location.sessionPatterns || breastScreeningUnit.sessionPatterns;

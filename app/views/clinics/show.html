@@ -13,10 +13,14 @@
   {# {% set events = data.events | getClinicEvents(clinicId) %} #}
   {% set events = allEvents %}
 
+  {{ clinic | log }}
+
   <h1 class="nhsuk-heading-l">
     <span class="nhsuk-caption-l">{{ unit.name }}</span>
     {{ clinic.clinicType | sentenceCase }} clinic on {{ clinic.date | formatDate }}
   </h1>
+
+  <p>{{ clinic.sessionType | sentenceCase }} clinic - {{ clinic.sessionTimes | formatTimeRange }} </p>
 
   {% set secondaryNavItems = [] %}
 
@@ -68,8 +72,7 @@
                 {{ participant | getFullName }}
               </a>
             </td>
-            {# <td class="nhsuk-table__cell">{{ participant.demographicInformation.address.postcode | noWrap }}</td> #}
-            <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber | formatNhsNumber}}</td>
+            <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber | formatNhsNumber | noWrap }}</td>
             <td class="nhsuk-table__cell">
               {{ tag({
                 text: event.status | formatWords | sentenceCase,

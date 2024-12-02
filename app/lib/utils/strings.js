@@ -184,7 +184,7 @@ const noWrap = (input) => {
  */
 const asHint = (input) => {
   if (!input) return '';
-  return `<span class="nhsuk-hint">${input}</span>`;
+  return `<span class="app-text-grey">${input}</span>`;
 };
 
 /**

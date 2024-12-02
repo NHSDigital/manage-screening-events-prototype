@@ -49,7 +49,9 @@
     items: secondaryNavItems
   }) }}
 
-  {% if data.clinics.length === 0 %}
+  {{ filteredClinics | log }}
+
+  {% if filteredClinics | length === 0 %}
     <p>No clinics found.</p>
   {% else %}
     <table class="nhsuk-table">
@@ -78,7 +80,10 @@
                 {% endif %}
               </a>
             </td>
-            <td>{{ clinic.date | formatDate |  noWrap }}</td>
+            <td>{{ clinic.date | formatDate |  noWrap }}<br>
+              {{ clinic.sessionType | sentenceCase | asHint }}<br>
+              {{clinic.sessionTimes | formatTimeRange | asHint }}
+            </td>
             <td>{{ clinic.clinicType | sentenceCase }}</td>
             <td class="nhsuk-table__cell--numeric">
               {{ tag({

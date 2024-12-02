@@ -37,50 +37,18 @@ function getClinicData(data, clinicId) {
 
 module.exports = router => {
 
+  // Set clinics to active in nav for all urls starting with /clinics
   router.use('/clinics', (req, res, next) => {
-    const data = req.session.data;
-
     res.locals.navActive = "clinics"
-    
-    // Add commonly used data to locals
-    // res.locals.breastScreeningUnits = data.breastScreeningUnits;
-    
-    // // Add helper functions for formatting
-    // res.locals.formatters = {
-    //   // Format a date using dayjs
-    //   date: (date) => dayjs(date).format('D MMMM YYYY'),
-    //   // Format time using dayjs
-    //   time: (date) => dayjs(date).format('HH:mm'),
-    //   // Format date and time together
-    //   dateTime: (date) => dayjs(date).format('D MMMM YYYY, HH:mm')
-    // };
-
-    // // Add helper functions for data lookups
-    // res.locals.lookups = {
-    //   // Find a breast screening unit by ID
-    //   getUnit: (unitId) => data.breastScreeningUnits.find(u => u.id === unitId),
-    //   // Find a clinic location within a unit
-    //   getLocation: (unitId, locationId) => {
-    //     const unit = data.breastScreeningUnits.find(u => u.id === unitId);
-    //     return unit?.locations.find(l => l.id === locationId);
-    //   },
-    //   // Get events for a specific clinic
-    //   getClinicEvents: (clinicId) => data.events.filter(e => e.clinicId === clinicId),
-    //   // Get a participant by ID
-    //   getParticipant: (participantId) => data.participants.find(p => p.id === participantId)
-    // };
-
     next();
   });
 
+  // Redirect to default tab
   router.get('/clinics', (req, res) => {
     res.redirect('/clinics/today');
   });
 
-  router.get('/clinics', (req, res) => {
-    res.redirect('/clinics/today');
-  });
-
+  // Clinic tab options
   const clinicViews = ['/clinics/today', '/clinics/upcoming', '/clinics/completed', '/clinics/all'];
 
   router.get(clinicViews, (req, res) => {
@@ -119,7 +87,7 @@ module.exports = router => {
 
   });
 
-  // View participant within clinic context
+  // Participant view within clinic context
   router.get('/clinics/:clinicId/participants/:participantId', (req, res) => {
     const participant = req.session.data.participants.find(p => p.id === req.params.participantId);
     const clinic = req.session.data.clinics.find(c => c.id === req.params.clinicId);
@@ -142,18 +110,18 @@ module.exports = router => {
     });
   });
 
-    // Helper to validate section name
-    const isValidSection = (section) => QUESTIONNAIRE_SECTIONS.includes(section);
+  const QUESTIONNAIRE_SECTIONS = ['health-status', 'medical-history', 'current-symptoms'];
 
-    const QUESTIONNAIRE_SECTIONS = ['health-status', 'medical-history', 'current-symptoms'];
+  // Helper to validate section name
+  const isValidSection = (section) => QUESTIONNAIRE_SECTIONS.includes(section);
 
-    // Helper to get next section
-    const getNextSection = (currentSection) => {
-      const currentIndex = QUESTIONNAIRE_SECTIONS.indexOf(currentSection);
-      return QUESTIONNAIRE_SECTIONS[currentIndex + 1];
-    };
+  // Helper to get next section
+  const getNextSection = (currentSection) => {
+    const currentIndex = QUESTIONNAIRE_SECTIONS.indexOf(currentSection);
+    return QUESTIONNAIRE_SECTIONS[currentIndex + 1];
+  };
 
-    // Optional: Add a summary view
+  // Check your answers - route needs to be before later wildcard route
   router.get('/clinics/:clinicId/participants/:participantId/questionnaire/summary', (req, res) => {
     const { clinicId, participantId } = req.params;
     

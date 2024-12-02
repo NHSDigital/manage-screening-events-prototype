@@ -42,6 +42,11 @@
     {% endif %}
   {% endset %}
 
+  {{event | log}}
+
+  {% set appointmentTimeHtml -%}
+    {{ event.timing | formatTimeRange }} ({{ event.timing.duration }} minutes)
+  {% endset %}
 
   {% set appointmentHtml %}
     {{ summaryList({
@@ -61,10 +66,10 @@
         },
         {
           key: {
-            text: "Appointment time"  
+            text: "Time"
           },
           value: {
-            text: event.statusHistory[0].timestamp | formatTime
+            text: appointmentTimeHtml
           },
           actions: {
             items: [
