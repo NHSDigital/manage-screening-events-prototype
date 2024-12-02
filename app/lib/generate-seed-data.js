@@ -16,60 +16,102 @@ const breastScreeningUnits = require('../data/breast-screening-units');
 const ethnicities = require('../data/ethnicities');
 
 // Scheduling helper functions
-const hasExistingEvents = (participant, events, startDate, endDate) => {
-  return events.some(event => {
-    if (event.participantId !== participant.id) return false;
-    const eventDate = dayjs(event.timing.startTime).startOf('day');
-    return eventDate.isAfter(startDate) && eventDate.isBefore(endDate);
-  });
-};
+// const hasExistingEvents = (participant, events, startDate, endDate) => {
+//   return events.some(event => {
+//     if (event.participantId !== participant.id) return false;
+//     const eventDate = dayjs(event.timing.startTime).startOf('day');
+//     return eventDate.isAfter(startDate) && eventDate.isBefore(endDate);
+//   });
+// };
 
-const getEligibleParticipants = (allParticipants, existingEvents, clinicDate) => {
+// Scheduling helper functions
+const getEligibleParticipants = (allParticipants, clinicDate) => {
   const clinicDay = dayjs(clinicDate);
-  const startDate = clinicDay.subtract(3, 'year');
-  const endDate = clinicDay.add(3, 'year');
   
   return allParticipants.filter(participant => {
     const age = clinicDay.diff(dayjs(participant.demographicInformation.dateOfBirth), 'year');
-    if (age < 50 || age > 70) return false;
-    return !hasExistingEvents(participant, existingEvents, startDate, endDate);
+    return age >= 50 && age <= 70;
   });
 };
 
-const assignParticipantsToSlots = (slots, eligibleParticipants) => {
-  const assignments = [];
-  const usedParticipants = new Set();
+// const assignParticipantsToSlots = (slots, eligibleParticipants) => {
+//   const assignments = [];
+//   const usedParticipants = new Set();
   
-  slots.forEach(slot => {
-    const availableParticipants = eligibleParticipants.filter(p => !usedParticipants.has(p.id));
+//   slots.forEach(slot => {
+//     const availableParticipants = eligibleParticipants.filter(p => !usedParticipants.has(p.id));
     
-    for (let i = 0; i < slot.capacity; i++) {
-      if (availableParticipants.length === 0) break;
+//     for (let i = 0; i < slot.capacity; i++) {
+//       if (availableParticipants.length === 0) break;
       
-      const randomIndex = Math.floor(Math.random() * availableParticipants.length);
-      const participant = availableParticipants[randomIndex];
+//       const randomIndex = Math.floor(Math.random() * availableParticipants.length);
+//       const participant = availableParticipants[randomIndex];
       
-      assignments.push({
-        slot,
-        participant
-      });
+//       assignments.push({
+//         slot,
+//         participant
+//       });
       
-      usedParticipants.add(participant.id);
-      availableParticipants.splice(randomIndex, 1);
-    }
-  });
+//       usedParticipants.add(participant.id);
+//       availableParticipants.splice(randomIndex, 1);
+//     }
+//   });
   
-  return assignments;
+//   return assignments;
+// };
+
+const generateSnapshot = (date, participants, unit) => {
+  const eligibleParticipants = getEligibleParticipants(participants, date);
+  const clinics = [];
+  const events = [];
+  const usedParticipantsInSnapshot = new Set();
+  
+  // Generate a week of clinics
+  for (let i = 0; i < 7; i++) {
+    const clinicDate = dayjs(date).add(i, 'day');
+    const newClinics = generateClinicsForBSU({
+      date: clinicDate.toDate(),
+      breastScreeningUnit: unit
+    });
+    
+    newClinics.forEach(clinic => {
+      clinic.slots
+        .filter(() => Math.random() < config.generation.bookingProbability)
+        .forEach(slot => {
+          const availableParticipants = eligibleParticipants.filter(p => !usedParticipantsInSnapshot.has(p.id));
+          if (availableParticipants.length === 0) return;
+          
+          for (let i = 0; i < slot.capacity; i++) {
+            if (availableParticipants.length === 0) break;
+            const randomIndex = Math.floor(Math.random() * availableParticipants.length);
+            const participant = availableParticipants[randomIndex];
+            
+            const event = generateEvent({
+              slot,
+              participant,
+              clinic,
+              outcomeWeights: config.screening.outcomes[clinic.clinicType]
+            });
+            
+            events.push(event);
+            usedParticipantsInSnapshot.add(participant.id);
+            availableParticipants.splice(randomIndex, 1);
+          }
+        });
+      
+      clinics.push(clinic);
+    });
+  }
+  
+  return { clinics, events };
 };
 
 
 const generateData = async () => {
-  // Create output directory if it doesn't exist
   if (!fs.existsSync(config.paths.generatedData)) {
     fs.mkdirSync(config.paths.generatedData, { recursive: true });
   }
 
-  // Generate base data
   console.log('Generating participants...');
   const participants = Array.from(
     { length: config.generation.numberOfParticipants }, 
@@ -77,50 +119,24 @@ const generateData = async () => {
   );
 
   console.log('Generating clinics and events...');
-  const clinics = [];
-  const events = [];
+  const allClinics = [];
+  const allEvents = [];
 
-  // Calculate date range
   const today = dayjs().startOf('day');
-  const startDate = today.subtract(config.clinics.daysBeforeToday, 'day');
-  const endDate = today.add(config.clinics.daysToGenerate, 'day');
+  const snapshots = [
+    today.subtract(9, 'year'),
+    today.subtract(6, 'year'),
+    today.subtract(3, 'year'),
+    today
+  ];
 
-  let currentDate = startDate;
-  while (currentDate.isBefore(endDate)) {
-    breastScreeningUnits.forEach(unit => {
-      const newClinics = generateClinicsForBSU({
-        date: currentDate.toDate(),
-        breastScreeningUnit: unit
-      });
-
-      newClinics.forEach(clinic => {
-        const eligibleParticipants = getEligibleParticipants(
-          participants,
-          events,
-          clinic.date
-        );
-        
-        const assignments = assignParticipantsToSlots(
-          clinic.slots.filter(() => Math.random() < config.generation.bookingProbability),
-          eligibleParticipants
-        );
-        
-        assignments.forEach(({ slot, participant }) => {
-          const event = generateEvent({
-            slot,
-            participant,
-            clinic,
-            outcomeWeights: config.screening.outcomes[clinic.clinicType]
-          });
-          events.push(event);
-        });
-      });
-
-      clinics.push(...newClinics);
+  breastScreeningUnits.forEach(unit => {
+    snapshots.forEach(date => {
+      const { clinics, events } = generateSnapshot(date, participants, unit);
+      allClinics.push(...clinics);
+      allEvents.push(...events);
     });
-    
-    currentDate = currentDate.add(1, 'day');
-  }
+  });
 
   // Write generated data to files
   const writeData = (filename, data) => {
@@ -131,22 +147,23 @@ const generateData = async () => {
   };
 
   writeData('participants.json', { participants });
-  writeData('clinics.json', { clinics });
-  writeData('events.json', { events });
+  writeData('clinics.json', { clinics: allClinics });
+  writeData('events.json', { events: allEvents });
   writeData('generation-info.json', { 
     generatedAt: new Date().toISOString(),
     stats: {
       participants: participants.length,
-      clinics: clinics.length,
-      events: events.length
+      clinics: allClinics.length,
+      events: allEvents.length
     }
   });
+
 
   console.log('\nData generation complete!');
   console.log(`Generated:`);
   console.log(`- ${participants.length} participants`);
-  console.log(`- ${clinics.length} clinics`);
-  console.log(`- ${events.length} events`);
+  console.log(`- ${allClinics.length} clinics`);
+  console.log(`- ${allEvents.length} events`);
 };
 
 // Export the function instead of running it immediately
