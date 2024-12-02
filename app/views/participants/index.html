@@ -61,9 +61,13 @@
         {% for participant in limitedParticipants %}
           <tr>
             <td class="nhsuk-table__cell">
+              {% set dob %}
+                {{ participant.demographicInformation.dateOfBirth | formatRelativeDate(true) }} old
+              {% endset %}
               <a href="/participants/{{ participant.id }}" class="nhsuk-link">
                 {{ participant | getFullNameReversed }}
-              </a>
+              </a><br>
+              {{ dob | asHint }}
             </td>
             <td class="nhsuk-table__cell">
               {{ participant.demographicInformation.address.postcode }}
