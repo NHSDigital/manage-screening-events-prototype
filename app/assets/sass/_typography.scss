@@ -9,3 +9,8 @@ h2 {
 h3 {
   @extend %nhsuk-heading-s;
 }
+
+
+.app-text-grey {
+  color: $nhsuk-secondary-text-color;
+}

@@ -44,6 +44,31 @@ const formatTime = (dateString, format = 'H:mm') => {
 };
 
 /**
+ * Format a time in 12-hour format
+ * @param {string} input - Either a time string (e.g. "17:00") or full date/datetime
+ * @returns {string} Formatted time (e.g. "5:00pm")
+ */
+const formatTimeString = (input) => {
+  if (!input) return '';
+
+  // If it looks like just a time (contains no date), prefix with dummy date
+  const datetime = input.includes('T') || input.includes('-') ?
+    input : `2000-01-01T${input}`;
+
+  return dayjs(datetime).format('h:mma');
+};
+
+/**
+ * Format clinic session times for display
+ * @param {Object} sessionTimes - Object containing startTime and endTime
+ * @returns {string} Formatted time range (e.g. "9:00am - 5:00pm")
+ */
+const formatTimeRange = (times) => {
+  if (!times?.startTime || !times?.endTime) return '';
+  return `${formatTimeString(times.startTime)} to ${formatTimeString(times.endTime)}`;
+};
+
+/**
  * Format a date and time
  * @param {string} dateString - ISO date string
  * @param {string} format - Optional format string
@@ -143,6 +168,8 @@ const getWeekDates = (dateString) => {
 module.exports = {
   formatDate,
   formatTime,
+  formatTimeString,
+  formatTimeRange,
   formatDateTime,
   formatRelativeDate,
   formatDateRange,

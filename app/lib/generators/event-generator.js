@@ -80,62 +80,71 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
    [0.9, 0.015, 0] :  // [attended, dna, attended_not_screened]
    [0.70, 0.25, 0.05];   // Original weights for screening
 
- // All future events and today's events start as scheduled
- if (!isPast) {
-   return {
-     id: generateId(),
-     participantId: participant.id,
-     clinicId: clinic.id,
-     slotId: slot.id,
-     type: clinic.clinicType,
-     status: 'scheduled',
-     details: {
-       screeningType: 'mammogram',
-       machineId: generateId()
-     },
-     statusHistory: [
-       {
-         status: 'scheduled',
-         timestamp: new Date(new Date(slot.dateTime).getTime() - (24 * 60 * 60 * 1000)).toISOString()
-       }
-     ]
-   };
- }
+  const eventBase = {
+    id: generateId(),
+    participantId: participant.id,
+    clinicId: clinic.id,
+    slotId: slot.id,
+    type: clinic.clinicType,
+    timing: {
+      startTime: slot.dateTime,
+      endTime: slot.endDateTime,
+      duration: slot.duration
+    },
+    status: 'scheduled',
+    details: {
+      screeningType: 'mammogram',
+      machineId: generateId()
+    },
+    statusHistory: [
+      {
+        status: 'scheduled',
+        timestamp: new Date(new Date(slot.dateTime).getTime() - (24 * 60 * 60 * 1000)).toISOString()
+      }
+    ]
+  };
+
+  // All future events and today's events start as scheduled
+  if (!isPast) {
+    return eventBase;
+  }
 
   // For past events, generate final status with clinic-appropriate weights
   const status = determineEventStatus(slot.dateTime, currentDateTime, attendanceWeights);
 
   const event = {
-   id: generateId(),
-   participantId: participant.id,
-   clinicId: clinic.id,
-   slotId: slot.id,
-   type: clinic.clinicType,
-   status,
-   details: {
-     screeningType: 'mammogram',
-     machineId: generateId(),
-     imagesTaken: status === 'attended' ? 
-       ['RCC', 'LCC', 'RMLO', 'LMLO'] : null,
-     notScreenedReason: status === 'attended_not_screened' ?
-       faker.helpers.arrayElement(NOT_SCREENED_REASONS) : null
-   },
-   statusHistory: generateStatusHistory(status, slot.dateTime)
+    ...eventBase,
+    status,
+    details: {
+      screeningType: 'mammogram',
+      machineId: generateId(),
+      imagesTaken: status === 'attended' ? 
+        ['RCC', 'LCC', 'RMLO', 'LMLO'] : null,
+      notScreenedReason: status === 'attended_not_screened' ?
+        faker.helpers.arrayElement(NOT_SCREENED_REASONS) : null
+    },
+    statusHistory: generateStatusHistory(status, slot.dateTime)
   };
 
- // Add outcome for completed events where participant attended
- if (status === 'attended') {
-   const outcomeKeys = Object.keys(eventWeights);
-   const outcomeValues = Object.values(eventWeights);
-   const outcome = weighted.select(outcomeKeys, outcomeValues);
-   
-   event.outcome = {
-     status: outcome,
-     decidedDate: new Date(slot.dateTime).toISOString(),
-     notes: generateOutcomeNotes(outcome),
-     followUpActions: generateFollowUpActions(outcome)
-   };
- }
+  // For attended events, add actual timing info
+  if (status === 'attended') {
+    // Randomly vary the actual duration slightly from scheduled
+    const actualStartOffset = faker.number.int({ min: -5, max: 5 }); // Minutes
+    const actualDurationOffset = faker.number.int({ min: -3, max: 5 }); // Minutes
+    
+    const actualStartTime = new Date(slot.dateTime);
+    actualStartTime.setMinutes(actualStartTime.getMinutes() + actualStartOffset);
+    
+    const actualEndTime = new Date(actualStartTime);
+    actualEndTime.setMinutes(actualEndTime.getMinutes() + slot.duration + actualDurationOffset);
+
+    event.timing = {
+      ...event.timing,
+      actualStartTime: actualStartTime.toISOString(),
+      actualEndTime: actualEndTime.toISOString(),
+      actualDuration: Math.round((actualEndTime - actualStartTime) / (1000 * 60)) // In minutes
+    };
+  }
 
  return event;
 };
