@@ -24,23 +24,31 @@ module.exports = router => {
     let filteredParticipants = allParticipants;
 
     if (searchTerm) {
+       data.search = searchTerm;
+       res.locals.data.search = searchTerm;
 
-      // Save cleaned search term back
-      data.search = searchTerm
-      res.locals.data.search = searchTerm
-      filteredParticipants = allParticipants.filter(p => {
-        const info = p.demographicInformation;
-        const name = `${info.firstName} ${info.middleName || ''} ${info.lastName}`.toLowerCase();
-        const postcode = cleanSearchTerm(info.address.postcode);
-        const nhsNumber = cleanSearchTerm(p.medicalInformation.nhsNumber);
-        const sxNumber = cleanSearchTerm(p.sxNumber);
-        
-        return name.includes(searchTerm.toLowerCase()) || 
-               postcode.includes(cleanedSearch) || 
-               nhsNumber.includes(cleanedSearch) ||
-               sxNumber.includes(cleanedSearch);
-     });
-    }
+       filteredParticipants = allParticipants.filter(participant => {
+         const info = participant.demographicInformation;
+
+         const nameVariations = [
+           [info.firstName, info.middleName, info.lastName].filter(Boolean).join(' '),
+           `${info.firstName} ${info.lastName}`
+         ].map(name => name.toLowerCase());
+
+         const postcode = cleanSearchTerm(info.address.postcode);
+         const nhsNumber = cleanSearchTerm(participant.medicalInformation.nhsNumber);
+         const sxNumber = cleanSearchTerm(participant.sxNumber);
+
+         const nameMatch = nameVariations.some(name =>
+           name.includes(searchTerm.toLowerCase())
+         );
+
+         return nameMatch ||
+                postcode.includes(cleanedSearch) ||
+                nhsNumber.includes(cleanedSearch) ||
+                sxNumber.includes(cleanedSearch);
+       });
+     }
 
     res.render('participants/index', {
      allParticipants,
