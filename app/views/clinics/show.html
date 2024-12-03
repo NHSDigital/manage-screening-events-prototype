@@ -68,7 +68,7 @@
           <tr>
             <td class="nhsuk-table__cell">{{ event.statusHistory[0].timestamp | formatTime }}</td>
             <td class="nhsuk-table__cell">
-              <a href="/clinics/{{ clinicId }}/participants/{{ participant.id }}" class="nhsuk-link">
+              <a href="/clinics/{{ clinicId }}/events/{{ event.id }}" class="nhsuk-link">
                 {{ participant | getFullName }}
               </a>
             </td>

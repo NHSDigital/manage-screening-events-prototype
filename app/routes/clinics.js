@@ -35,6 +35,33 @@ function getClinicData(data, clinicId) {
   };
 }
 
+/**
+ * Get single event and its related data
+ */
+function getEventData(data, clinicId, eventId) {
+  const clinic = data.clinics.find(c => c.id === clinicId)
+  
+  if (!clinic) {
+    return null
+  }
+
+  const event = data.events.find(e => e.id === eventId && e.clinicId === clinicId)
+  
+  if (!event) {
+    return null
+  }
+
+  const participant = data.participants.find(p => p.id === event.participantId)
+  const unit = data.breastScreeningUnits.find(u => u.id === clinic.breastScreeningUnitId)
+
+  return {
+    clinic,
+    event,
+    participant,
+    unit
+  }
+}
+
 module.exports = router => {
 
   // Set clinics to active in nav for all urls starting with /clinics
@@ -87,28 +114,24 @@ module.exports = router => {
 
   });
 
-  // Participant view within clinic context
-  router.get('/clinics/:clinicId/participants/:participantId', (req, res) => {
-    const participant = req.session.data.participants.find(p => p.id === req.params.participantId);
-    const clinic = req.session.data.clinics.find(c => c.id === req.params.clinicId);
-    const event = req.session.data.events.find(e => 
-      e.clinicId === req.params.clinicId && 
-      e.participantId === req.params.participantId
-    );
+  // Event within clinic context
+  router.get('/clinics/:clinicId/events/:eventId', (req, res) => {
+    const eventData = getEventData(req.session.data, req.params.clinicId, req.params.eventId)
     
-    if (!participant || !clinic || !event) {
-      res.redirect('/clinics/' + req.params.clinicId);
-      return;
+    if (!eventData) {
+      res.redirect('/clinics/' + req.params.clinicId)
+      return
     }
 
-    res.render('clinics/participant', {
-      participant,
-      clinic,
-      event,
+    res.render('clinics/event', {
+      clinic: eventData.clinic,
+      event: eventData.event,
+      participant: eventData.participant,
+      unit: eventData.unit,
       clinicId: req.params.clinicId,
-      participantId: req.params.participantId
-    });
-  });
+      eventId: req.params.eventId
+    })
+  })
 
   const QUESTIONNAIRE_SECTIONS = ['health-status', 'medical-history', 'current-symptoms'];
 
@@ -229,25 +252,25 @@ module.exports = router => {
 
   // Handle check-in
   router.get('/clinics/:clinicId/check-in/:eventId', (req, res) => {
-    const { clinicId, eventId } = req.params;
-    const data = req.session.data;
+    const { clinicId, eventId } = req.params
+    const data = req.session.data
     
     // Get current filter from query param, or default to the current page's filter
-    const currentFilter = req.query.filter || req.query.currentFilter || 'all';
+    const currentFilter = req.query.filter || req.query.currentFilter || 'all'
     
     // Find the event
-    const eventIndex = data.events.findIndex(e => e.id === eventId && e.clinicId === clinicId);
+    const eventIndex = data.events.findIndex(e => e.id === eventId && e.clinicId === clinicId)
     
     if (eventIndex === -1) {
-      return res.redirect(`/clinics/${clinicId}/${currentFilter}`);
+      return res.redirect(`/clinics/${clinicId}/${currentFilter}`)
     }
 
     // Update the event status
-    const event = data.events[eventIndex];
+    const event = data.events[eventIndex]
     
     // Only allow check-in if currently scheduled
     if (event.status !== 'scheduled') {
-      return res.redirect(`/clinics/${clinicId}/${currentFilter}`);
+      return res.redirect(`/clinics/${clinicId}/${currentFilter}`)
     }
 
     // Update the event
@@ -261,19 +284,19 @@ module.exports = router => {
           timestamp: new Date().toISOString()
         }
       ]
-    };
+    }
 
     // Save back to session
-    req.session.data = data;
+    req.session.data = data
 
     // If there's a returnTo path, use that, otherwise go back to the filter view
-    const returnTo = req.query.returnTo;
+    const returnTo = req.query.returnTo
     if (returnTo) {
-      res.redirect(returnTo);
+      res.redirect(returnTo)
     } else {
-      res.redirect(`/clinics/${clinicId}/${currentFilter}`);
+      res.redirect(`/clinics/${clinicId}/${currentFilter}`)
     }
-  });
+  })
 
   function filterEvents(events, filter) {
     switch(filter) {
