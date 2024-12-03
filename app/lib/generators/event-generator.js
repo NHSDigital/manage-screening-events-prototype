@@ -56,29 +56,25 @@ const determineEventStatus = (slotDateTime, currentDateTime, attendanceWeights) 
 };
 
 const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
-
-  // Get simulated current time
+  // Parse dates once
   const [hours, minutes] = config.clinics.simulatedTime.split(':');
-  const currentDateTime = dayjs().hour(parseInt(hours)).minute(parseInt(minutes));
+  const simulatedDateTime = dayjs().hour(parseInt(hours)).minute(parseInt(minutes));
+  const slotDateTime = dayjs(slot.dateTime);
+  const eventDateTime = slotDateTime.startOf('day');
+  const today = simulatedDateTime.startOf('day');
+  const isPast = slotDateTime.isBefore(simulatedDateTime);
 
-  // Check if the event is from yesterday or before
-  const eventDate = dayjs(slot.dateTime).startOf('day');
-  const today = dayjs(currentDateTime).startOf('day');
-  const isPast = dayjs(slot.dateTime).isBefore(currentDateTime);
-  const isTodayBeforeCurrentTime = eventDate.isBefore(currentDateTime)
+  // If it's an assessment clinic, override the outcome weights
+  const eventWeights = clinic.clinicType === 'assessment' ? 
+    {
+      'clear': 0.4,
+      'needs_further_tests': 0.45,
+      'cancer_detected': 0.15
+    } : outcomeWeights;
 
- // If it's an assessment clinic, override the outcome weights to reflect higher probability of findings
- const eventWeights = clinic.clinicType === 'assessment' ? 
-   {
-     'clear': 0.4,                  // Lower chance of clear results
-     'needs_further_tests': 0.45,   // Higher chance of needing more tests
-     'cancer_detected': 0.15        // Higher cancer detection rate
-   } : outcomeWeights;
-
- // Adjust attendance probability for assessment clinics
- const attendanceWeights = clinic.clinicType === 'assessment' ? 
-   [0.9, 0.015, 0] :  // [attended, dna, attended_not_screened]
-   [0.70, 0.25, 0.05];   // Original weights for screening
+  const attendanceWeights = clinic.clinicType === 'assessment' ? 
+    [0.9, 0.015, 0] :
+    [0.70, 0.25, 0.05];
 
   const eventBase = {
     id: generateId(),
@@ -99,18 +95,16 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
     statusHistory: [
       {
         status: 'scheduled',
-        timestamp: new Date(new Date(slot.dateTime).getTime() - (24 * 60 * 60 * 1000)).toISOString()
+        timestamp: dayjs(slot.dateTime).subtract(1, 'day').toISOString()
       }
     ]
   };
 
-  // All future events and today's events start as scheduled
   if (!isPast) {
     return eventBase;
   }
 
-  // For past events, generate final status with clinic-appropriate weights
-  const status = determineEventStatus(slot.dateTime, currentDateTime, attendanceWeights);
+  const status = determineEventStatus(slotDateTime, simulatedDateTime, attendanceWeights);
 
   const event = {
     ...eventBase,
@@ -123,30 +117,25 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
       notScreenedReason: status === 'attended_not_screened' ?
         faker.helpers.arrayElement(NOT_SCREENED_REASONS) : null
     },
-    statusHistory: generateStatusHistory(status, slot.dateTime)
+    statusHistory: generateStatusHistory(status, slotDateTime)
   };
 
-  // For attended events, add actual timing info
   if (status === 'attended') {
-    // Randomly vary the actual duration slightly from scheduled
-    const actualStartOffset = faker.number.int({ min: -5, max: 5 }); // Minutes
-    const actualDurationOffset = faker.number.int({ min: -3, max: 5 }); // Minutes
+    const actualStartOffset = faker.number.int({ min: -5, max: 5 });
+    const actualDurationOffset = faker.number.int({ min: -3, max: 5 });
     
-    const actualStartTime = new Date(slot.dateTime);
-    actualStartTime.setMinutes(actualStartTime.getMinutes() + actualStartOffset);
-    
-    const actualEndTime = new Date(actualStartTime);
-    actualEndTime.setMinutes(actualEndTime.getMinutes() + slot.duration + actualDurationOffset);
+    const actualStartTime = slotDateTime.add(actualStartOffset, 'minute');
+    const actualEndTime = actualStartTime.add(slot.duration + actualDurationOffset, 'minute');
 
     event.timing = {
       ...event.timing,
       actualStartTime: actualStartTime.toISOString(),
       actualEndTime: actualEndTime.toISOString(),
-      actualDuration: Math.round((actualEndTime - actualStartTime) / (1000 * 60)) // In minutes
+      actualDuration: actualEndTime.diff(actualStartTime, 'minute')
     };
   }
 
- return event;
+  return event;
 };
 
 const generateStatusHistory = (finalStatus, dateTime) => {
