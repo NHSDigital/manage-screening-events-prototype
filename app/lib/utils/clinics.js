@@ -72,26 +72,33 @@ const getClinicHours = (clinic) => {
  */
 const getFilteredClinics = (clinics, filter = 'all') => {
   const today = dayjs().startOf('day');
+
+  const twoWeeksAgo = today.subtract(2, 'weeks');
+
+  // First filter out clinics older than 2 weeks
+  const recentClinics = clinics.filter(clinic => 
+    dayjs(clinic.date).isAfter(twoWeeksAgo, 'day')
+  );
   
   switch(filter) {
     case 'today':
-      return clinics.filter(clinic => 
+      return recentClinics.filter(clinic => 
         dayjs(clinic.date).isSame(today, 'day')
       );
       
     case 'upcoming':
-      return clinics.filter(clinic => 
+      return recentClinics.filter(clinic => 
         dayjs(clinic.date).isAfter(today, 'day')
       ).sort((a, b) => new Date(a.date) - new Date(b.date));
       
     case 'completed':
-      return clinics.filter(clinic => 
+      return recentClinics.filter(clinic => 
         dayjs(clinic.date).isBefore(today, 'day')
       ).sort((a, b) => new Date(b.date) - new Date(a.date)); // Most recent first
       
     case 'all':
     default:
-      return [...clinics].sort((a, b) => new Date(a.date) - new Date(b.date));
+      return [...recentClinics].sort((a, b) => new Date(a.date) - new Date(b.date));
   }
 };
 
