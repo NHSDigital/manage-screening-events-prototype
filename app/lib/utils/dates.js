@@ -100,7 +100,7 @@ const formatRelativeDate = (dateString, withoutSuffix = false) => {
  */
 const isPast = (dateString) => {
   if (!dateString) return false;
-  return dayjs(dateString).isBefore(dayjs());
+  return dayjs(dateString).isBefore(dayjs(), 'day');
 };
 
 /**

@@ -68,11 +68,42 @@ const sortBySurname = (participants) => {
   });
 };
 
+/**
+ * Get clinic history for a participant
+ * @param {Object} data - Session data containing clinics and events
+ * @param {string} participantId - Participant ID to get history for
+ * @returns {Array} Array of clinic/event pairs
+ */
+const getParticipantClinicHistory = (data, participantId) => {
+  if (!data?.events || !data?.clinics || !participantId) return []
+
+  const participantEvents = data.events.filter(event =>
+    event.participantId === participantId
+  )
+
+  // Get clinic details for each event
+  return participantEvents.map(event => {
+    const clinic = data.clinics.find(clinic => clinic.id === event.clinicId)
+    const unit = data.breastScreeningUnits.find(unit => unit.id === clinic.breastScreeningUnitId);
+    const location = unit.locations.find(location => location.id === clinic.locationId);
+    // console.log({location})
+
+    return {
+      clinic,
+      unit,
+      location,
+      event
+    }
+  }).filter(history => history.clinic) // Remove any with missing clinics
+}
+
+
 module.exports = {
   getFullName,
   getFullNameReversed,
   getShortName,
   findBySXNumber,
   getAge,
-  sortBySurname
+  sortBySurname,
+  getParticipantClinicHistory
 };

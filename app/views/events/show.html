@@ -1,4 +1,4 @@
-
+show
 {% extends 'layout-app.html' %}
 
 
@@ -26,7 +26,7 @@
     {{ pageHeading }}
   </h1>
 
-  <h2 class="nhsuk-heading-m">Appointment</h2>
+  <p><a href="/participants/{{ participant.id }}">View participant record</a></p>
 
   {% set statusHtml %}
     {{ tag({
@@ -45,12 +45,31 @@
   {{event | log}}
 
   {% set appointmentTimeHtml -%}
-    {{ event.timing | formatTimeRange }} ({{ event.timing.duration }} minutes)
+    <p>{{ clinic.date | formatDate }} ({{ clinic.date | formatRelativeDate }})</p>
+    <p>{{ event.timing | formatTimeRange }} ({{ event.timing.duration }} minutes)</p>
+    
   {% endset %}
 
   {% set appointmentHtml %}
     {{ summaryList({
       rows: [
+        {
+          key: {
+            text: "Date"
+          },
+          value: {
+            html: appointmentTimeHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Reschedule appointment",
+                visuallyHiddenText: "name"
+              } if event.status == "scheduled"
+            ]
+          }
+        },
         {
           key: {
             text: "Clinic type"
@@ -61,23 +80,6 @@
           actions: {
             items: [
               
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Time"
-          },
-          value: {
-            text: appointmentTimeHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Reschedule appointment",
-                visuallyHiddenText: "name"
-              } if event.status == "scheduled"
             ]
           }
         },
@@ -199,22 +201,64 @@
 
   {% set screeningHistoryHtml %}
 
-    {% set lastMamogramDateHtml %}
-      {% set lastMamogramDate = "2021-12-27T12:54:27.756Z" %}
-      {{ lastMamogramDate | formatDate }}<br>
-      <span class="nhsuk-hint">({{ lastMamogramDate | formatRelativeDate }})</span>
+    {% set clinicHistory = data | getParticipantClinicHistory(participant.id) %}
+
+    {% set lastMammogram = null %}
+
+    {% for record in clinicHistory %}
+       {% if record.event.status === 'attended' and (not lastMammogram or record.event.timing.startTime > lastMammogram.event.timing.startTime) %}
+         {% set lastMammogram = record %}
+       {% endif %}
+    {% endfor %}
+
+    <h3>Last known mammogram</h3>
+    {% if lastMammogram %}
+      <table class="nhsuk-table">
+       <thead>
+         <tr>
+           <th>Date</th>
+           <th>Type</th>
+           <th>Location</th>
+           <th>Details</th>
+         </tr>
+       </thead>
+       <tbody>
+          {% set record = lastMammogram %}
+           {% set event = record.event %}
+           {% set clinic = record.clinic %}
+           {% set unit = record.unit %}
+           <tr>
+             <td>{{ event.timing.startTime | formatDate }}
+              <br>
+              <span class="nhsuk-hint">({{ event.timing.startTime | formatRelativeDate }})</span>
+             </td>
+             <td>{{ clinic.clinicType | formatWords | sentenceCase }}</td>
+             <td>{{ unit.name }}</td>
+             <td>
+               <a href="/clinics/{{ clinic.id }}/events/{{ event.id }}">
+                 View details
+               </a>
+             </td>
+           </tr>
+       </tbody>
+     </table>
+    {% else %}
+      <p>No details.</p>
+    {% endif %}
+
+    {{clinicHistory | log }}
+
+    {% set detailsHtml %}
+      {% set hideUpcoming = true %}
+      {% include "summary-lists/screening-history.njk" %}
     {% endset %}
 
-    {{ summaryList({
-      rows: [
-        {
-          key: { text: "Date of last mamogram" },
-          value: { 
-            html: lastMamogramDateHtml
-          }
-        }
-      ] | removeEmpty
+    {{ details({
+      text: "View full screening history",
+      HTML: detailsHtml
     }) }}
+
+
   {% endset %}
 
   {{ card({
@@ -223,137 +267,8 @@
     descriptionHtml: screeningHistoryHtml
   }) }}
 
-  {% set medicalInformationHtml %}
-    {% set riskFactorsList %}
-      <ul class="nhsuk-list nhsuk-list--bullet">
-       {% for factor in participant.medicalInformation.riskFactors %}
-         <li>{{ factor | formatWords | sentenceCase }}</li>
-       {% endfor %}
-      </ul>
-    {% endset %}
 
-    {% set medicationsList %}
-      <ul class="nhsuk-list nhsuk-list--bullet">
-       {% for medication in participant.currentHealthInformation.medications %}
-         <li>{{ medication | formatWords | sentenceCase }}</li>
-       {% endfor %}
-      </ul>
-    {% endset %}
-
-    {{ summaryList({
-      rows: [
-       {
-         key: {
-           text: "Risk factors"
-         },
-         value: {
-           html: riskFactorsList
-         }
-       } if participant.medicalInformation.riskFactors.length > 0,
-       {
-         key: {
-           text: "Current medications"
-         }, 
-         value: {
-           html: medicationsList
-         }
-       } if participant.currentHealthInformation.medications.length > 0
-      ] | removeEmpty
-    }) }}
-
-    {# Medical history survey information #}
-  {% if participant.medicalInformation.medicalHistorySurvey %}
-    {# Previous cancer history #}
-    {% if participant.medicalInformation.previousCancerHistory %}
-      {% set cancer = participant.medicalInformation.previousCancerHistory %}
-      {% set treatmentsList %}
-        <ul class="nhsuk-list nhsuk-list--bullet">
-        {% for treatment in cancer.treatments %}
-          <li>{{ treatment.type | formatWords | sentenceCase }} - {{ treatment.details }}</li>
-        {% endfor %}
-        </ul>
-      {% endset %}
-
-      {{ summaryList({
-        rows: [
-          {
-            key: { text: "Previous breast cancer" },
-            value: { text: "Yes, " + cancer.yearDiagnosed }
-          },
-          {
-            key: { text: "Position" },
-            value: { text: cancer.position }
-          } if cancer.position,
-          {
-            key: { text: "Treatments" },
-            value: { html: treatmentsList }
-          },
-          {
-            key: { text: "Hospital" },
-            value: { text: cancer.hospital }
-          }
-        ] | removeEmpty
-      }) }}
-    {% endif %}
-
-    {# Non-cancerous procedures #}
-    {% if participant.medicalInformation.medicalHistorySurvey.nonCancerousProcedures %}
-      {% set procedures = participant.medicalInformation.medicalHistorySurvey.nonCancerousProcedures %}
-      {% set proceduresList %}
-        <ul class="nhsuk-list nhsuk-list--bullet">
-        {% for procedure in procedures %}
-          <li>
-            {{ procedure.type | formatWords | sentenceCase }}
-            {% if procedure.date %}({{ procedure.date | formatDate }}){% endif %}
-            {% if procedure.location %} - {{ procedure.location }}{% endif %}
-            {% if procedure.notes %} - {{ procedure.notes }}{% endif %}
-          </li>
-        {% endfor %}
-        </ul>
-      {% endset %}
-
-      {{ summaryList({
-        rows: [
-          {
-            key: { text: "Previous procedures" },
-            value: { html: proceduresList }
-          }
-        ]
-      }) }}
-    {% endif %}
-
-    {# Other medical history #}
-    {% if participant.medicalInformation.medicalHistorySurvey.otherMedicalHistory %}
-      {% set otherHistoryList %}
-        <ul class="nhsuk-list nhsuk-list--bullet">
-        {% for item in participant.medicalInformation.medicalHistorySurvey.otherMedicalHistory %}
-          <li>{{ item }}</li>
-        {% endfor %}
-        </ul>
-      {% endset %}
-
-      {{ summaryList({
-        rows: [
-          {
-            key: { text: "Other medical history" },
-            value: { html: otherHistoryList }
-          }
-        ]
-      }) }}
-    {% endif %}
-  {% endif %}
-
-  {% endset %}
-
-  {# {% if participant.medicalInformation.riskFactors | length or participant.currentHealthInformation.medications | length %} #}
-    {{ card({
-      heading: "Medical information",
-      headingLevel: "2",
-      descriptionHtml: medicalInformationHtml
-    }) }}
-  {# {% endif %} #}
-
-  {% set preAppointmentQuestionnaireHtml %}
+{#   {% set preAppointmentQuestionnaireHtml %}
     {% if participant.questionnaire %}
       {% set questionnaire = participant.questionnaire %}
       {% set headingLevel = 'h3' %}
@@ -381,7 +296,7 @@
     heading: "Pre-appointment questionnaire",
     headingLevel: "2",
     descriptionHtml: preAppointmentQuestionnaireHtml
-  }) }}
+  }) }} #}
 
   {% set screeningHtml %}
 
@@ -424,3 +339,4 @@
 
 
 {% endblock %}
+

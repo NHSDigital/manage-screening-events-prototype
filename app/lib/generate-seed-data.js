@@ -109,9 +109,9 @@ const generateData = async () => {
   console.log('Generating clinics and events...');
   const today = dayjs().startOf('day');
   const snapshots = [
-    today.subtract(9, 'year'),
-    today.subtract(6, 'year'),
-    today.subtract(3, 'year'),
+    today.subtract(9, 'year').add(3, 'month'),
+    today.subtract(6, 'year').add(2, 'month'),
+    today.subtract(3, 'year').add(1, 'month'),
     today.subtract(3, 'days')
   ];
 

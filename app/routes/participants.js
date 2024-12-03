@@ -1,6 +1,6 @@
 // app/routes/participants.js
 
-const { sortBySurname } = require('../lib/utils/participants');
+const { sortBySurname, getParticipantClinicHistory } = require('../lib/utils/participants');
 const { findById } = require('../lib/utils/arrays');
 
 
@@ -59,35 +59,24 @@ module.exports = router => {
   });
 
 
+  // In the show route:
   router.get('/participants/:participantId', (req, res) => {
-    const data = req.session.data;
+    const data = req.session.data
     const participantId = req.params.participantId
-    const participant = findById(data.participants, participantId);
+    const participant = findById(data.participants, participantId)
     
     if (!participant) {
-      res.redirect('/participants');
-      return;
+      res.redirect('/participants')
+      return
     }
 
-    // Find all events for this participant
-    const participantEvents = data.events.filter(e => 
-      e.participantId === participant.id
-    );
-
-    // Get clinic details for each event
-    const participantClinics = participantEvents.map(event => {
-      const clinic = findById(data.clinics, event.clinicId);
-      return {
-        clinic,
-        event
-      };
-    });
+    const clinicHistory = getParticipantClinicHistory(data, participant.id)
 
     res.render('participants/show', {
       participant,
       participantId,
-      clinicHistory: participantClinics
-    });
-  });
+      clinicHistory
+    })
+  })
 
 };
