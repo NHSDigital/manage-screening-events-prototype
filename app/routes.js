@@ -21,6 +21,7 @@ router.use(async (req, res, next) => {
 require('./routes/settings')(router);
 require('./routes/clinics')(router);
 require('./routes/participants')(router);
+require('./routes/events')(router);
 
 // Add your routes here - above the module.exports line
 

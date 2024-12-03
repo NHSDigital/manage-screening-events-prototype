@@ -46,7 +46,16 @@
          },
          value: {
            text: participant | getFullName
-         }
+         },
+         actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "date of birth"
+              }
+            ]
+          }
        },
        {
          key: {
@@ -54,6 +63,10 @@
          },
          value: {
            text: "Female"
+         },
+         actions: {
+            items: [
+            ]
          }
        },
        {
@@ -62,6 +75,10 @@
          },
          value: {
            text: participant.medicalInformation.nhsNumber | formatNhsNumber
+         },
+         actions: {
+            items: [
+            ]
          }
        },
        {
@@ -70,7 +87,16 @@
          },
          value: {
            text: participant.sxNumber
-         }
+         },
+         actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "date of birth"
+              }
+            ]
+          }
        },
        {
          key: {
@@ -78,6 +104,10 @@
          },
          value: {
            html: dob
+         },
+         actions: {
+            items: [
+            ]
          }
        },
        {
@@ -86,7 +116,16 @@
          },
          value: {
            html: address
-         }
+         },
+         actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "date of birth"
+              }
+            ]
+          }
        },
        {
          key: {
@@ -94,7 +133,16 @@
          },
          value: {
            text: participant.demographicInformation.phone | formatPhoneNumber
-         }
+         },
+         actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "date of birth"
+              }
+            ]
+          }
        },
        {
          key: {
@@ -102,7 +150,16 @@
          },
          value: {
            text: participant.demographicInformation.email
-         }
+         },
+         actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "date of birth"
+              }
+            ]
+          }
        }
       ]
     }) }}
@@ -118,116 +175,26 @@
 
   {# {% set screeningHistoryHtml %}
 
-    {% set lastMamogramDateHtml %}
-      {% set lastMamogramDate = "2021-12-27T12:54:27.756Z" %}
-      {{ lastMamogramDate | formatDate }}<br>
-      <span class="nhsuk-hint">({{ lastMamogramDate | formatRelativeDate }})</span>
+    {% set lastMammogramDateHtml %}
+      {% set lastMammogramDate = "2021-12-27T12:54:27.756Z" %}
+      {{ lastMammogramDate | formatDate }}<br>
+      <span class="nhsuk-hint">({{ lastMammogramDate | formatRelativeDate }})</span>
     {% endset %}
 
     {{ summaryList({
       rows: [
         {
-          key: { text: "Date of last mamogram" },
+          key: { text: "Date of last mammogram" },
           value: { 
-            html: lastMamogramDateHtml
+            html: lastMammogramDateHtml
           }
         }
       ] | removeEmpty
     }) }}
   {% endset %} #}
 
-{% set screeningHistoryHtml %}
-  {% set today = "" | today %}
-  {% set upcomingAppointments = [] %}
-  {% set pastAppointments = [] %}
-
-  {% for record in clinicHistory %}
-   {% if not record.event.timing.startTime | isPast %}
-     {% set upcomingAppointments = (upcomingAppointments.push(record), upcomingAppointments) %}
-   {% else %}
-     {% set pastAppointments = (pastAppointments.push(record), pastAppointments) %}
-   {% endif %}
-  {% endfor %}
-
-  {% if upcomingAppointments.length > 0 %}
-   <h3>Upcoming appointments</h3>
-   <table class="nhsuk-table">
-     <thead>
-       <tr>
-         <th>Date</th>
-         <th>Type</th>
-         <th>Status</th>
-         <th></th>
-       </tr>
-     </thead>
-     <tbody>
-       {% for record in upcomingAppointments | sort(false, false, 'event.slot.dateTime') %}
-         {% set event = record.event %}
-         {% set clinic = record.clinic %}
-         <tr>
-           <td>{{ event.timing.startTime | formatDate }}</td>
-           <td>{{ clinic.clinicType | formatWords | sentenceCase }}</td>
-           <td>
-             {{ tag({
-               text: event.status | formatWords | sentenceCase,
-               classes: "nhsuk-tag--" + event.status | getStatusTagColour
-             }) }}
-           </td>
-           <td>
-             <a href="/clinics/{{ clinic.id }}/participants/{{ participant.id }}">
-               View details
-             </a>
-           </td>
-         </tr>
-       {% endfor %}
-     </tbody>
-   </table>
-  {% endif %}
-
-  {% if pastAppointments.length > 0 %}
-   <h3>Screening history</h3>
-   <table class="nhsuk-table">
-     <thead>
-       <tr>
-         <th>Date</th>
-         <th>Type</th>
-         <th>Status</th>
-         {# <th>Outcome</th> #}
-         <th></th>
-       </tr>
-     </thead>
-     <tbody>
-       {% for record in pastAppointments | sort(true, false, 'event.timing.startTime') %}
-         {% set event = record.event %}
-         {% set clinic = record.clinic %}
-         <tr>
-           <td>{{ event.timing.startTime | formatDate }}</td>
-           <td>{{ clinic.clinicType | formatWords | sentenceCase }}</td>
-           <td>
-             {{ tag({
-               text: event.status | formatWords | sentenceCase,
-               classes: "nhsuk-tag--" + event.status | getStatusTagColour
-             }) }}
-           </td>
-           {# <td>
-             {% if event.outcome %}
-               {{ event.outcome.status | formatWords | sentenceCase }}
-             {% endif %}
-           </td> #}
-           <td>
-             <a href="/clinics/{{ clinic.id }}/participants/{{ participant.id }}">
-               View details
-             </a>
-           </td>
-         </tr>
-       {% endfor %}
-     </tbody>
-   </table>
-  {% endif %}
-
-  {% if upcomingAppointments.length === 0 and pastAppointments.length === 0 %}
-   <p>No screening history found</p>
-  {% endif %}
+  {% set screeningHistoryHtml %}
+    {% include "summary-lists/screening-history.njk" %}
   {% endset %}
 
   {{ card({
