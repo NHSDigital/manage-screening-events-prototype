@@ -1,12 +1,12 @@
 
 {% extends 'layout-app.html' %}
 
-
-{% set pageHeading = participant | getFullName %}
+{% set pageHeading %}
+  {{ clinic.clinicType | sentenceCase }} for {{ participant | getFullName }}
+{% endset %}
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
 
-{% set formAction = 'foo' %}
 
 {% set back = {
   href: "/clinics/" + clinicId,
@@ -17,16 +17,13 @@
 
   {{ participant | log }}
 
-  {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
+  {% include "event-header.njk" %}
 
-  <h1 class="nhsuk-heading-l">
-    <span class="nhsuk-caption-l">
-      {{ unit.name }} - {{ clinic.date | formatDate }}
-    </span>
-    {{ pageHeading }}
-  </h1>
+  {% set activeTab = 'all' %}
 
-  <p><a href="/participants/{{ participant.id }}">View participant record</a></p>
+  {% if event.status == "attended" %}
+    {% include "event-navigation.njk" %}
+  {% endif %}
 
   {% set statusHtml %}
     {{ tag({
@@ -262,36 +259,39 @@
 
   {% set screeningHtml %}
 
-    {{ radios({
-      idPrefix: "beginScreening",
-      name: "beginScreening",
-      fieldset: {
-        legend: {
-          text: "Are you ready to begin screening?",
-          classes: "nhsuk-fieldset__legend--s",
-          isPageHeading: false
-        }
-      },
-      items: [
-        {
-          value: "yes",
-          text: "Yes"
+    <form action="./{{eventId}}/start" method="post">
+      {{ radios({
+        idPrefix: "beginScreening",
+        name: "beginScreening",
+        fieldset: {
+          legend: {
+            text: "Are you ready to begin screening?",
+            classes: "nhsuk-fieldset__legend--s",
+            isPageHeading: false
+          }
         },
-        {
-          value: "no",
-          text: "No, screening cannot proceed"
-        }
-      ]
-    }) }}
+        items: [
+          {
+            value: "yes",
+            text: "Yes"
+          },
+          {
+            value: "no",
+            text: "No, screening cannot proceed"
+          }
+        ]
+      }) }}
 
-    {{ button({
-      text: "Continue",
-      html: ""
-    }) }}
+      {{ button({
+        text: "Continue"
+      }) }}
+    </form>
+
+
 
   {% endset %}
 
-  {% if event.status == 'checked_in' %}
+  {% if event.status == 'checked_in' or event.status == 'scheduled' %}
     {{ card({
       heading: "Screening",
       headingLevel: "2",

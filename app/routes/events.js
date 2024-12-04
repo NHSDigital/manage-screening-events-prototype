@@ -72,10 +72,47 @@ module.exports = router => {
     })
   })
 
+  // Handle screening completion
+  router.post('/clinics/:clinicId/events/:eventId/start', (req, res) => {
+    const { clinicId, eventId } = req.params
+    const data = req.session.data
+    const canBeginScreening = data.beginScreening
+    delete data.beginScreening
+
+    // console.log({data})
+
+    const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
+
+    if (!canBeginScreening){
+      res.redirect(`/clinics/${clinicId}/events/${eventId}`)
+    }
+    else if (canBeginScreening == 'yes'){
+      if (req.session.data.events[eventIndex].status !== 'checked_in') {
+        req.session.data.events[eventIndex] = updateEventStatus(
+          req.session.data.events[eventIndex],
+          'checked_in'
+        )
+      }
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information`)
+
+    }
+    else {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
+    }
+
+  })
+
+  const MAMMOGRAPHY_VIEWS = ['medical-information', 'images', 'imaging', 'attended-not-screened-reason']
+
   // Event within clinic context
-  router.get('/clinics/:clinicId/events/:eventId/imaging', (req, res) => {
-    res.render('events/mamography/imaging', {
-    })
+  router.get('/clinics/:clinicId/events/:eventId/:view', (req, res, next) => {
+
+    if (MAMMOGRAPHY_VIEWS.some(view => view == req.params.view)) {
+      res.render(`events/mammography/${req.params.view}`, {
+      })
+    }
+    else next()
+
   })
 
   // // Advance status to attened / complete
@@ -84,6 +121,20 @@ module.exports = router => {
   //   res.redirect(`/clinics/${req.params.clinicId}/events/${req.params.eventId}`, {
   //   })
   // })
+
+  // Handle screening completion
+  router.post('/clinics/:clinicId/events/:eventId/attended-not-screened-answer', (req, res) => {
+    const { clinicId, eventId } = req.params
+
+    // Update event status to attended
+    const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
+    req.session.data.events[eventIndex] = updateEventStatus(
+      req.session.data.events[eventIndex],
+      'attended_not_screened'
+    )
+
+    res.redirect(`/clinics/${clinicId}/events/${eventId}`)
+  })
 
   // Handle screening completion
   router.post('/clinics/:clinicId/events/:eventId/complete', (req, res) => {

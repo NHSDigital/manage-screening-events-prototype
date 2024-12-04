@@ -1,0 +1,23 @@
+{% set secondaryNavItems = [] %}
+
+{% for item in [
+  { id: 'all', label: 'Appointment details' },
+  { id: '#', label: 'Medical information' },
+  { id: 'images', label: 'Images' }
+] %}
+  {% set href -%}
+    /clinics/{{ clinicId }}/events/{{event.id}}{{ ("/" + item.id) if item.id !== 'all' }}
+  {% endset %}
+
+  {% set secondaryNavItems = secondaryNavItems | push({
+    text: item.label,
+    href: href | trim,
+    current: true if item.id == activeTab
+  }) %}
+
+{% endfor %}
+
+{{ appSecondaryNavigation({
+  visuallyHiddenTitle: "Secondary menu",
+  items: secondaryNavItems
+}) }}

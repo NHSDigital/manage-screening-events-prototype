@@ -1,0 +1,12 @@
+{% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
+
+<h1 class="nhsuk-heading-l">
+  <span class="nhsuk-caption-l">
+    {{ unit.name }} - {{ clinic.date | formatDate }}
+  </span>
+  {{ pageHeading }}
+</h1>
+
+<p class="app-text-grey"><span>NHS Number: {{ participant.medicalInformation.nhsNumber | formatNhsNumber }}</span><span class="nhsuk-u-margin-left-4">SX Number: {{ participant.sxNumber }}</span></p>
+
+<p class="nhsuk-u-margin-bottom-4"><a href="/participants/{{ participant.id }}">View participant record</a></p>

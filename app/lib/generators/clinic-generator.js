@@ -117,7 +117,7 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes) => {
     slots,
     status: determineClinicStatus(date),
     staffing: {
-      mamographers: [],
+      mammographers: [],
       radiologists: [],
       support: []
     },
