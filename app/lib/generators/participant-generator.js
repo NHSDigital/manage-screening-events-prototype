@@ -4,6 +4,40 @@ const generateId = require('../utils/id-generator');
 const weighted = require('weighted');
 const { generateBSUAppropriateAddress } = require('./address-generator');
 
+// List of possible extra needs
+const EXTRA_NEEDS = [
+  'Agoraphobia',
+  'Implants',
+  'Learning difficulties',
+  'Physical restriction',
+  'Registered disabled',
+  'Social reasons',
+  'Wheelchair user',
+  'Transgender',
+  // 'Other' // need to come up with some free text replies before using this
+]
+
+// Generate extra needs for a participant
+const generateExtraNeeds = (config = { probability: 0.08 }) => {
+  // Check if they should have extra needs
+  if (Math.random() > config.probability) {
+    return null
+  }
+
+  // Use weighted to determine how many needs they should have
+  const needCount = weighted.select({
+    1: 0.7,  // 70% chance of 1 need
+    2: 0.2,  // 20% chance of 2 needs
+    3: 0.1   // 10% chance of 3 needs
+  })
+
+  // Select that many random needs
+  return faker.helpers.arrayElements(EXTRA_NEEDS, { 
+    min: needCount, 
+    max: needCount 
+  })
+}
+
 // Generate a UK phone number
 const generateUKPhoneNumber = () => {
   const numberTypes = {
@@ -160,7 +194,11 @@ const generateNonCancerousProcedures = () => {
 };
 
 
-const generateParticipant = ({ ethnicities, breastScreeningUnits }) => {
+const generateParticipant = ({ 
+    ethnicities, 
+    breastScreeningUnits,
+    extraNeedsConfig = { probability: 0.08 }
+  }) => {
   const id = generateId();
   
   // Randomly assign to a BSU
@@ -179,6 +217,7 @@ const generateParticipant = ({ ethnicities, breastScreeningUnits }) => {
     id,
     sxNumber: generateSXNumber(assignedBSU.abbreviation),
     assignedBSU: assignedBSU.id,
+    extraNeeds: generateExtraNeeds(extraNeedsConfig),
     demographicInformation: {
       firstName: faker.person.firstName('female'),
       middleName,

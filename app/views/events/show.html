@@ -1,4 +1,4 @@
-show
+
 {% extends 'layout-app.html' %}
 
 
@@ -6,7 +6,7 @@ show
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
 
-
+{% set formAction = 'foo' %}
 
 {% set back = {
   href: "/clinics/" + clinicId,
@@ -15,7 +15,7 @@ show
 
 {% block pageContent %}
 
-{{ participant | log }}
+  {{ participant | log }}
 
   {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
 
@@ -42,11 +42,31 @@ show
     {% endif %}
   {% endset %}
 
-  {{event | log}}
 
   {% set appointmentTimeHtml -%}
     <p>{{ clinic.date | formatDate }} ({{ clinic.date | formatRelativeDate }})</p>
     <p>{{ event.timing | formatTimeRange }} ({{ event.timing.duration }} minutes)</p>
+    
+  {% endset %}
+
+  {% set specialAppointmentHtml %}
+    {% if event.details.isSpecialAppointment %}
+    {{ tag({
+      text: "Special appointment",
+      classes: "nhsuk-tag--orange nhsuk-u-margin-bottom-3"
+    })}}
+    {% if participant.extraNeeds | length > 1 %}
+      <ul>
+        {% for need in participant.extraNeeds %}
+          <li>{{need}}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>{{ participant.extraNeeds }}</p>
+    {% endif %}
+    {% else %}
+      Not provided.
+    {% endif %}
     
   {% endset %}
 
@@ -95,7 +115,24 @@ show
               
             ]
           }
-        }
+        },
+        {
+          key: {
+            text: "Other details"
+          },
+          value: {
+            html: specialAppointmentHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "special appointment"
+              }
+            ]
+          }
+        } if event.details.isSpecialAppointment
       ]
     }) }}
   {% endset %}
@@ -106,97 +143,17 @@ show
     descriptionHtml: appointmentHtml
   }) }}
 
-  {% set personalDetailsHtml %}
-    {% set dob %}
-      {{ participant.demographicInformation.dateOfBirth | formatDate }}<br>
-      <span class="nhsuk-hint">({{ participant.demographicInformation.dateOfBirth | formatRelativeDate(true) }} old)</span>
-    {% endset %}
-
-    {% set address %}
-      {{ participant.demographicInformation.address.line1 }}<br>
-      {% if participant.demographicInformation.address.line2 %}
-        {{ participant.demographicInformation.address.line2 }}<br>
-      {% endif %}
-      {{ participant.demographicInformation.address.city }}<br>
-      {{ participant.demographicInformation.address.postcode }}
-    {% endset %}
-
-    {{ summaryList({
-      rows: [
-       {
-         key: {
-           text: "Full name"
-         },
-         value: {
-           text: participant | getFullName
-         }
-       },
-       {
-         key: {
-           text: "Gender"  
-         },
-         value: {
-           text: "Female"
-         }
-       },
-       {
-         key: {
-           text: "NHS number"
-         },
-         value: {
-           text: participant.medicalInformation.nhsNumber | formatNhsNumber
-         }
-       },
-       {
-         key: {
-           text: "SX number"
-         },
-         value: {
-           text: participant.sxNumber
-         }
-       },
-       {
-         key: {
-           text: "Date of birth"
-         },
-         value: {
-           html: dob
-         }
-       },
-       {
-         key: {
-           text: "Address"
-         },
-         value: {
-           html: address
-         }
-       },
-       {
-         key: {
-           text: "Phone"
-         },
-         value: {
-           text: participant.demographicInformation.phone | formatPhoneNumber
-         }
-       },
-       {
-         key: {
-           text: "Email"
-         },
-         value: {
-           text: participant.demographicInformation.email
-         }
-       }
-      ]
-    }) }}
+  {% set participantDetailsHtml %}
+    {% set isMinimalParticipant = true %}
+    {% set allowEdits = false %}
+    {% include "summary-lists/participant.njk" %}
   {% endset %}
 
 
-
   {{ card({
-    heading: "Personal details",
+    heading: "Participant",
     headingLevel: "2",
-    descriptionHtml: personalDetailsHtml
+    descriptionHtml: participantDetailsHtml
   }) }}
 
   {% set screeningHistoryHtml %}
@@ -223,19 +180,19 @@ show
          </tr>
        </thead>
        <tbody>
-          {% set record = lastMammogram %}
-           {% set event = record.event %}
+           {% set record = lastMammogram %}
+           {% set lastEvent = record.event %}
            {% set clinic = record.clinic %}
            {% set unit = record.unit %}
            <tr>
-             <td>{{ event.timing.startTime | formatDate }}
+             <td>{{ lastEvent.timing.startTime | formatDate }}
               <br>
-              <span class="nhsuk-hint">({{ event.timing.startTime | formatRelativeDate }})</span>
+              <span class="nhsuk-hint">({{ lastEvent.timing.startTime | formatRelativeDate }})</span>
              </td>
              <td>{{ clinic.clinicType | formatWords | sentenceCase }}</td>
              <td>{{ unit.name }}</td>
              <td>
-               <a href="/clinics/{{ clinic.id }}/events/{{ event.id }}">
+               <a href="/clinics/{{ clinic.id }}/events/{{ lastEvent.id }}">
                  View details
                </a>
              </td>
@@ -247,6 +204,11 @@ show
     {% endif %}
 
     {{clinicHistory | log }}
+
+    {{ button({
+      text: "Record additional screening history",
+      classes: "nhsuk-button--secondary"
+    }) }}
 
     {% set detailsHtml %}
       {% set hideUpcoming = true %}
@@ -329,7 +291,7 @@ show
 
   {% endset %}
 
-  {% if event.status == 'checked_in' and participant.questionnaire %}
+  {% if event.status == 'checked_in' %}
     {{ card({
       heading: "Screening",
       headingLevel: "2",

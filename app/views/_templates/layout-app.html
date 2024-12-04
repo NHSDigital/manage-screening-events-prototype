@@ -86,7 +86,7 @@
     {% endif %}
 
     {% if formAction or isForm %}
-      <form action="{{formAction or './'}}" method="{{ formMethod or 'GET'}}">
+      <form action="{{formAction or './'}}" method="{{ formMethod or 'POST'}}">
     {% endif %}
     {% block pageContent %}{% endblock %}
     {% if formAction or isForm %}

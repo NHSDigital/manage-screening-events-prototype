@@ -71,6 +71,12 @@
               <a href="/clinics/{{ clinicId }}/events/{{ event.id }}" class="nhsuk-link">
                 {{ participant | getFullName }}
               </a>
+              {% if event.details.isSpecialAppointment %}<br>
+                {{ tag({
+                  text: "Special appointment",
+                  classes: "nhsuk-tag--orange nhsuk-u-margin-top-2"
+                })}}
+              {% endif %}
             </td>
             <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber | formatNhsNumber | noWrap }}</td>
             <td class="nhsuk-table__cell">
