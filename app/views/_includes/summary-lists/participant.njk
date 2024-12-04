@@ -1,0 +1,141 @@
+{% set dob %}
+  {{ participant.demographicInformation.dateOfBirth | formatDate }}<br>
+  <span class="nhsuk-hint">({{ participant.demographicInformation.dateOfBirth | formatRelativeDate(true) }} old)</span>
+{% endset %}
+
+{% set address %}
+  {{ participant.demographicInformation.address.line1 }}<br>
+  {% if participant.demographicInformation.address.line2 %}
+    {{ participant.demographicInformation.address.line2 }}<br>
+  {% endif %}
+  {{ participant.demographicInformation.address.city }}<br>
+  {{ participant.demographicInformation.address.postcode }}
+{% endset %}
+
+{% set allowEdits = allowEdits | default(true) %}
+
+{{ summaryList({
+  rows: [
+   {
+     key: {
+       text: "Full name"
+     },
+     value: {
+       text: participant | getFullName
+     },
+     actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "date of birth"
+          } if allowEdits
+        ]
+      }
+   },
+   {
+     key: {
+       text: "Gender"  
+     },
+     value: {
+       text: "Female"
+     },
+     actions: {
+        items: [
+        ]
+     }
+   } if not isMinimalParticipant,
+   {
+     key: {
+       text: "NHS number"
+     },
+     value: {
+       text: participant.medicalInformation.nhsNumber | formatNhsNumber
+     },
+     actions: {
+        items: [
+        ]
+     }
+   } if not isMinimalParticipant,
+   {
+     key: {
+       text: "SX number"
+     },
+     value: {
+       text: participant.sxNumber
+     },
+     actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "SX number"
+          } if allowEdits
+        ]
+      }
+   } if not isMinimalParticipant,
+   {
+     key: {
+       text: "Date of birth"
+     },
+     value: {
+       html: dob
+     },
+     actions: {
+        items: [
+        ]
+     }
+   },
+   {
+     key: {
+       text: "Address"
+     },
+     value: {
+       html: address
+     },
+     actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "address"
+          } if allowEdits
+        ]
+      }
+   },
+   {
+     key: {
+       text: "Phone"
+     },
+     value: {
+       text: participant.demographicInformation.phone | formatPhoneNumber
+     },
+     actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "phone"
+          } if allowEdits
+        ]
+      }
+   } if not isMinimalParticipant,
+   {
+     key: {
+       text: "Email"
+     },
+     value: {
+       text: participant.demographicInformation.email
+     },
+     actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "email"
+          } if allowEdits
+        ]
+      }
+   } if not isMinimalParticipant
+  ]
+}) }}

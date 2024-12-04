@@ -64,7 +64,14 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
   const today = simulatedDateTime.startOf('day');
   const isPast = slotDateTime.isBefore(simulatedDateTime);
 
-  // If it's an assessment clinic, override the outcome weights
+  // Check if this is a special event (participant has extra needs)
+  const isSpecialAppointment = Boolean(participant.extraNeeds?.length);
+
+  // Double the duration for participants with extra needs
+  const duration = isSpecialAppointment ? slot.duration * 2 : slot.duration;
+  const endDateTime = dayjs(slot.dateTime).add(duration, 'minute');
+
+  // If it’s an assessment clinic, override the outcome weights
   const eventWeights = clinic.clinicType === 'assessment' ? 
     {
       'clear': 0.4,
@@ -84,13 +91,15 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
     type: clinic.clinicType,
     timing: {
       startTime: slot.dateTime,
-      endTime: slot.endDateTime,
-      duration: slot.duration
+      endTime: endDateTime.toISOString(),
+      duration
     },
     status: 'scheduled',
     details: {
       screeningType: 'mammogram',
-      machineId: generateId()
+      machineId: generateId(),
+      isSpecialAppointment,
+      extraNeeds: participant.extraNeeds
     },
     statusHistory: [
       {
@@ -110,8 +119,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
     ...eventBase,
     status,
     details: {
-      screeningType: 'mammogram',
-      machineId: generateId(),
+      ...eventBase.details,
       imagesTaken: status === 'attended' ? 
         ['RCC', 'LCC', 'RMLO', 'LMLO'] : null,
       notScreenedReason: status === 'attended_not_screened' ?
@@ -122,10 +130,14 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
 
   if (status === 'attended') {
     const actualStartOffset = faker.number.int({ min: -5, max: 5 });
-    const actualDurationOffset = faker.number.int({ min: -3, max: 5 });
+
+    // For special events, allow more time variation
+    const durationOffset = isSpecialAppointment ? 
+      faker.number.int({ min: -3, max: 10 }) :
+      faker.number.int({ min: -3, max: 5 });
     
     const actualStartTime = slotDateTime.add(actualStartOffset, 'minute');
-    const actualEndTime = actualStartTime.add(slot.duration + actualDurationOffset, 'minute');
+    const actualEndTime = actualStartTime.add(slot.duration + durationOffset, 'minute');
 
     event.timing = {
       ...event.timing,
