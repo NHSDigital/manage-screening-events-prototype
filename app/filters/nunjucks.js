@@ -2,12 +2,12 @@
 
 
 
-const log = (a, description=false) => {
+const log = (a, description=null) => {
 
   if (description){
     description = `console.log("${description}:");`
   }
-  return `<script>${description}console.log(${JSON.stringify(a, null, '\t')});</script>`
+  return `<script>${description ? description : ""}console.log(${JSON.stringify(a, null, '\t')});</script>`
 }
 
 module.exports = {

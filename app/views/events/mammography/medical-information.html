@@ -28,10 +28,265 @@
     {{ pageHeading }}
   </h1>
 
+  {% set taskStatus = {} %}
+  {% set valueHtml = "" %}
+
+  {{ query.taskStatus | log }}
+  {% if query.taskStatus == 'complete' %}
+    {% set taskStatus = {
+        text: "Completed",
+        classes: "nhsuk-task-list__status--completed"
+      }
+     %}
+     {% set valueHtml = "None" %}
+  {% else %}
+    {% set taskStatus = {
+        tag: {
+          text: "Incomplete",
+          classes: "nhsuk-tag--blue"
+        }
+      }
+     %}
+     {# {% set valueHtml = tag({
+          text: "Incomplete",
+          classes: "nhsuk-tag--blue"
+        }) %} #}
+    {% set valueHtml = "Incomplete" | asHint %}
+
+  {% endif %}
+
+  {# {{ taskList({
+    idPrefix: "your-health",
+    items: [
+      {
+        title: {
+          text: "History of breast cancer"
+        },
+        href: "#",
+        status: taskStatus
+      },
+      {
+        title: {
+          text: "Other breast diagnosis or proceedures"
+        },
+        href: "#",
+        status: taskStatus
+      },
+      {
+        title: {
+          text: "Scars"
+        },
+        href: "#",
+        status: taskStatus
+      },
+      {
+        title: {
+          text: "Current health status"
+        },
+        href: "#",
+        status: taskStatus
+      },
+      {
+        title: {
+          text: "Breast symptoms"
+        },
+        href: "#",
+        status: taskStatus
+      }
+    ]
+  }) }} #}
+
+  {{ summaryList({
+  rows: [
+    {
+      key: {
+        text: "Breast implants"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "name"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Implanted medical devices and pacemakers"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "name"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Special appointment needs"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "name"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Pregnancy and breastfeeding"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "name"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "History of breast cancer"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "name"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Other breast diagnosis or proceedures"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "date of birth"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Scars"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "contact information"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Current health status"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "contact details"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Breast symptoms"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "contact details"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Appointment notes / other"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "contact details"
+          }
+        ]
+      }
+    }
+  ]
+}) }}
+
+  {% if query.taskStatus !== 'complete' %}
+    <div class="nhsuk-form-group">
+      {{ button({
+        text: "Answer incomplete as 'No' / 'None'",
+        classes: "nhsuk-button--secondary",
+        href: "./medical-information?taskStatus=complete"
+      }) }}
+    </div>
+  {% endif %}
+
 
   {{ button({
     text: "Continue"
   }) }}
+
+  <p><a href="./attended-not-screened-reason">Screening cannot proceed</a></p>
 
 {% endblock %}
 

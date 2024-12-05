@@ -8,11 +8,41 @@
 
 {% set formAction = './complete' %}
 
+{% set images = [
+  {
+    view: "Cranio-caudal",
+    side: "Right"
+  },
+  {
+    view: "Dutch oblique",
+    side: "Right"
+  },
+  {
+    view: "Cranio-caudal",
+    side: "Left"
+  },
+  {
+    view: "Dutch oblique",
+    side: "Left"
+  }
+] %}
+
 {# {% set back = {
   href: "/clinics/" + clinicId,
   text: "Back to clinic"
 } %}
  #}
+{# Loading state macro #}
+{% macro loadingSpinner() %}
+<div id="loading-spinner" class="">
+  <div class="nhsuk-loader">
+    <span class="nhsuk-u-visually-hidden">Loading images...</span>
+  </div>
+  <p class="nhsuk-u-margin-top-3 nhsuk-u-secondary-text-color">Waiting for mammogram images...</p>
+</div>
+{% endmacro %}
+
+
 {% macro makeImage(params) %}
 
   {% set summaryListHtml %}
@@ -106,7 +136,7 @@
     heading: "Image " + params.index,
     headingLevel: "3",
     descriptionHtml: summaryListHtml,
-    classes: "nhsuk-u-margin-bottom-3"
+    classes: "nhsuk-u-margin-bottom-3 app-image-card app-hidden"
   }) }}
 
 {% endmacro %}
@@ -124,24 +154,8 @@
     {{ pageHeading }}
   </h1>
 
-  {% set images = [
-    {
-      view: "Cranio-caudal",
-      side: "Right"
-    },
-    {
-      view: "Dutch oblique",
-      side: "Right"
-    },
-    {
-      view: "Cranio-caudal",
-      side: "Left"
-    },
-    {
-      view: "Dutch oblique",
-      side: "Left"
-    }
-  ] %}
+  {# Show loading spinner initially #}
+  {{ loadingSpinner() }}
 
   <div class="nhsuk-u-margin-bottom-4">
     {% for image in images %}
@@ -154,46 +168,88 @@
     {% endfor %}
   </div>
 
-  <div class="nhsuk-grid-row">
-    <div class="nhsuk-grid-column-two-thirds">
-      {% set reasonHtml %}
-        {{ textarea({
-          name: "partialMammographyReason",
-          id: "partialMammographyReason",
-          label: {
-            text: "Reason for partial mammography"
-          }
-        }) }}
-      {% endset %}
-      
-      {{ checkboxes({
-        idPrefix: "partialMammography",
-        name: "partialMammography",
-        classes: "nhsuk-u-margin-bottom-5",
-        _fieldset: {
-          legend: {
-            text: "How would you like to be contacted?",
-            classes: "nhsuk-fieldset__legend--l",
-            isPageHeading: true
-          }
-        },
-        items: [
-          {
-            value: "partial",
-            text: "Partial mammography only",
-            
-            conditional: {
-              html: reasonHtml
+  <div class='app-hidden' id="imaging-form">
+    <div class="nhsuk-grid-row">
+      <div class="nhsuk-grid-column-two-thirds">
+        {% set reasonHtml %}
+          {{ textarea({
+            name: "partialMammographyReason",
+            id: "partialMammographyReason",
+            label: {
+              text: "Reason for partial mammography"
             }
-          }
-        ]
-      }) }}
+          }) }}
+        {% endset %}
+        
+        {{ checkboxes({
+          idPrefix: "partialMammography",
+          name: "partialMammography",
+          classes: "nhsuk-u-margin-bottom-5",
+          _fieldset: {
+            legend: {
+              text: "How would you like to be contacted?",
+              classes: "nhsuk-fieldset__legend--l",
+              isPageHeading: true
+            }
+          },
+          items: [
+            {
+              value: "partial",
+              text: "Partial mammography only",
+              
+              conditional: {
+                html: reasonHtml
+              }
+            }
+          ]
+        }) }}
 
-      {{ button({
-        text: "Confirm all images and complete imaging"
-      }) }}
+        {{ button({
+          text: "Confirm all images and complete imaging"
+        }) }}
+      </div>
     </div>
   </div>
 
+  <p><a href="./attended-not-screened-reason">Screening cannot proceed</a></p>
+
 {% endblock %}
 
+{% block pageScripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const loadingSpinner = document.getElementById('loading-spinner')
+  const imageCards = document.querySelectorAll('.app-image-card')
+  const imagingForm = document.getElementById('imaging-form')
+  let lastLoadTime = 0
+
+  // Hide spinner after initial delay
+  setTimeout(() => {
+    loadingSpinner.classList.add('app-hidden')
+    
+    // Show each image sequentially
+    imageCards.forEach((card, index) => {
+      const loadTime = 1000 + (index * 1600)
+      
+      setTimeout(() => {
+        card.classList.remove('app-hidden')
+        // Add fade-in effect
+        card.style.opacity = 0
+        card.style.transition = 'opacity 0.5s ease-in'
+        setTimeout(() => card.style.opacity = 1, 50)
+
+        // Show form after first image is loaded
+        if (index === 0) {
+          setTimeout(() => {
+            imagingForm.classList.remove('app-hidden')
+            imagingForm.style.opacity = 0
+            imagingForm.style.transition = 'opacity 0.5s ease-in'
+            setTimeout(() => imagingForm.style.opacity = 1, 50)
+          }, 400) // Show form slightly after first image
+        }
+      }, loadTime)
+    })
+  }, 2000)
+})
+</script>
+{% endblock %}
