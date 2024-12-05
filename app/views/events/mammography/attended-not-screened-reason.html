@@ -2,9 +2,9 @@
 {% extends 'layout-app.html' %}
 
 
-{% set pageHeading = "Attended not screened reason" %}
+{% set pageHeading = "Screening suspended" %}
 
-{% set gridColumn = "nhsuk-grid-column-full" %}
+{# {% set gridColumn = "nhsuk-grid-column-full" %} #}
 
 {% set formAction = './attended-not-screened-answer' %}
 
@@ -27,6 +27,40 @@
     </span>
     {{ pageHeading }}
   </h1>
+
+  {{ textarea({
+    name: "example",
+    id: "example",
+    label: {
+      text: "Details of why screening cannot proceed"
+    }
+  }) }}
+
+  {{ radios({
+    idPrefix: "example",
+    name: "example",
+    fieldset: {
+      legend: {
+        text: "Follow-up action",
+        classes: "nhsuk-fieldset__legend--s",
+        isPageHeading: false
+      }
+    },
+    items: [
+      {
+        value: "yes",
+        text: "Reschedule appointment"
+      },
+      {
+        value: "no",
+        text: "Review with clinician"
+      },
+      {
+        value: "no",
+        text: "Other"
+      }
+    ]
+  }) }}
 
 
   {{ button({

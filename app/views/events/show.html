@@ -37,6 +37,9 @@
       <p class="nhsuk-u-margin-top-2"><a href="{{href | trim}}">Check in participant</a></p>
 
     {% endif %}
+    {% if event.status === "attended_not_screened" %}
+      <p class="nhsuk-u-margin-top-2">[Reason for not screened here]</p>
+    {% endif %}
   {% endset %}
 
 
@@ -46,23 +49,23 @@
     
   {% endset %}
 
-  {% set specialAppointmentHtml %}
+  {% set otherDetailsHtml %}
     {% if event.details.isSpecialAppointment %}
-    {{ tag({
-      text: "Special appointment",
-      classes: "nhsuk-tag--orange nhsuk-u-margin-bottom-3"
-    })}}
-    {% if participant.extraNeeds | length > 1 %}
-      <ul>
-        {% for need in participant.extraNeeds %}
-          <li>{{need}}</li>
-        {% endfor %}
-      </ul>
+      {{ tag({
+        text: "Special appointment",
+        classes: "nhsuk-tag--orange nhsuk-u-margin-bottom-3"
+      })}}
+      {% if participant.extraNeeds | length > 1 %}
+        <ul>
+          {% for need in participant.extraNeeds %}
+            <li>{{need}}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>{{ participant.extraNeeds }}</p>
+      {% endif %}
     {% else %}
-      <p>{{ participant.extraNeeds }}</p>
-    {% endif %}
-    {% else %}
-      Not provided.
+     {{ "Not provided" | asHint }}
     {% endif %}
     
   {% endset %}
@@ -118,18 +121,18 @@
             text: "Other details"
           },
           value: {
-            html: specialAppointmentHtml
+            html: otherDetailsHtml
           },
           actions: {
             items: [
               {
                 href: "#",
                 text: "Change",
-                visuallyHiddenText: "special appointment"
+                visuallyHiddenText: "other details"
               }
             ]
           }
-        } if event.details.isSpecialAppointment
+        }
       ]
     }) }}
   {% endset %}
@@ -197,10 +200,10 @@
        </tbody>
      </table>
     {% else %}
-      <p>No details.</p>
+      <p>{{ "No details" | asHint }}</p>
     {% endif %}
 
-    {{clinicHistory | log }}
+    {{clinicHistory | log("clinic history") }}
 
     {{ button({
       text: "Record additional screening history",
@@ -212,11 +215,12 @@
       {% include "summary-lists/screening-history.njk" %}
     {% endset %}
 
-    {{ details({
-      text: "View full screening history",
-      HTML: detailsHtml
-    }) }}
-
+    {% if clinicHistory | length > 1 %}
+      {{ details({
+        text: "View full screening history",
+        HTML: detailsHtml
+      }) }}
+    {% endif %}
 
   {% endset %}
 
@@ -259,14 +263,32 @@
 
   {% set screeningHtml %}
 
+  <h3>Confirm the following before continuing</h3>
+
+  <ul>
+    <li>Identity has been confirmed</li>
+    <li>Mammogram history
+      <ul>
+        <li>Date and location of last mammogram</li>
+        <li>No mammograms within last 6 months</li>
+      </ul>
+    </li>
+  </ul>
+
+{#   <h3>Special status reviewed</h3>
+
+  <ul>
+    <li>Breast implants</li>
+    <li>Date of last mammogram</li>
+  </ul> #}
     <form action="./{{eventId}}/start" method="post">
       {{ radios({
         idPrefix: "beginScreening",
         name: "beginScreening",
         fieldset: {
           legend: {
-            text: "Are you ready to begin screening?",
-            classes: "nhsuk-fieldset__legend--s",
+            text: "Can screening proceed?",
+            classes: "nhsuk-fieldset__legend--m",
             isPageHeading: false
           }
         },
@@ -293,7 +315,7 @@
 
   {% if event.status == 'checked_in' or event.status == 'scheduled' %}
     {{ card({
-      heading: "Screening",
+      heading: "Pre-screening checks",
       headingLevel: "2",
       descriptionHtml: screeningHtml
     }) }}
