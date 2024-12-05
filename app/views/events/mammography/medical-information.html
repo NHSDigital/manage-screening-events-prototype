@@ -4,7 +4,7 @@
 
 {% set pageHeading = "Medical information" %}
 
-{% set gridColumn = "nhsuk-grid-column-full" %}
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
 {% set formAction = './imaging' %}
 
@@ -13,6 +13,15 @@
   text: "Back to clinic"
 } %}
  #}
+
+{% macro makeRow(params) %}
+<h3>{{ params.title }}</h3>
+
+<p>{{params.content}}</p>
+
+<p><a href="#">Provide details</a></p>
+  
+{% endmacro %}
 
 
 {% block pageContent %}
@@ -55,46 +64,9 @@
 
   {% endif %}
 
-  {# {{ taskList({
-    idPrefix: "your-health",
-    items: [
-      {
-        title: {
-          text: "History of breast cancer"
-        },
-        href: "#",
-        status: taskStatus
-      },
-      {
-        title: {
-          text: "Other breast diagnosis or proceedures"
-        },
-        href: "#",
-        status: taskStatus
-      },
-      {
-        title: {
-          text: "Scars"
-        },
-        href: "#",
-        status: taskStatus
-      },
-      {
-        title: {
-          text: "Current health status"
-        },
-        href: "#",
-        status: taskStatus
-      },
-      {
-        title: {
-          text: "Breast symptoms"
-        },
-        href: "#",
-        status: taskStatus
-      }
-    ]
-  }) }} #}
+{#   {{ makeRow({
+  title: "Breast implants"
+})}} #}
 
   {{ summaryList({
   rows: [
@@ -117,10 +89,12 @@
     },
     {
       key: {
-        text: "Implanted medical devices and pacemakers"
+        text: "Implanted medical devices and pacemakers",
+        classes: "nhsuk-u-width-one-half"
       },
       value: {
-        html: valueHtml
+        html: valueHtml,
+        classes: "nhsuk-u-width-one-half"
       },
       actions: {
         items: [
@@ -148,7 +122,7 @@
           }
         ]
       }
-    },
+    } if false,
     {
       key: {
         text: "Pregnancy and breastfeeding"
@@ -202,7 +176,7 @@
     },
     {
       key: {
-        text: "Scars"
+        text: "Scars and other visual features"
       },
       value: {
         html: valueHtml
@@ -220,6 +194,23 @@
     {
       key: {
         text: "Current health status"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "contact details"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Hormone replacement therapy (HRT)"
       },
       value: {
         html: valueHtml
@@ -274,7 +265,7 @@
   {% if query.taskStatus !== 'complete' %}
     <div class="nhsuk-form-group">
       {{ button({
-        text: "Answer incomplete as 'No' / 'None'",
+        text: "Answer all incomplete as 'No' / 'None'",
         classes: "nhsuk-button--secondary",
         href: "./medical-information?taskStatus=complete"
       }) }}
