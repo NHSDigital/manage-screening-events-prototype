@@ -7,7 +7,7 @@ const { generateBSUAppropriateAddress } = require('./address-generator');
 // List of possible extra needs
 const EXTRA_NEEDS = [
   'Agoraphobia',
-  'Implants',
+  'Breast implants',
   'Learning difficulties',
   'Physical restriction',
   'Registered disabled',

@@ -15,7 +15,7 @@
 
 {% block pageContent %}
 
-  {{ participant | log }}
+  {{ participant | log("Participant:") }}
 
   {% include "event-header.njk" %}
 
@@ -203,7 +203,7 @@
       <p>{{ "No details" | asHint }}</p>
     {% endif %}
 
-    {{clinicHistory | log("clinic history") }}
+    {{clinicHistory | log("Clinic history") }}
 
     {{ button({
       text: "Record additional screening history",
@@ -263,7 +263,7 @@
 
   {% set screeningHtml %}
 
-  <h3>Confirm the following before continuing</h3>
+  <h3 class="nhsuk-heading-s">Confirm the following before continuing</h3>
 
   <ul>
     <li>Identity has been confirmed</li>
@@ -275,20 +275,23 @@
     </li>
   </ul>
 
-{#   <h3>Special status reviewed</h3>
-
-  <ul>
-    <li>Breast implants</li>
-    <li>Date of last mammogram</li>
-  </ul> #}
     <form action="./{{eventId}}/start" method="post">
+
+      {# {{ input({
+        label: {
+          text: "Full name"
+        },
+        id: "example",
+        name: "save[participant--" + participantId + "][first-name]"
+      }) }} #}
+
       {{ radios({
         idPrefix: "beginScreening",
         name: "beginScreening",
         fieldset: {
           legend: {
             text: "Can screening proceed?",
-            classes: "nhsuk-fieldset__legend--m",
+            classes: "nhsuk-fieldset__legend--s",
             isPageHeading: false
           }
         },

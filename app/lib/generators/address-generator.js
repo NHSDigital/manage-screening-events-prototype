@@ -94,15 +94,20 @@ const generateNearbyAreas = (bsu) => {
  * @returns {Object} Generated address object
  */
 const generateBSUAppropriateAddress = (bsu) => {
-  const nearbyAreas = generateNearbyAreas(bsu);
+  const nearbyAreas = generateNearbyAreas(bsu)
   
+  // Helper to capitalize first letter of each word
+  const capitalise = (str) => str.split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+
   return {
     line1: `${faker.number.int({ min: 1, max: 300 })} ${faker.helpers.arrayElement(STREETS)}`,
-    line2: Math.random() < 0.3 ? `${faker.word.adjective()} House` : null,
+    line2: Math.random() < 0.3 ? `${capitalise(faker.word.adjective())} House` : null,
     city: faker.helpers.arrayElement(nearbyAreas),
     postcode: generateNearbyPostcode(bsu.address.postcode)
-  };
-};
+  }
+}
 
 module.exports = {
   generateBSUAppropriateAddress

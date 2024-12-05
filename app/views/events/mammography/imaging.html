@@ -205,7 +205,7 @@
         }) }}
 
         {{ button({
-          text: "Confirm all images and complete imaging"
+          text: "Confirm all images and complete screening"
         }) }}
       </div>
     </div>
@@ -221,7 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadingSpinner = document.getElementById('loading-spinner')
   const imageCards = document.querySelectorAll('.app-image-card')
   const imagingForm = document.getElementById('imaging-form')
-  let lastLoadTime = 0
 
   // Hide spinner after initial delay
   setTimeout(() => {
@@ -229,27 +228,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Show each image sequentially
     imageCards.forEach((card, index) => {
-      const loadTime = 1000 + (index * 1600)
+      // Increased time between images to 2 seconds
+      const loadTime = 1000 + (index * 2000)
       
       setTimeout(() => {
         card.classList.remove('app-hidden')
-        // Add fade-in effect
         card.style.opacity = 0
         card.style.transition = 'opacity 0.5s ease-in'
         setTimeout(() => card.style.opacity = 1, 50)
 
-        // Show form after first image is loaded
+        // Show form at same time as first image
         if (index === 0) {
-          setTimeout(() => {
-            imagingForm.classList.remove('app-hidden')
-            imagingForm.style.opacity = 0
-            imagingForm.style.transition = 'opacity 0.5s ease-in'
-            setTimeout(() => imagingForm.style.opacity = 1, 50)
-          }, 400) // Show form slightly after first image
+          imagingForm.classList.remove('app-hidden')
+          imagingForm.style.opacity = 0
+          imagingForm.style.transition = 'opacity 0.5s ease-in'
+          setTimeout(() => imagingForm.style.opacity = 1, 50)
         }
       }, loadTime)
     })
-  }, 2000)
+  }, 1000)
 })
 </script>
 {% endblock %}
