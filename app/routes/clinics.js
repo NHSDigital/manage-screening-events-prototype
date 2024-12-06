@@ -261,15 +261,15 @@ module.exports = router => {
       case 'checked-in':
         console.log('filtering checked in')
         return events.filter(e => e.status === 'checked_in');
-      case 'attended':
-        return events.filter(e => ['attended', 'attended_not_screened'].includes(e.status));
+      case 'complete':
+        return events.filter(e => ['complete', 'attended_not_screened'].includes(e.status));
       default:
         return events;
     }
   }
 
   // Single clinic view
-  const VALID_FILTERS = ['scheduled', 'checked-in', 'attended', 'all'];
+  const VALID_FILTERS = ['scheduled', 'checked-in', 'complete', 'all'];
 
   // Support both /clinics/:id and /clinics/:id/:filter
   router.get(['/clinics/:id', '/clinics/:id/:filter'], (req, res) => {

@@ -28,7 +28,7 @@
     { id: 'all', label: 'All participants' },
     { id: 'scheduled', label: 'Scheduled' },
     { id: 'checked-in', label: 'Checked in' },
-    { id: 'attended', label: 'Attended' }
+    { id: 'complete', label: 'Complete' }
   ] %}
     {% set href -%}
       /clinics/{{ clinicId }}/{{ filter.id if filter.id !== 'all' }}
