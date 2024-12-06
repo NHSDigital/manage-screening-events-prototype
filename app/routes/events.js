@@ -47,6 +47,7 @@ module.exports = router => {
 
   // Set clinics to active in nav for all urls starting with /clinics
   router.use('/clinics/:clinicId/events/:eventId', (req, res, next) => {
+    const data = req.session.data
     const eventData = getEventData(req.session.data, req.params.clinicId, req.params.eventId)
 
     if (!eventData) {
@@ -54,6 +55,20 @@ module.exports = router => {
       res.redirect('/clinics/' + req.params.clinicId)
       return
     }
+
+    // An idea for how we could automate saving back to participant
+    // if (data.saveToParticipant){
+    //   const participantIndex = data.participants.findIndex(p => p.id === eventData.participant.id);
+    //   if (participantIndex !== -1) {
+    //     // Update participant record with questionnaire data
+    //     data.participants[participantIndex] = {
+    //       ...data.participants[participantIndex],
+    //       ...data.saveToParticipant
+    //     };
+
+    //     delete data.saveToParticipant
+    //   }
+    // }
 
     res.locals.eventData = eventData
     res.locals.clinic = eventData.clinic,
@@ -116,7 +131,7 @@ module.exports = router => {
   })
 
   // // Advance status to attened / complete
-  // router.post('/clinics/:clinicId/events/:eventId/attended', (req, res) => {
+  // router.post('/clinics/:clinicId/events/:eventId/complete', (req, res) => {
 
   //   res.redirect(`/clinics/${req.params.clinicId}/events/${req.params.eventId}`, {
   //   })
@@ -144,7 +159,7 @@ module.exports = router => {
     const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
     req.session.data.events[eventIndex] = updateEventStatus(
       req.session.data.events[eventIndex],
-      'attended'
+      'complete'
     )
 
     res.redirect(`/clinics/${clinicId}/events/${eventId}`)

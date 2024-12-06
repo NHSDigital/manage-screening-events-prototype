@@ -21,7 +21,7 @@
 
   {% set activeTab = 'all' %}
 
-  {% if event.status == "attended" %}
+  {% if event.status == "complete" %}
     {% include "event-navigation.njk" %}
   {% endif %}
 
@@ -45,7 +45,7 @@
 
   {% set appointmentTimeHtml -%}
     <p>{{ clinic.date | formatDate }} ({{ clinic.date | formatRelativeDate }})</p>
-    <p>{{ event.timing | formatTimeRange }} ({{ event.timing.duration }} minutes)</p>
+    <p>{{ event.timing.startTime | formatTime }} ({{ event.timing.duration }} minutes)</p>
     
   {% endset %}
 
@@ -163,7 +163,7 @@
     {% set lastMammogram = null %}
 
     {% for record in clinicHistory %}
-       {% if record.event.status === 'attended' and (not lastMammogram or record.event.timing.startTime > lastMammogram.event.timing.startTime) %}
+       {% if record.event.status === 'complete' and (not lastMammogram or record.event.timing.startTime > lastMammogram.event.timing.startTime) %}
          {% set lastMammogram = record %}
        {% endif %}
     {% endfor %}

@@ -87,7 +87,7 @@
             <td>{{ clinic.clinicType | sentenceCase }}</td>
             <td class="nhsuk-table__cell--numeric">
               {{ tag({
-                text: clinic.status | formatWords | sentenceCase,
+                html: clinic.status | formatWords | sentenceCase | noWrap,
                 classes: "nhsuk-tag--" + clinic.status | getStatusTagColour
               })}}
             </td>

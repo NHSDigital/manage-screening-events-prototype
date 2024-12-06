@@ -29,7 +29,7 @@ const determineEventStatus = (slotDateTime, currentDateTime, attendanceWeights) 
   }
 
   if (slotDate.isBefore(currentDate)){
-    const finalStatuses = ['attended', 'did_not_attend', 'attended_not_screened'];
+    const finalStatuses = ['complete', 'did_not_attend', 'attended_not_screened'];
     return weighted.select(finalStatuses, attendanceWeights);
   }
 
@@ -41,14 +41,14 @@ const determineEventStatus = (slotDateTime, currentDateTime, attendanceWeights) 
     // Within 30 mins of appointment
     return weighted.select({
       'checked_in': 0.6,
-      'attended': 0.1,
+      'complete': 0.1,
       'attended_not_screened': 0.1,
       'scheduled': 0.2,
     });
   } else {
     // More than 30 mins after appointment
     return weighted.select({
-      'attended': 0.6,
+      'complete': 0.6,
       'attended_not_screened': 0.1,
       'scheduled': 0.2,
     });
@@ -120,7 +120,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
     status,
     details: {
       ...eventBase.details,
-      imagesTaken: status === 'attended' ? 
+      imagesTaken: status === 'complete' ? 
         ['RCC', 'LCC', 'RMLO', 'LMLO'] : null,
       notScreenedReason: status === 'attended_not_screened' ?
         faker.helpers.arrayElement(NOT_SCREENED_REASONS) : null
@@ -128,7 +128,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
     statusHistory: generateStatusHistory(status, slotDateTime)
   };
 
-  if (status === 'attended') {
+  if (status === 'complete') {
     const actualStartOffset = faker.number.int({ min: -5, max: 5 });
 
     // For special events, allow more time variation
@@ -161,7 +161,7 @@ const generateStatusHistory = (finalStatus, dateTime) => {
  });
 
  // Add intermediate statuses based on final status
- if (finalStatus === 'attended') {
+ if (finalStatus === 'complete') {
    history.push(
      {
        status: 'checked_in',
