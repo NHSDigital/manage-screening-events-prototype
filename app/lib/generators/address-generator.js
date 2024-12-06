@@ -2,24 +2,70 @@
 
 const { faker } = require('@faker-js/faker');
 
-// Common UK street names
-const STREETS = [
-  'High Street',
-  'Church Road',
-  'Station Road',
-  'Victoria Road',
-  'Manor Road',
-  'The Green',
-  'Queens Road',
-  'Kings Road',
-  'New Road',
-  'School Lane',
-  'Mill Lane',
-  'The Avenue',
-  'Park Road',
-  'London Road',
-  'York Road'
-];
+// Common UK street suffixes
+const STREET_SUFFIXES = [
+  'Street',
+  'Road',
+  'Lane',
+  'Avenue',
+  'Close',
+  'Drive',
+  'Way',
+  'Gardens',
+  'Crescent',
+  'Grove',
+  'Place',
+  'Green',
+  'Park',
+  'Walk',
+  'Mews'
+]
+
+// Common UK street name prefixes
+const STREET_PREFIXES = [
+  'High',
+  'Church',
+  'Station',
+  'Victoria',
+  'Manor',
+  'Queen\'s',
+  'King\'s',
+  'New',
+  'School',
+  'Mill',
+  'Park',
+  'London',
+  'York',
+  'Albert',
+  'Windsor',
+  'Castle',
+  'George',
+  'The',
+  'Old',
+  'North',
+  'South',
+  'East',
+  'West'
+]
+
+// Common house/building names
+const HOUSE_NAMES = [
+  'Rose Cottage',
+  'The Old School House',
+  'The Coach House',
+  'The Old Vicarage',
+  'The Gables',
+  'The Willows',
+  'Orchard House',
+  'Oak House',
+  'Ivy Cottage',
+  'The Old Post Office',
+  'The Old Rectory',
+  'Holly Cottage',
+  'The Laurels',
+  'The Old Farm',
+  'Sunnyside'
+]
 
 /**
  * Extract postcode area (first 1-2 letters) from a full postcode
@@ -62,7 +108,45 @@ const generateNearbyPostcode = (referencePostcode) => {
                faker.helpers.arrayElement('ABCDEFGHJKLMNPQRSTUWXYZ');
   
   return `${area}${nearbyDistrict} ${sector}${unit}`;
-};
+}
+
+/**
+ * Generate a random street name
+ * @returns {string} Generated street name
+ */
+const generateStreetName = () => {
+  const prefix = faker.helpers.arrayElement(STREET_PREFIXES)
+  const suffix = faker.helpers.arrayElement(STREET_SUFFIXES)
+  return `${prefix} ${suffix}`
+}
+
+/**
+ * Generate line 1 of an address
+ * @returns {Object} Address line 1 details
+ */
+const generateAddressLine1 = () => {
+  // 20% chance of using a house name instead of number
+  if (Math.random() < 0.2) {
+    return {
+      line1: faker.helpers.arrayElement(HOUSE_NAMES)
+    }
+  }
+
+  const houseNumber = faker.number.int({ min: 1, max: 300 })
+  const streetName = generateStreetName()
+
+  // 15% chance of being a flat/apartment
+  if (Math.random() < 0.15) {
+    const flatNumber = faker.number.int({ min: 1, max: 20 })
+    return {
+      line1: `Flat ${flatNumber}, ${houseNumber} ${streetName}`
+    }
+  }
+
+  return {
+    line1: `${houseNumber} ${streetName}`
+  }
+}
 
 /**
  * Generate list of nearby towns/areas based on BSU location
@@ -78,15 +162,23 @@ const generateNearbyAreas = (bsu) => {
       .filter(l => l.type === 'hospital')
       .map(l => l.address.city)
       .filter(Boolean)
-  ].filter(Boolean));
+  ].filter(Boolean))
 
   // Add some generated nearby areas
-  for(let i = 0; i < 5; i++) {
-    areas.add(faker.location.city());
+  for (let i = 0; i < 2; i++) {
+    // Use UK-style town names
+    const suffix = faker.helpers.arrayElement([
+      'on-Sea', 'upon-Thames', 'St Mary', 'St John',
+      'under-Edge', 'on-the-Hill',
+      '', '', '', '' // More weight to no suffix
+    ])
+    
+    const name = `${faker.location.city()}${suffix ? ` ${suffix}` : ''}`
+    areas.add(name)
   }
 
-  return Array.from(areas);
-};
+  return Array.from(areas)
+}
 
 /**
  * Generate an address appropriate for the BSU area
@@ -95,15 +187,16 @@ const generateNearbyAreas = (bsu) => {
  */
 const generateBSUAppropriateAddress = (bsu) => {
   const nearbyAreas = generateNearbyAreas(bsu)
+  const addressLine1 = generateAddressLine1()
   
-  // Helper to capitalize first letter of each word
-  const capitalise = (str) => str.split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+  // 30% chance of having a line2
+  const line2 = Math.random() < 0.3 ? 
+    `${faker.word.adjective().charAt(0).toUpperCase() + faker.word.adjective().slice(1)} House` : 
+    null
 
   return {
-    line1: `${faker.number.int({ min: 1, max: 300 })} ${faker.helpers.arrayElement(STREETS)}`,
-    line2: Math.random() < 0.3 ? `${capitalise(faker.word.adjective())} House` : null,
+    ...addressLine1,
+    line2,
     city: faker.helpers.arrayElement(nearbyAreas),
     postcode: generateNearbyPostcode(bsu.address.postcode)
   }
