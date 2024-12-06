@@ -164,7 +164,16 @@
         side: image.side,
         index: loop.index
       } %}
+
+      {# Hack in some titles for left and right #}
+      {% if loop.index == 1 %}
+        <h3>Right breast images</h3>
+      {% elseif loop.index == 3 %}
+        <h3>Left breast images</h3>
+      {% endif %}
+
       {{ makeImage(params) }}
+
     {% endfor %}
   </div>
 
@@ -185,13 +194,6 @@
           idPrefix: "partialMammography",
           name: "partialMammography",
           classes: "nhsuk-u-margin-bottom-5",
-          _fieldset: {
-            legend: {
-              text: "How would you like to be contacted?",
-              classes: "nhsuk-fieldset__legend--l",
-              isPageHeading: true
-            }
-          },
           items: [
             {
               value: "partial",
