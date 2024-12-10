@@ -29,12 +29,12 @@ module.exports = {
     slotDurationMinutes: 8,
 
     // Target percentages
-    targetBookingPercent: 150, // 150% represents overbooking (e.g. 60 bookings for 40 slots)
+    targetBookingPercent: 120, // 150% represents overbooking (e.g. 60 bookings for 40 slots)
     targetAttendancePercent: 100, // 100% of original capacity (not overbooking)
 
     // Date range for generating data
-    daysToGenerate: 7,
-    daysBeforeToday: 3,
+    daysToGenerate: 5,
+    daysBeforeToday: 2,
 
     simulatedTime: '11:30', // 24h format
   },
@@ -57,6 +57,6 @@ module.exports = {
   // Data generation settings
   generation: {
     numberOfParticipants: 1000,
-    bookingProbability: 0.8  // 80% of slots are booked
+    bookingProbability: 0.8, // 80% of slots are booked
   }
 };

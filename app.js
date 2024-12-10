@@ -93,11 +93,45 @@ if (useCookieSessionStore === 'true' && !onlyDocumentation) {
     requestKey: 'session',
   })));
 } else {
+  // app.use(sessionInMemory(Object.assign(sessionOptions, {
+  //   name: sessionName,
+  //   resave: false,
+  //   saveUninitialized: false,
+  // })));
+
+  // Somewhat similar file store to GOV.UK
+  const FileStore = require('session-file-store')(sessionInMemory)
+  const sessionPath = path.join(__dirname, '.tmp/sessions')
+  
+  // Make sure the sessions directory exists
+  if (!fs.existsSync(sessionPath)) {
+    fs.mkdirSync(sessionPath, { recursive: true })
+  } else {
+    // Clear existing session files on restart
+    fs.readdirSync(sessionPath).forEach(file => {
+      fs.unlinkSync(path.join(sessionPath, file))
+    })
+  }
+
   app.use(sessionInMemory(Object.assign(sessionOptions, {
     name: sessionName,
     resave: false,
     saveUninitialized: false,
-  })));
+    store: new FileStore({
+      path: sessionPath,
+      logFn: (message) => {
+        // Suppress noisy session cleanup logs
+        if (message.endsWith('Deleting expired sessions')) {
+          return
+        }
+        if (message.includes('ENOENT')) {
+          console.error('Warning: Please use different working directories for your prototypes to avoid session clashes')
+          return
+        }
+        console.log(message)
+      }
+    })
+  })))
 }
 
 // Support for parsing data in POSTs

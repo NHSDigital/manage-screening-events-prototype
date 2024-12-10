@@ -38,8 +38,8 @@ const generateSnapshot = (date, allParticipants, unit) => {
     return age >= 50 && age <= 70;
   });
   
-  // Generate a week of clinics
-  for (let i = 0; i < 7; i++) {
+  // Generate a 5 days of clinics
+  for (let i = 0; i < config.clinics.daysToGenerate; i++) {
     const clinicDate = dayjs(date).add(i, 'day');
     const newClinics = generateClinicsForBSU({
       date: clinicDate.toDate(),
@@ -112,7 +112,7 @@ const generateData = async () => {
     today.subtract(9, 'year').add(3, 'month'),
     today.subtract(6, 'year').add(2, 'month'),
     today.subtract(3, 'year').add(1, 'month'),
-    today.subtract(3, 'days')
+    today.subtract(config.clinics.daysBeforeToday, 'days')
   ];
 
 
