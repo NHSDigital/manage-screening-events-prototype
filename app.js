@@ -93,11 +93,41 @@ if (useCookieSessionStore === 'true' && !onlyDocumentation) {
     requestKey: 'session',
   })));
 } else {
+  // app.use(sessionInMemory(Object.assign(sessionOptions, {
+  //   name: sessionName,
+  //   resave: false,
+  //   saveUninitialized: false,
+  // })));
+
+  const FileStore = require('session-file-store')(sessionInMemory)
+  const sessionPath = path.join(__dirname, '.tmp/sessions')
+
+  // Make sure the sessions directory exists
+  if (!fs.existsSync(sessionPath)) {
+    fs.mkdirSync(sessionPath, { recursive: true })
+  }
+
+  const fileStoreOptions = {
+    path: sessionPath,
+    logFn: (message) => {
+      // Suppress noisy session cleanup logs
+      if (message.endsWith('Deleting expired sessions')) {
+        return
+      }
+      if (message.includes('ENOENT')) {
+        console.error('Warning: Please use different working directories for your prototypes to avoid session clashes')
+        return
+      }
+      console.log(message)
+    }
+  }
+
   app.use(sessionInMemory(Object.assign(sessionOptions, {
     name: sessionName,
     resave: false,
     saveUninitialized: false,
-  })));
+    store: new FileStore(fileStoreOptions)
+  })))
 }
 
 // Support for parsing data in POSTs

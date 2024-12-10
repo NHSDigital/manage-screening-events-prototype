@@ -3,6 +3,7 @@
 # compiled output
 /dist
 /tmp
+.tmp
 /public
 app/data/generated/
 reference
