@@ -47,9 +47,9 @@ const generateTimeSlots = (date, sessionTimes, clinicType) => {
       endDateTime: slotEndTime.toISOString(),
       duration: slotDurationMinutes,
       type: clinicType,
-      capacity: 1,
+      // capacity: 1,
       // Don't support smart clinics yet
-      // capacity: clinicType === 'assessment' ? 1 : 2, // Assessment clinics don't double book
+      capacity: clinicType === 'assessment' ? 1 : 2, // Assessment clinics don't double book
       bookedCount: 0,
       period: `${sessionTimes.startTime}-${sessionTimes.endTime}`
     });
@@ -126,9 +126,9 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes) => {
     targetCapacity: {
       bookingPercent: clinicType === 'assessment' ? 100 : config.clinics.targetBookingPercent,
       attendancePercent: clinicType === 'assessment' ? 95 : config.clinics.targetAttendancePercent,
-      totalSlots: slots.length,
+      // totalSlots: slots.length,
       // not supporting Smart clinics yet
-      // totalSlots: slots.length * (clinicType === 'assessment' ? 1 : 2)
+      totalSlots: slots.length * (clinicType === 'assessment' ? 1 : 2)
     },
     notes: null,
     sessionTimes,
