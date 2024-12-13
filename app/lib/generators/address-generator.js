@@ -1,6 +1,6 @@
 // app/lib/generators/address-generator.js
 
-const { faker } = require('@faker-js/faker');
+const { faker } = require('@faker-js/faker')
 
 // Common UK street suffixes
 const STREET_SUFFIXES = [
@@ -18,7 +18,7 @@ const STREET_SUFFIXES = [
   'Green',
   'Park',
   'Walk',
-  'Mews'
+  'Mews',
 ]
 
 // Common UK street name prefixes
@@ -45,7 +45,7 @@ const STREET_PREFIXES = [
   'North',
   'South',
   'East',
-  'West'
+  'West',
 ]
 
 // Common house/building names
@@ -64,7 +64,7 @@ const HOUSE_NAMES = [
   'Holly Cottage',
   'The Laurels',
   'The Old Farm',
-  'Sunnyside'
+  'Sunnyside',
 ]
 
 /**
@@ -73,8 +73,8 @@ const HOUSE_NAMES = [
  * @returns {string} Postcode area (e.g., 'OX' from 'OX3 7LE')
  */
 const getPostcodeArea = (postcode) => {
-  return postcode.match(/^[A-Z]{1,2}/)[0];
-};
+  return postcode.match(/^[A-Z]{1,2}/)[0]
+}
 
 /**
  * Get the postcode district (number after area) from a full postcode
@@ -82,8 +82,8 @@ const getPostcodeArea = (postcode) => {
  * @returns {string} Postcode district number
  */
 const getPostcodeDistrict = (postcode) => {
-  return postcode.match(/^[A-Z]{1,2}(\d+)/)[1];
-};
+  return postcode.match(/^[A-Z]{1,2}(\d+)/)[1]
+}
 
 /**
  * Generate a random postcode in the same area as the reference postcode
@@ -91,23 +91,23 @@ const getPostcodeDistrict = (postcode) => {
  * @returns {string} New postcode in same area
  */
 const generateNearbyPostcode = (referencePostcode) => {
-  const area = getPostcodeArea(referencePostcode);
-  const district = getPostcodeDistrict(referencePostcode);
-  
+  const area = getPostcodeArea(referencePostcode)
+  const district = getPostcodeDistrict(referencePostcode)
+
   // Generate nearby district number (±1 of reference, staying in valid range)
-  const districtNum = parseInt(district);
+  const districtNum = parseInt(district)
   const nearbyDistrict = faker.helpers.arrayElement([
     districtNum,
     Math.max(1, districtNum - 1),
-    districtNum + 1
-  ]);
-  
+    districtNum + 1,
+  ])
+
   // Generate random sector (0-9) and unit (two letters)
-  const sector = faker.number.int({ min: 0, max: 9 });
-  const unit = faker.helpers.arrayElement('ABCDEFGHJKLMNPQRSTUWXYZ') + 
-               faker.helpers.arrayElement('ABCDEFGHJKLMNPQRSTUWXYZ');
-  
-  return `${area}${nearbyDistrict} ${sector}${unit}`;
+  const sector = faker.number.int({ min: 0, max: 9 })
+  const unit = faker.helpers.arrayElement('ABCDEFGHJKLMNPQRSTUWXYZ') +
+               faker.helpers.arrayElement('ABCDEFGHJKLMNPQRSTUWXYZ')
+
+  return `${area}${nearbyDistrict} ${sector}${unit}`
 }
 
 /**
@@ -128,7 +128,7 @@ const generateAddressLine1 = () => {
   // 20% chance of using a house name instead of number
   if (Math.random() < 0.2) {
     return {
-      line1: faker.helpers.arrayElement(HOUSE_NAMES)
+      line1: faker.helpers.arrayElement(HOUSE_NAMES),
     }
   }
 
@@ -139,12 +139,12 @@ const generateAddressLine1 = () => {
   if (Math.random() < 0.15) {
     const flatNumber = faker.number.int({ min: 1, max: 20 })
     return {
-      line1: `Flat ${flatNumber}, ${houseNumber} ${streetName}`
+      line1: `Flat ${flatNumber}, ${houseNumber} ${streetName}`,
     }
   }
 
   return {
-    line1: `${houseNumber} ${streetName}`
+    line1: `${houseNumber} ${streetName}`,
   }
 }
 
@@ -161,7 +161,7 @@ const generateNearbyAreas = (bsu) => {
     ...bsu.locations
       .filter(l => l.type === 'hospital')
       .map(l => l.address.city)
-      .filter(Boolean)
+      .filter(Boolean),
   ].filter(Boolean))
 
   // Add some generated nearby areas
@@ -170,9 +170,9 @@ const generateNearbyAreas = (bsu) => {
     const suffix = faker.helpers.arrayElement([
       'on-Sea', 'upon-Thames', 'St Mary', 'St John',
       'under-Edge', 'on-the-Hill',
-      '', '', '', '' // More weight to no suffix
+      '', '', '', '', // More weight to no suffix
     ])
-    
+
     const name = `${faker.location.city()}${suffix ? ` ${suffix}` : ''}`
     areas.add(name)
   }
@@ -188,20 +188,20 @@ const generateNearbyAreas = (bsu) => {
 const generateBSUAppropriateAddress = (bsu) => {
   const nearbyAreas = generateNearbyAreas(bsu)
   const addressLine1 = generateAddressLine1()
-  
+
   // 30% chance of having a line2
-  const line2 = Math.random() < 0.3 ? 
-    `${faker.word.adjective().charAt(0).toUpperCase() + faker.word.adjective().slice(1)} House` : 
-    null
+  const line2 = Math.random() < 0.3
+    ? `${faker.word.adjective().charAt(0).toUpperCase() + faker.word.adjective().slice(1)} House`
+    : null
 
   return {
     ...addressLine1,
     line2,
     city: faker.helpers.arrayElement(nearbyAreas),
-    postcode: generateNearbyPostcode(bsu.address.postcode)
+    postcode: generateNearbyPostcode(bsu.address.postcode),
   }
 }
 
 module.exports = {
-  generateBSUAppropriateAddress
-};
+  generateBSUAppropriateAddress,
+}
