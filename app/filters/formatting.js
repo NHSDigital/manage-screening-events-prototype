@@ -16,25 +16,25 @@
 const formatAnswer = (value, options = {}) => {
   const {
     yesValue = null,
-    noText = "No",
-    notAnsweredText = "Not answered",
-    yesPrefix = "Yes"
-  } = options;
+    noText = 'No',
+    notAnsweredText = 'Not answered',
+    yesPrefix = 'Yes',
+  } = options
 
   // Handle not answered cases
   if (value === null || value === undefined || value === '') {
-    return notAnsweredText;
+    return notAnsweredText
   }
 
   // Handle explicit no values
-  if (value === "no" || value === "false" || value === false) {
-    return noText;
+  if (value === 'no' || value === 'false' || value === false) {
+    return noText
   }
-  
+
   // For any truthy value (includes "yes", true, etc)
-  return yesValue ? `${yesPrefix} - ${yesValue}` : yesPrefix;
-};
+  return yesValue ? `${yesPrefix} - ${yesValue}` : yesPrefix
+}
 
 module.exports = {
-  formatAnswer
-};
+  formatAnswer,
+}

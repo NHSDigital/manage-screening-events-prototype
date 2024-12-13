@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('fs')
+const path = require('path')
 
 module.exports = function (env) { /* eslint-disable-line func-names,no-unused-vars */
   /**
@@ -8,34 +8,33 @@ module.exports = function (env) { /* eslint-disable-line func-names,no-unused-va
    * gov.uk core filters by creating filter methods of the same name.
    * @type {Object}
    */
-  const filters = {};
+  const filters = {}
 
   // Get all files from utils directory
-  const utilsPath = path.join(__dirname, 'lib/utils');
-  const filtersPath = path.join(__dirname, 'filters');
+  const utilsPath = path.join(__dirname, 'lib/utils')
+  const filtersPath = path.join(__dirname, 'filters')
 
   const folderPaths = [utilsPath, filtersPath]
-  
+
   try {
     folderPaths.forEach(folderPath => {
-      const files = fs.readdirSync(folderPath);
-      
+      const files = fs.readdirSync(folderPath)
+
       files.forEach(file => {
         if (path.extname(file) === '.js') {
-          const module = require(path.join(folderPath, file));
-          
+          const module = require(path.join(folderPath, file))
+
           Object.entries(module).forEach(([name, func]) => {
             if (typeof func === 'function') {
-              filters[name] = func;
+              filters[name] = func
             }
-          });
+          })
         }
-      });
-    });
-  } 
-  catch (err) {
-    console.warn('Error loading filters:', err);
+      })
+    })
+  } catch (err) {
+    console.warn('Error loading filters:', err)
   }
 
-  return filters;
-};
+  return filters
+}

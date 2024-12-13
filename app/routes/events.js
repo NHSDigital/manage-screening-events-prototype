@@ -1,18 +1,17 @@
 // app/routes/events.js
 
-
 /**
  * Get single event and its related data
  */
-function getEventData(data, clinicId, eventId) {
+function getEventData (data, clinicId, eventId) {
   const clinic = data.clinics.find(c => c.id === clinicId)
-  
+
   if (!clinic) {
     return null
   }
 
   const event = data.events.find(e => e.id === eventId && e.clinicId === clinicId)
-  
+
   if (!event) {
     return null
   }
@@ -24,12 +23,12 @@ function getEventData(data, clinicId, eventId) {
     clinic,
     event,
     participant,
-    unit
+    unit,
   }
 }
 
 // Update event status and add to history
-function updateEventStatus(event, newStatus) {
+function updateEventStatus (event, newStatus) {
   return {
     ...event,
     status: newStatus,
@@ -37,17 +36,15 @@ function updateEventStatus(event, newStatus) {
       ...event.statusHistory,
       {
         status: newStatus,
-        timestamp: new Date().toISOString()
-      }
-    ]
+        timestamp: new Date().toISOString(),
+      },
+    ],
   }
 }
 
 module.exports = router => {
-
   // Set clinics to active in nav for all urls starting with /clinics
   router.use('/clinics/:clinicId/events/:eventId', (req, res, next) => {
-    const data = req.session.data
     const eventData = getEventData(req.session.data, req.params.clinicId, req.params.eventId)
 
     if (!eventData) {
@@ -71,15 +68,15 @@ module.exports = router => {
     // }
 
     res.locals.eventData = eventData
-    res.locals.clinic = eventData.clinic,
-    res.locals.event = eventData.event,
-    res.locals.participant = eventData.participant,
-    res.locals.unit = eventData.unit,
-    res.locals.clinicId = req.params.clinicId,
+    res.locals.clinic = eventData.clinic
+    res.locals.event = eventData.event
+    res.locals.participant = eventData.participant
+    res.locals.unit = eventData.unit
+    res.locals.clinicId = req.params.clinicId
     res.locals.eventId = req.params.eventId
 
-    next();
-  });
+    next()
+  })
 
   // Event within clinic context
   router.get('/clinics/:clinicId/events/:eventId', (req, res) => {
@@ -98,10 +95,9 @@ module.exports = router => {
 
     const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
 
-    if (!canBeginScreening){
+    if (!canBeginScreening) {
       res.redirect(`/clinics/${clinicId}/events/${eventId}`)
-    }
-    else if (canBeginScreening == 'yes'){
+    } else if (canBeginScreening === 'yes') {
       if (req.session.data.events[eventIndex].status !== 'checked_in') {
         req.session.data.events[eventIndex] = updateEventStatus(
           req.session.data.events[eventIndex],
@@ -109,25 +105,19 @@ module.exports = router => {
         )
       }
       res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information`)
-
-    }
-    else {
+    } else {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
     }
-
   })
 
   const MAMMOGRAPHY_VIEWS = ['medical-information', 'images', 'imaging', 'attended-not-screened-reason']
 
   // Event within clinic context
   router.get('/clinics/:clinicId/events/:eventId/:view', (req, res, next) => {
-
-    if (MAMMOGRAPHY_VIEWS.some(view => view == req.params.view)) {
+    if (MAMMOGRAPHY_VIEWS.some(view => view === req.params.view)) {
       res.render(`events/mammography/${req.params.view}`, {
       })
-    }
-    else next()
-
+    } else next()
   })
 
   // // Advance status to attened / complete
@@ -164,5 +154,4 @@ module.exports = router => {
 
     res.redirect(`/clinics/${clinicId}/events/${eventId}`)
   })
-
-};
+}

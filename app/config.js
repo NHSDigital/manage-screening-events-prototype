@@ -1,6 +1,5 @@
 // Use this file to change prototype configuration.
-const path = require('path');
-
+const path = require('path')
 
 module.exports = {
   // Service name
@@ -20,7 +19,7 @@ module.exports = {
   useDocumentation: true,
 
   paths: {
-    generatedData: path.join(__dirname, 'data/generated')
+    generatedData: path.join(__dirname, 'data/generated'),
   },
 
   // Clinic settings
@@ -42,21 +41,21 @@ module.exports = {
   screening: {
     outcomes: {
       screening: {
-        'clear': 0.95,
-        'needs_further_tests': 0.04,
-        'cancer_detected': 0.01
+        clear: 0.95,
+        needs_further_tests: 0.04,
+        cancer_detected: 0.01,
       },
       assessment: {
-        'clear': 0.4,
-        'needs_further_tests': 0.45,
-        'cancer_detected': 0.15
-      }
-    }
+        clear: 0.4,
+        needs_further_tests: 0.45,
+        cancer_detected: 0.15,
+      },
+    },
   },
 
   // Data generation settings
   generation: {
     numberOfParticipants: 1000,
     bookingProbability: 0.8, // 80% of slots are booked
-  }
-};
+  },
+}

@@ -10,7 +10,9 @@
     "test": "jest --coverage=true",
     "prewatch": "gulp build",
     "watch": "gulp",
-    "lint:js": "eslint -c ./linters/.eslintrc.js app.js middleware/**/*.js lib/**/*.js app/*.js docs/*.js"
+    "lint:js-all": "eslint -c ./linters/.eslintrc.js app.js middleware/**/*.js lib/**/*.js app/*.js docs/*.js",
+    "lint:js-app": "eslint -c ./linters/.eslintrc.js app/**/*.js",
+    "lint:js-app:fix": "eslint -c ./linters/.eslintrc.js app/**/*.js --fix"
   },
   "author": "https://github.com/nhsuk/",
   "license": "MIT",
@@ -45,7 +47,10 @@
   "devDependencies": {
     "eslint": "^8.56.0",
     "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.6.0",
     "jest": "^29.7.0"
   },
   "engines": {
