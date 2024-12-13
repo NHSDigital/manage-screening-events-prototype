@@ -1,6 +1,6 @@
 // app/lib/utils/clinics.js
-const dayjs = require('dayjs');
 
+const dayjs = require('dayjs')
 
 const config = require('../../config');
 

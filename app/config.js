@@ -1,3 +1,5 @@
+// app/config.js
+
 // Use this file to change prototype configuration.
 const path = require('path')
 

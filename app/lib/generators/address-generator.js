@@ -1,4 +1,4 @@
-// app/lib/utils/address-generator.js
+// app/lib/generators/address-generator.js
 
 const { faker } = require('@faker-js/faker');
 

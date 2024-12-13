@@ -1,3 +1,5 @@
+// app/data/users.js
+
 module.exports = [
   {
     firstName: 'Jane',

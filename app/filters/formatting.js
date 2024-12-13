@@ -1,3 +1,5 @@
+// app/filers/formatting.js
+
 /**
  * Format a yes/no/not answered response with optional additional details
  * @param {string|boolean} value - The response value to format

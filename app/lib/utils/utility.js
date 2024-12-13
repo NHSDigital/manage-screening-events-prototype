@@ -1,4 +1,4 @@
-// app/lib/utils/nunjucks.js
+// app/lib/utils/utility.js
 
 /**
  * Coerces a value to boolean, handling common web cases. Useful for converting json / html attributes from strings to their appropriate boolean values.

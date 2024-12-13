@@ -1,4 +1,5 @@
 // app/lib/generators/people-generator.js
+
 const { faker } = require('@faker-js/faker');
 const generateId = require('../utils/id-generator');
 const weighted = require('weighted');

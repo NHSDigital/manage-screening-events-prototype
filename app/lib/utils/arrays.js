@@ -1,5 +1,6 @@
 // app/lib/utils/arrays.js
-const _ = require('lodash');
+
+const _ = require('lodash')
 
 
 /**
