@@ -29,6 +29,9 @@ const determineclinicType = (location, breastScreeningUnit) => {
 
 const generateTimeSlots = (date, sessionTimes, clinicType) => {
   const { slotDurationMinutes } = config.clinics
+  const today = dayjs().startOf('day')
+  const clinicDate = dayjs(date).startOf('day')
+  const isToday = clinicDate.isSame(today)
 
   const slots = []
   const startTime = new Date(`${date.toISOString().split('T')[0]}T${sessionTimes.startTime}`)
@@ -36,12 +39,35 @@ const generateTimeSlots = (date, sessionTimes, clinicType) => {
 
   const currentTime = new Date(startTime)
 
+  // Calculate how many slots should be double-booked
+  const totalSlots = Math.floor((endTime - startTime) / (slotDurationMinutes * 60000))
+  let doubleBookedSlotsNeeded = 0
+
+  // Screening clinics can be 'smart' - allows for some overbooking
+  // Scope to 'today' only to limit the number for prototype performance
+  if (isToday && clinicType === 'screening') {
+    const targetBookingPercent = config.clinics.targetBookingPercent
+    const extraBookingsNeeded = Math.ceil((targetBookingPercent - 100) * totalSlots / 100)
+    doubleBookedSlotsNeeded = extraBookingsNeeded
+  }
+
+  // Create array of indices that will be double-booked
+  const doubleBookedSlotIndices = new Set()
+  while (doubleBookedSlotIndices.size < doubleBookedSlotsNeeded) {
+    const randomIndex = Math.floor(Math.random() * totalSlots)
+    doubleBookedSlotIndices.add(randomIndex)
+  }
+
   // eslint-disable-next-line no-unmodified-loop-condition
+  let slotIndex = 0
   while (currentTime < endTime) {
     const slotId = generateId()
     const slotStartTime = new Date(currentTime)
     const slotEndTime = new Date(currentTime)
     slotEndTime.setMinutes(slotEndTime.getMinutes() + slotDurationMinutes)
+
+    // Determine if this slot should be double-booked
+    const capacity = doubleBookedSlotIndices.has(slotIndex) ? 2 : 1
 
     slots.push({
       id: slotId,
@@ -49,13 +75,12 @@ const generateTimeSlots = (date, sessionTimes, clinicType) => {
       endDateTime: slotEndTime.toISOString(),
       duration: slotDurationMinutes,
       type: clinicType,
-      // capacity: 1,
-      // Don't support smart clinics yet
-      capacity: clinicType === 'assessment' ? 1 : 2, // Assessment clinics don't double book
+      capacity,
       bookedCount: 0,
       period: `${sessionTimes.startTime}-${sessionTimes.endTime}`,
     })
     currentTime.setMinutes(currentTime.getMinutes() + slotDurationMinutes)
+    slotIndex++
   }
   return slots
 }
@@ -109,6 +134,14 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes) => {
   const clinicType = determineclinicType(location, breastScreeningUnit)
   const slots = generateTimeSlots(date, sessionTimes, clinicType)
 
+  // Check if clinic is for today
+  const today = dayjs().startOf('day')
+  const clinicDate = dayjs(date).startOf('day')
+  const isToday = clinicDate.isSame(today)
+
+  // Calculate total slots based on capacity
+  const totalSlots = slots.length * (isToday && clinicType !== 'assessment' ? 2 : 1)
+
   return {
     id: generateId(),
     date: date.toISOString().split('T')[0],
@@ -127,9 +160,7 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes) => {
     targetCapacity: {
       bookingPercent: clinicType === 'assessment' ? 100 : config.clinics.targetBookingPercent,
       attendancePercent: clinicType === 'assessment' ? 95 : config.clinics.targetAttendancePercent,
-      // totalSlots: slots.length,
-      // not supporting Smart clinics yet
-      totalSlots: slots.length * (clinicType === 'assessment' ? 1 : 2),
+      totalSlots,
     },
     notes: null,
     sessionTimes,
