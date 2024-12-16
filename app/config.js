@@ -1,3 +1,5 @@
+// app/config.js
+
 // Use this file to change prototype configuration.
 const path = require('path')
 
@@ -28,7 +30,7 @@ module.exports = {
     slotDurationMinutes: 8,
 
     // Target percentages
-    targetBookingPercent: 120, // 150% represents overbooking (e.g. 60 bookings for 40 slots)
+    targetBookingPercent: 130, // 150% represents overbooking (e.g. 60 bookings for 40 slots)
     targetAttendancePercent: 100, // 100% of original capacity (not overbooking)
 
     // Date range for generating data

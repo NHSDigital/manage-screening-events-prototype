@@ -1,6 +1,6 @@
 // app/lib/utils/arrays.js
-const _ = require('lodash');
 
+const _ = require('lodash')
 
 /**
  * Find an object by ID in an array
@@ -9,12 +9,12 @@ const _ = require('lodash');
  * @returns {Object} Found object or undefined
  */
 const findById = (array, id) => {
-  if (!array || !Array.isArray(array)) return undefined;
-  return array.find(item => item.id === id);
-};
+  if (!array || !Array.isArray(array)) return undefined
+  return array.find(item => item.id === id)
+}
 
 const push = (array, item) => {
-  let newArray = [...array]
+  const newArray = [...array]
   newArray.push(_.cloneDeep(item)) // clone needed to stop this mutating original
   return newArray
 }
@@ -25,20 +25,20 @@ const push = (array, item) => {
  * @returns {Array|string|undefined} Filtered items or undefined if empty
  */
 const removeEmpty = (items) => {
-  if (!items) return;
-  
+  if (!items) return
+
   if (_.isString(items)) {
-    return items.trim() || undefined;
+    return items.trim() || undefined
   }
-  
+
   if (_.isArray(items)) {
-    const filtered = items.filter(item => item && item !== "");
-    return filtered.length ? filtered : undefined;
+    const filtered = items.filter(item => item && item !== '')
+    return filtered.length ? filtered : undefined
   }
-};
+}
 
 module.exports = {
   push,
   removeEmpty,
-  findById
-};
+  findById,
+}

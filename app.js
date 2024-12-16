@@ -120,14 +120,11 @@ if (useCookieSessionStore === 'true' && !onlyDocumentation) {
     store: new FileStore({
       path: sessionPath,
       logFn: (message) => {
-        // Suppress noisy session cleanup logs
-        if (message.endsWith('Deleting expired sessions')) {
+        // Suppress all expected session-related messages
+        if (message.endsWith('Deleting expired sessions') || message.includes('ENOENT')) {
           return
         }
-        if (message.includes('ENOENT')) {
-          console.error('Warning: Please use different working directories for your prototypes to avoid session clashes')
-          return
-        }
+        // Only log unexpected issues
         console.log(message)
       }
     })

@@ -6,10 +6,10 @@
  * @returns {string} Sentence case string
  */
 const sentenceCase = (input) => {
-  if (!input) return '';
-  if (typeof input !== 'string') return input;
-  return input.charAt(0).toUpperCase() + input.slice(1);
-};
+  if (!input) return ''
+  if (typeof input !== 'string') return input
+  return input.charAt(0).toUpperCase() + input.slice(1)
+}
 
 /**
  * Convert string to start with lowercase
@@ -17,10 +17,10 @@ const sentenceCase = (input) => {
  * @returns {string} String starting with lowercase
  */
 const startLowerCase = (input) => {
-  if (!input) return '';
-  if (typeof input !== 'string') return input;
-  return input.charAt(0).toLowerCase() + input.slice(1);
-};
+  if (!input) return ''
+  if (typeof input !== 'string') return input
+  return input.charAt(0).toLowerCase() + input.slice(1)
+}
 
 /**
  * Separate words with hyphens
@@ -28,9 +28,9 @@ const startLowerCase = (input) => {
  * @returns {string} Hyphen-separated string
  */
 const kebabCase = (input) => {
-  if (!input) return '';
-  return input.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/\s+/g, '-').toLowerCase();
-};
+  if (!input) return ''
+  return input.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/\s+/g, '-').toLowerCase()
+}
 
 /**
  * Create URL-friendly slug from string
@@ -38,11 +38,11 @@ const kebabCase = (input) => {
  * @returns {string} URL-safe slug
  */
 const slugify = (input) => {
-  if (!input) return '';
+  if (!input) return ''
   return input.toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-};
+    .replace(/(^-|-$)/g, '')
+}
 
 /**
  * Split a string using a separator
@@ -51,9 +51,9 @@ const slugify = (input) => {
  * @returns {Array} Array of split strings
  */
 const split = (input, separator) => {
-  if (!input || typeof input !== 'string') return [];
-  return input.split(separator);
-};
+  if (!input || typeof input !== 'string') return []
+  return input.split(separator)
+}
 
 /**
  * Add appropriate indefinite article (a/an) before a word
@@ -61,9 +61,9 @@ const split = (input, separator) => {
  * @returns {string} Word with appropriate article
  */
 const addIndefiniteArticle = (input) => {
-  if (!input) return '';
-  return /^[aeiou]/i.test(input) ? `an ${input}` : `a ${input}`;
-};
+  if (!input) return ''
+  return /^[aeiou]/i.test(input) ? `an ${input}` : `a ${input}`
+}
 
 /**
  * Make a string possessive
@@ -71,18 +71,18 @@ const addIndefiniteArticle = (input) => {
  * @returns {string} Possessive form of string
  */
 const possessive = (input) => {
-  if (!input) return '';
-  const isAllUpperCase = input === input.toUpperCase();
-  const endsInS = /s$/i.test(input);
+  if (!input) return ''
+  const isAllUpperCase = input === input.toUpperCase()
+  const endsInS = /s$/i.test(input)
 
   if (endsInS) {
-    return `${input}'`;
+    return `${input}'`
   }
   if (isAllUpperCase) {
-    return `${input}'S`;
+    return `${input}'S`
   }
-  return `${input}'s`;
-};
+  return `${input}'s`
+}
 
 /**
  * Pad a number with leading zeros
@@ -91,9 +91,9 @@ const possessive = (input) => {
  * @returns {string} Padded number
  */
 const padDigits = (input, length) => {
-  if (!input) return '';
-  return input.toString().padStart(length, '0');
-};
+  if (!input) return ''
+  return input.toString().padStart(length, '0')
+}
 
 /**
  * Format number as currency with thousands separators
@@ -101,11 +101,11 @@ const padDigits = (input, length) => {
  * @returns {string} Formatted currency string
  */
 const formatCurrency = (input) => {
-  if (!input) return '–';
-  const value = parseInt(input, 10);
-  const formatted = Math.abs(value).toLocaleString();
-  return value < 0 ? `–£${formatted}` : `£${formatted}`;
-};
+  if (!input) return '–'
+  const value = parseInt(input, 10)
+  const formatted = Math.abs(value).toLocaleString()
+  return value < 0 ? `–£${formatted}` : `£${formatted}`
+}
 
 /**
  * Format number as currency without separators (for CSV)
@@ -113,10 +113,10 @@ const formatCurrency = (input) => {
  * @returns {string} Formatted currency string
  */
 const formatCurrencyForCsv = (input) => {
-  if (!input) return '0';
-  const value = parseInt(input, 10);
-  return value < 0 ? `-£${Math.abs(value)}` : `£${value}`;
-};
+  if (!input) return '0'
+  const value = parseInt(input, 10)
+  return value < 0 ? `-£${Math.abs(value)}` : `£${value}`
+}
 
 /**
  * Check if string starts with target
@@ -125,9 +125,9 @@ const formatCurrencyForCsv = (input) => {
  * @returns {boolean} Whether string starts with target
  */
 const startsWith = (input, target) => {
-  if (typeof input !== 'string') return false;
-  return input.startsWith(target);
-};
+  if (typeof input !== 'string') return false
+  return input.startsWith(target)
+}
 
 /**
  * Check if value is a string
@@ -135,9 +135,8 @@ const startsWith = (input, target) => {
  * @returns {boolean} Whether value is a string
  */
 const isString = (input) => {
-  return typeof input === 'string';
-};
-
+  return typeof input === 'string'
+}
 
 /**
  * Format separated words as a sentence
@@ -147,15 +146,14 @@ const isString = (input) => {
  * @returns {string} Formatted string as words
  */
 const formatWords = (input, separator = '_') => {
-  if (!input) return '';
-  if (typeof input !== 'string') return input;
-  
+  if (!input) return ''
+  if (typeof input !== 'string') return input
+
   return input
     .split(separator)
     .map(word => word.toLowerCase())
     .join(' ')
-    // .replace(/^./, firstChar => firstChar.toUpperCase());
-};
+}
 
 /**
  * Support for template literals in Nunjucks
@@ -163,9 +161,10 @@ const formatWords = (input, separator = '_') => {
  * @param {string} str - Template string
  * @returns {string} Processed string with variables replaced
  */
-const stringLiteral = function(str) {
-  return (new Function('with (this) { return `' + str + '` }')).call(this.ctx);
-};
+const stringLiteral = function (str) {
+  // eslint-disable-next-line no-new-func
+  return (new Function('with (this) { return `' + str + '` }')).call(this.ctx)
+}
 
 /**
  * Wrap string in a no-wrap span
@@ -173,9 +172,9 @@ const stringLiteral = function(str) {
  * @returns {string} HTML string with no-wrap class
  */
 const noWrap = (input) => {
-  if (!input) return '';
-  return `<span class="app-nowrap">${input}</span>`;
-};
+  if (!input) return ''
+  return `<span class="app-nowrap">${input}</span>`
+}
 
 /**
  * Wrap string in a no-wrap span
@@ -183,9 +182,9 @@ const noWrap = (input) => {
  * @returns {string} HTML string with no-wrap class
  */
 const asHint = (input) => {
-  if (!input) return '';
-  return `<span class="app-text-grey">${input}</span>`;
-};
+  if (!input) return ''
+  return `<span class="app-text-grey">${input}</span>`
+}
 
 /**
  * Format phone number for display with spaces
@@ -193,15 +192,15 @@ const asHint = (input) => {
  * @returns {string} Formatted phone number
  */
 const formatPhoneNumber = (phoneNumber) => {
-  if (!phoneNumber) return '';
-  if (typeof phoneNumber !== 'string') return phoneNumber;
+  if (!phoneNumber) return ''
+  if (typeof phoneNumber !== 'string') return phoneNumber
 
   if (phoneNumber.startsWith('07')) {
-    return `${phoneNumber.slice(0, 5)} ${phoneNumber.slice(5)}`;
+    return `${phoneNumber.slice(0, 5)} ${phoneNumber.slice(5)}`
   }
 
-  return `${phoneNumber.slice(0, 4)} ${phoneNumber.slice(4, 7)} ${phoneNumber.slice(7)}`;
-};
+  return `${phoneNumber.slice(0, 4)} ${phoneNumber.slice(4, 7)} ${phoneNumber.slice(7)}`
+}
 
 /**
  * Format NHS number with spaces (3-3-4 format)
@@ -209,15 +208,15 @@ const formatPhoneNumber = (phoneNumber) => {
  * @returns {string} Formatted NHS number or original input if invalid
  */
 const formatNhsNumber = (input) => {
-  if (!input) return '';
-  const nhsStr = input.toString().replace(/\s/g, '');
-  
+  if (!input) return ''
+  const nhsStr = input.toString().replace(/\s/g, '')
+
   if (!/^\d{10}$/.test(nhsStr)) {
-    return input;
+    return input
   }
 
-  return `${nhsStr.slice(0,3)} ${nhsStr.slice(3,6)} ${nhsStr.slice(6)}`;
-};
+  return `${nhsStr.slice(0, 3)} ${nhsStr.slice(3, 6)} ${nhsStr.slice(6)}`
+}
 
 // Example usage:
 // formatNhsNumber('4857773456') // returns '485 777 3456'
@@ -243,4 +242,4 @@ module.exports = {
   startsWith,
   stringLiteral,
   formatPhoneNumber,
-};
+}

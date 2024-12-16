@@ -1,5 +1,7 @@
 // app/lib/generate-seed-data.js
-// node app/lib/generate-seed-data.js
+
+// to run: node app/lib/generate-seed-data.js
+// can also be run from ui at localhost:3000/settings
 
 const dayjs = require('dayjs')
 const fs = require('fs')

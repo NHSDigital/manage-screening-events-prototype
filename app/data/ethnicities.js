@@ -1,3 +1,5 @@
+// app/data/ethnicities.js
+
 module.exports = {
   'Asian or Asian British': [
     'Bangladeshi',
