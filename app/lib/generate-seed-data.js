@@ -16,11 +16,49 @@ const { generateEvent } = require('./generators/event-generator')
 const breastScreeningUnits = require('../data/breast-screening-units')
 const ethnicities = require('../data/ethnicities')
 
-const generateSnapshot = (date, allParticipants, unit) => {
+// Hardcoded scenarios for user research
+const testScenarios = require('../data/test-scenarios')
+
+// Find a slot  near a target time
+// Used by test scenarios so we can populate a slot at a given time
+const findNearestSlot = (slots, targetTime) => {
+  if (!targetTime) return null
+
+  const [targetHour, targetMinute] = targetTime.split(':').map(Number)
+  const targetMinutes = targetHour * 60 + targetMinute
+
+  return slots.reduce((nearest, slot) => {
+    const slotTime = dayjs(slot.dateTime)
+    const slotMinutes = slotTime.hour() * 60 + slotTime.minute()
+    
+    if (!nearest) return slot
+
+    const currentDiff = Math.abs(targetMinutes - slotMinutes)
+    const nearestDiff = Math.abs(
+      targetMinutes - 
+      (dayjs(nearest.dateTime).hour() * 60 + dayjs(nearest.dateTime).minute())
+    )
+
+    return currentDiff < nearestDiff ? slot : nearest
+  }, null)
+}
+
+const generateClinicsForDay = (date, allParticipants, unit) => {
   const clinics = []
   const events = []
   const usedParticipantsInSnapshot = new Set()
   const participants = [...allParticipants]
+
+  // Check if this snapshot date is for the recent period (not historical)
+  const isRecentSnapshot = dayjs(date).isAfter(dayjs().subtract(1, 'month'))
+
+  // Only look for test scenarios in recent snapshots
+  const testScenariosForDay = isRecentSnapshot 
+    ? testScenarios.filter(scenario => {
+        const targetDate = dayjs().startOf('day').add(scenario.scheduling.whenRelativeToToday, 'day')
+        return targetDate.isSame(dayjs(date).startOf('day'), 'day')
+      })
+    : []
 
   // Pre-filter eligible participants once
   const clinicDate = dayjs(date)
@@ -29,55 +67,86 @@ const generateSnapshot = (date, allParticipants, unit) => {
     return age >= 50 && age <= 70
   })
 
-  // Generate a 5 days of clinics
-  for (let i = 0; i < config.clinics.daysToGenerate; i++) {
-    const clinicDate = dayjs(date).add(i, 'day')
-    const newClinics = generateClinicsForBSU({
-      date: clinicDate.toDate(),
-      breastScreeningUnit: unit,
-    })
+  // Generate clinics for this day
+  const newClinics = generateClinicsForBSU({
+    date: date.toDate(),
+    breastScreeningUnit: unit,
+  })
 
-    newClinics.forEach(clinic => {
-      const bookableSlots = clinic.slots
-        .filter(() => Math.random() < config.generation.bookingProbability)
+  // For test scenarios, only use first clinic of the day
+  if (testScenariosForDay.length > 0 && newClinics.length > 0) {
+    const firstClinic = newClinics[0]
+    
+    testScenariosForDay.forEach(scenario => {
+      const participant = participants.find(p => p.id === scenario.participant.id)
+      if (!participant) return
 
-      bookableSlots.forEach(slot => {
-        // Filter from pre-filtered eligible participants
-        const availableParticipants = eligibleParticipants.filter(p =>
-          !usedParticipantsInSnapshot.has(p.id)
-        )
+      const slot = scenario.scheduling.slotIndex !== undefined
+        ? firstClinic.slots[scenario.scheduling.slotIndex]
+        : findNearestSlot(firstClinic.slots, scenario.scheduling.approximateTime)
 
-        // If we need more participants, create them
-        if (availableParticipants.length === 0) {
-          const newParticipant = generateParticipant({
-            ethnicities,
-            breastScreeningUnits: [unit],
-          })
-          participants.push(newParticipant)
-          availableParticipants.push(newParticipant)
-        }
+      if (!slot) {
+        console.log(`Warning: Could not find suitable slot for test participant ${participant.id}`)
+        return
+      }
 
-        for (let i = 0; i < slot.capacity; i++) {
-          if (availableParticipants.length === 0) break
-          const randomIndex = Math.floor(Math.random() * availableParticipants.length)
-          const participant = availableParticipants[randomIndex]
-
-          const event = generateEvent({
-            slot,
-            participant,
-            clinic,
-            outcomeWeights: config.screening.outcomes[clinic.clinicType],
-          })
-
-          events.push(event)
-          usedParticipantsInSnapshot.add(participant.id)
-          availableParticipants.splice(randomIndex, 1)
-        }
+      const event = generateEvent({
+        slot,
+        participant,
+        clinic: firstClinic,
+        outcomeWeights: config.screening.outcomes[firstClinic.clinicType],
+        forceStatus: scenario.scheduling.status,
       })
 
-      clinics.push(clinic)
+      events.push(event)
+      usedParticipantsInSnapshot.add(participant.id)
     })
   }
+
+  // Handle regular clinic slot allocation for all clinics
+  newClinics.forEach(clinic => {
+    // Continue with random slot allocation as before
+    const remainingSlots = clinic.slots
+      .filter(() => Math.random() < config.generation.bookingProbability)
+      // Filter out slots used by test participants
+      .filter(slot => !events.some(e => e.slotId === slot.id))
+
+    remainingSlots.forEach(slot => {
+      // Filter from pre-filtered eligible participants
+      const availableParticipants = eligibleParticipants.filter(p =>
+        !usedParticipantsInSnapshot.has(p.id)
+      )
+
+      // If we need more participants, create them
+      if (availableParticipants.length === 0) {
+        const newParticipant = generateParticipant({
+          ethnicities,
+          breastScreeningUnits: [unit],
+        })
+        participants.push(newParticipant)
+        availableParticipants.push(newParticipant)
+      }
+
+      for (let i = 0; i < slot.capacity; i++) {
+        if (availableParticipants.length === 0) break
+        const randomIndex = Math.floor(Math.random() * availableParticipants.length)
+        const participant = availableParticipants[randomIndex]
+
+        const event = generateEvent({
+          slot,
+          participant,
+          clinic,
+          outcomeWeights: config.screening.outcomes[clinic.clinicType],
+        })
+
+        events.push(event)
+        usedParticipantsInSnapshot.add(participant.id)
+        availableParticipants.splice(randomIndex, 1)
+      }
+    })
+
+    clinics.push(clinic)
+  })
 
   return {
     clinics,
@@ -91,24 +160,54 @@ const generateData = async () => {
     fs.mkdirSync(config.paths.generatedData, { recursive: true })
   }
 
-  console.log('Generating initial participants...')
-  const participants = Array.from(
+  // Create test participants first, using generateParticipant but with overrides
+  console.log('Generating test scenario participants...')
+  const testParticipants = testScenarios.map(scenario => {
+    return generateParticipant({
+      ethnicities,
+      breastScreeningUnits,
+      overrides: scenario.participant,
+    })
+  })
+
+  console.log('Generating random participants...')
+  const randomParticipants = Array.from(
     { length: config.generation.numberOfParticipants },
     () => generateParticipant({ ethnicities, breastScreeningUnits })
   )
 
+  // Combine test and random participants
+  const participants = [...testParticipants, ...randomParticipants]
+
   console.log('Generating clinics and events...')
   const today = dayjs().startOf('day')
-  const snapshots = [
-    today.subtract(9, 'year').add(3, 'month'),
-    today.subtract(6, 'year').add(2, 'month'),
-    today.subtract(3, 'year').add(1, 'month'),
-    today.subtract(config.clinics.daysBeforeToday, 'days'),
+
+  // Helper function to generate multiple days from a start date
+  const generateDayRange = (startDate, numberOfDays) => {
+    return Array.from(
+      { length: numberOfDays },
+      (_, i) => dayjs(startDate).add(i, 'days')
+    )
+  }
+
+  // Generate days for each historical period
+  const historicalSnapshots = [
+    ...generateDayRange(today.subtract(9, 'year').add(3, 'month'), config.clinics.daysToGenerate),
+    ...generateDayRange(today.subtract(6, 'year').add(2, 'month'), config.clinics.daysToGenerate),
+    ...generateDayRange(today.subtract(3, 'year').add(1, 'month'), config.clinics.daysToGenerate),
   ]
+
+  // Generate recent days
+  const recentSnapshots = generateDayRange(
+    today.subtract(config.clinics.daysBeforeToday, 'days'),
+    config.clinics.daysToGenerate
+  )
+
+  const snapshots = [...historicalSnapshots, ...recentSnapshots]
 
   // Generate all data in batches per BSU
   const allData = breastScreeningUnits.map(unit => {
-    const unitSnapshots = snapshots.map(date => generateSnapshot(date, participants, unit))
+    const unitSnapshots = snapshots.map(date => generateClinicsForDay(date, participants, unit))
     return {
       clinics: [].concat(...unitSnapshots.map(s => s.clinics)),
       events: [].concat(...unitSnapshots.map(s => s.events)),
@@ -123,6 +222,17 @@ const generateData = async () => {
 
   // Combine initial and new participants
   const finalParticipants = [...participants, ...allNewParticipants]
+
+  // Sort events by start time within each clinic
+  const sortedEvents = allEvents.sort((a, b) => {
+    // First sort by clinic ID to group events together
+    if (a.clinicId !== b.clinicId) {
+      return a.clinicId.localeCompare(b.clinicId)
+    }
+    // Then by start time within each clinic
+    return new Date(a.timing.startTime) - new Date(b.timing.startTime)
+  })
+
 
   // breastScreeningUnits.forEach(unit => {
   //   snapshots.forEach(date => {
@@ -147,7 +257,7 @@ const generateData = async () => {
       slots: clinic.slots.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime)),
     })),
   })
-  writeData('events.json', { events: allEvents })
+  writeData('events.json', { events: sortedEvents })
   writeData('generation-info.json', {
     generatedAt: new Date().toISOString(),
     stats: {

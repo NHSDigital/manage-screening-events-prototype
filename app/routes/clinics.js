@@ -25,12 +25,17 @@ function getClinicData (data, clinicId) {
     }
   })
 
+  // Sort events by appointment time
+  const sortedEvents = [...eventsWithParticipants].sort((a, b) => {
+    return new Date(a.timing.startTime) - new Date(b.timing.startTime)
+  })
+
   // Get screening unit details
   const unit = data.breastScreeningUnits.find(u => u.id === clinic.breastScreeningUnitId)
 
   return {
     clinic,
-    events: eventsWithParticipants,
+    events: sortedEvents,
     unit,
   }
 }
