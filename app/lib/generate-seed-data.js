@@ -19,7 +19,7 @@ const ethnicities = require('../data/ethnicities')
 // Hardcoded scenarios for user research
 const testScenarios = require('../data/test-scenarios')
 
-// Find a slot  near a target time
+// Find nearest slot at or after the target time
 // Used by test scenarios so we can populate a slot at a given time
 const findNearestSlot = (slots, targetTime) => {
   if (!targetTime) return null
@@ -27,7 +27,17 @@ const findNearestSlot = (slots, targetTime) => {
   const [targetHour, targetMinute] = targetTime.split(':').map(Number)
   const targetMinutes = targetHour * 60 + targetMinute
 
-  return slots.reduce((nearest, slot) => {
+  // Filter to only slots at or after target time
+  const eligibleSlots = slots.filter(slot => {
+    const slotTime = dayjs(slot.dateTime)
+    const slotMinutes = slotTime.hour() * 60 + slotTime.minute()
+    return slotMinutes >= targetMinutes
+  })
+
+  if (eligibleSlots.length === 0) return null
+
+  // Find the nearest from eligible slots
+  return eligibleSlots.reduce((nearest, slot) => {
     const slotTime = dayjs(slot.dateTime)
     const slotMinutes = slotTime.hour() * 60 + slotTime.minute()
     
@@ -40,7 +50,7 @@ const findNearestSlot = (slots, targetTime) => {
     )
 
     return currentDiff < nearestDiff ? slot : nearest
-  }, null)
+  })
 }
 
 const generateClinicsForDay = (date, allParticipants, unit) => {

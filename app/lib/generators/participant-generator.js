@@ -9,7 +9,7 @@ const _ = require('lodash')
 // List of possible extra needs
 const EXTRA_NEEDS = [
   'Agoraphobia',
-  'Breast implants',
+  // 'Breast implants', // needs consent journey that isn't designed yet
   'Learning difficulties',
   'Physical restriction',
   'Registered disabled',

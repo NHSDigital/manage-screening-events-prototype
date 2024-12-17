@@ -9,37 +9,38 @@
  */
 module.exports = [
   {
-    // The participant data matches our data model
-    participant: {
-      id: 'aab45c3d',
-      demographicInformation: {
-        firstName: 'Susan',
-        lastName: 'Smith',
-        middleName: null,
-        dateOfBirth: '1964-03-15',
-      },
-      extraNeeds: ['Wheelchair user'],
-    },
-    // Scheduling is separate as it relates to clinic/event generation
-    scheduling: {
-      whenRelativeToToday: 0,
-      status: 'checked_in',
-      slotIndex: 20,
-    },
-  },
-  {
     participant: {
       id: 'bc724e9f',
       demographicInformation: {
         firstName: 'Janet',
+        middleName: null,
         lastName: 'Williams',
         dateOfBirth: '1959-07-22',
       },
+      extraNeeds: ['Wheelchair user'],
     },
     scheduling: {
       whenRelativeToToday: 0,
       status: 'scheduled', 
       approximateTime: '10:30',
+    },
+  },
+  {
+    participant: {
+      id: 'aab45c3d',
+      demographicInformation: {
+        firstName: 'Dianna',
+        lastName: 'McIntosh',
+        middleName: 'Rose',
+        dateOfBirth: '1964-03-15',
+      },
+      extraNeeds: null,
+    },
+    scheduling: {
+      whenRelativeToToday: 0,
+      status: 'checked_in',
+      approximateTime: '11:30',
+      // slotIndex: 20,
     },
   },
 ]

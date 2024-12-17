@@ -17,13 +17,13 @@ module.exports = [
     clinicTypes: ['screening', 'assessment'], // Can do both
     // Default operating hours for the BSU
     sessionPatterns: [
-      {
-        name: 'full_day',
-        type: 'single',
-        sessions: [
-          { startTime: '09:00', endTime: '17:00' },
-        ],
-      },
+      // {
+      //   name: 'full_day',
+      //   type: 'single',
+      //   sessions: [
+      //     { startTime: '09:00', endTime: '17:00' },
+      //   ],
+      // },
       {
         name: 'split_day',
         type: 'paired',
