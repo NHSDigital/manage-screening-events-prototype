@@ -6,7 +6,7 @@ const dayjs = require('dayjs')
 const weighted = require('weighted')
 const config = require('../../config')
 
-const determineclinicType = (location, breastScreeningUnit) => {
+const determineClinicType = (location, breastScreeningUnit) => {
   // First check location-specific service types
   const clinicTypes = location.clinicTypes || breastScreeningUnit.clinicTypes
 
@@ -20,10 +20,12 @@ const determineclinicType = (location, breastScreeningUnit) => {
     return clinicTypes[0]
   }
 
-  // For locations that can do both, weight towards screening
+  // For locations that can do both, equal weighting
+  // In practice we'll have more screening because mobile units
+  // don't doo assessment
   return weighted.select({
-    screening: 0.8,
-    assessment: 0.2,
+    screening: 0.5,
+    assessment: 0.5,
   })
 }
 
@@ -130,8 +132,8 @@ const determineSessionType = (sessionTimes) => {
   return startHour < 12 ? 'morning' : 'afternoon'
 }
 
-const generateClinic = (date, location, breastScreeningUnit, sessionTimes) => {
-  const clinicType = determineclinicType(location, breastScreeningUnit)
+const generateClinic = (date, location, breastScreeningUnit, sessionTimes, overrides = null) => {
+  const clinicType = overrides?.clinicType || determineClinicType(location, breastScreeningUnit)
   const slots = generateTimeSlots(date, sessionTimes, clinicType)
 
   // Check if clinic is for today
@@ -172,8 +174,11 @@ const generateClinicsForBSU = ({ date, breastScreeningUnit }) => {
   // Each location has an 95% chance of running clinics on any given day
   const selectedLocations = breastScreeningUnit.locations.filter(() => Math.random() < 0.95)
 
+  // Check if this is today's generation
+  const isToday = dayjs(date).startOf('day').isSame(dayjs().startOf('day'))
+
   // Generate clinics for each selected location
-  return selectedLocations.flatMap(location => {
+  return selectedLocations.flatMap((location, locationIndex) => {
     // Use location-specific patterns if available, otherwise use BSU patterns
     const sessionPatterns = location.sessionPatterns || breastScreeningUnit.sessionPatterns
 
@@ -182,11 +187,25 @@ const generateClinicsForBSU = ({ date, breastScreeningUnit }) => {
 
     if (selectedPattern.type === 'single') {
       // For single sessions, create one clinic
-      return [generateClinic(date, location, breastScreeningUnit, selectedPattern.sessions[0])]
+      return [generateClinic(
+        date,
+        location,
+        breastScreeningUnit,
+        selectedPattern.sessions[0],
+        // Force first clinic of today to be screening
+        isToday && locationIndex === 0 ? { clinicType: 'screening' } : null
+)]
     } else {
       // For paired sessions, create two clinics
-      return selectedPattern.sessions.map(sessionTimes =>
-        generateClinic(date, location, breastScreeningUnit, sessionTimes)
+      return selectedPattern.sessions.map((sessionTimes, sessionIndex) =>
+        generateClinic(
+          date,
+          location,
+          breastScreeningUnit,
+          sessionTimes,
+          // Force first clinic of today to be screening
+          isToday && locationIndex === 0 && sessionIndex === 0 ? { clinicType: 'screening' } : null
+        )
       )
     }
   })

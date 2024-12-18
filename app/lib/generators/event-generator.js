@@ -54,7 +54,7 @@ const determineEventStatus = (slotDateTime, currentDateTime, attendanceWeights) 
   }
 }
 
-const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
+const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus = null }) => {
   // Parse dates once
   const [hours, minutes] = config.clinics.simulatedTime.split(':')
   const simulatedDateTime = dayjs().hour(parseInt(hours)).minute(parseInt(minutes))
@@ -72,6 +72,11 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
     ? [0.9, 0.015, 0]
     : [0.70, 0.25, 0.05]
 
+  // We'll use forceStatus if provided, otherwise calculate based on timing
+  const eventStatus = forceStatus || (isPast 
+    ? determineEventStatus(slotDateTime, simulatedDateTime, attendanceWeights)
+    : 'scheduled')
+
   const eventBase = {
     id: generateId(),
     participantId: participant.id,
@@ -83,7 +88,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
       endTime: endDateTime.toISOString(),
       duration,
     },
-    status: 'scheduled',
+    status: eventStatus,
     details: {
       screeningType: 'mammogram',
       machineId: generateId(),
@@ -102,43 +107,43 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights }) => {
     return eventBase
   }
 
-  const status = determineEventStatus(slotDateTime, simulatedDateTime, attendanceWeights)
-
-  const event = {
-    ...eventBase,
-    status,
-    details: {
-      ...eventBase.details,
-      imagesTaken: status === 'complete'
-        ? ['RCC', 'LCC', 'RMLO', 'LMLO']
-        : null,
-      notScreenedReason: status === 'attended_not_screened'
-        ? faker.helpers.arrayElement(NOT_SCREENED_REASONS)
-        : null,
-    },
-    statusHistory: generateStatusHistory(status, slotDateTime),
-  }
-
-  if (status === 'complete') {
-    const actualStartOffset = faker.number.int({ min: -5, max: 5 })
-
-    // For special events, allow more time variation
-    const durationOffset = isSpecialAppointment
-      ? faker.number.int({ min: -3, max: 10 })
-      : faker.number.int({ min: -3, max: 5 })
-
-    const actualStartTime = slotDateTime.add(actualStartOffset, 'minute')
-    const actualEndTime = actualStartTime.add(slot.duration + durationOffset, 'minute')
-
-    event.timing = {
-      ...event.timing,
-      actualStartTime: actualStartTime.toISOString(),
-      actualEndTime: actualEndTime.toISOString(),
-      actualDuration: actualEndTime.diff(actualStartTime, 'minute'),
+  // For past or forced statuses, add appropriate extra details
+  if (isPast || forceStatus) {
+    const event = {
+      ...eventBase,
+      details: {
+        ...eventBase.details,
+        imagesTaken: eventStatus === 'complete'
+          ? ['RCC', 'LCC', 'RMLO', 'LMLO']
+          : null,
+        notScreenedReason: eventStatus === 'attended_not_screened'
+          ? faker.helpers.arrayElement(NOT_SCREENED_REASONS)
+          : null,
+      },
     }
+
+    // Add timing details for completed appointments
+    if (eventStatus === 'complete') {
+      const actualStartOffset = faker.number.int({ min: -5, max: 5 })
+      const durationOffset = isSpecialAppointment
+        ? faker.number.int({ min: -3, max: 10 })
+        : faker.number.int({ min: -3, max: 5 })
+
+      const actualStartTime = slotDateTime.add(actualStartOffset, 'minute')
+      const actualEndTime = actualStartTime.add(slot.duration + durationOffset, 'minute')
+
+      event.timing = {
+        ...event.timing,
+        actualStartTime: actualStartTime.toISOString(),
+        actualEndTime: actualEndTime.toISOString(),
+        actualDuration: actualEndTime.diff(actualStartTime, 'minute'),
+      }
+    }
+
+    return event
   }
 
-  return event
+  return eventBase
 }
 
 const generateStatusHistory = (finalStatus, dateTime) => {

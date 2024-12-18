@@ -4,11 +4,12 @@ const { faker } = require('@faker-js/faker')
 const generateId = require('../utils/id-generator')
 const weighted = require('weighted')
 const { generateBSUAppropriateAddress } = require('./address-generator')
+const _ = require('lodash')
 
 // List of possible extra needs
 const EXTRA_NEEDS = [
   'Agoraphobia',
-  'Breast implants',
+  // 'Breast implants', // needs consent journey that isn't designed yet
   'Learning difficulties',
   'Physical restriction',
   'Registered disabled',
@@ -184,29 +185,27 @@ const generateParticipant = ({
   ethnicities,
   breastScreeningUnits,
   extraNeedsConfig = { probability: 0.08 },
+  overrides = null,
 }) => {
+
   const id = generateId()
 
-  // Randomly assign to a BSU
-  const assignedBSU = faker.helpers.arrayElement(breastScreeningUnits)
+  // First get or generate BSU
+  const assignedBSU = overrides?.assignedBSU 
+    ? breastScreeningUnits.find(bsu => bsu.id === overrides.assignedBSU)
+    : faker.helpers.arrayElement(breastScreeningUnits)
 
-  // Define ethnicity distributions
-  const ethnicityGroups = Object.keys(ethnicities)
-  const ethnicityWeights = [0.85, 0.08, 0.03, 0.02, 0.02]
+  const ethnicGroup = weighted.select(Object.keys(ethnicities), [0.85, 0.08, 0.03, 0.02, 0.02])
 
-  const ethnicGroup = weighted.select(ethnicityGroups, ethnicityWeights)
-  const ethnicBackground = faker.helpers.arrayElement(ethnicities[ethnicGroup])
-
-  const middleName = Math.random() < 0.3 ? faker.person.firstName('female') : null
-
-  return {
-    id,
-    sxNumber: generateSXNumber(assignedBSU.abbreviation),
+  // Generate base random participant first
+  const baseParticipant = {
+    id: id,
+    sxNumber: generateSXNumber(faker.helpers.arrayElement(breastScreeningUnits).abbreviation),
     assignedBSU: assignedBSU.id,
     extraNeeds: generateExtraNeeds(extraNeedsConfig),
     demographicInformation: {
       firstName: faker.person.firstName('female'),
-      middleName,
+      middleName: Math.random() < 0.3 ? faker.person.firstName('female') : null,
       lastName: faker.person.lastName(),
       dateOfBirth: faker.date.birthdate({
         min: 50,
@@ -217,7 +216,7 @@ const generateParticipant = ({
       phone: generateUKPhoneNumber(),
       email: `${faker.internet.username().toLowerCase()}@example.com`,
       ethnicGroup,
-      ethnicBackground,
+      ethnicBackground: faker.helpers.arrayElement(ethnicities[ethnicGroup]),
     },
     medicalInformation: {
       nhsNumber: generateNHSNumber(),
@@ -234,6 +233,14 @@ const generateParticipant = ({
       medications: generateMedications(),
     },
   }
+
+  if (!overrides) {
+    return baseParticipant
+  }
+
+  // If we have overrides, do a deep merge excluding the scheduling info
+  const { scheduling, ...participantOverrides } = overrides
+  return _.merge({}, baseParticipant, participantOverrides)
 }
 
 // Modified family history generator to add more detail
