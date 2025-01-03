@@ -55,6 +55,8 @@
           <th class="nhsuk-table__header">Name</th>
           <th class="nhsuk-table__header">Postcode</th>
           <th class="nhsuk-table__header">NHS number</th>
+          <th class="nhsuk-table__header">Last screened</th>
+          <th class="nhsuk-table__header">Next screening</th>
         </tr>
       </thead>
       <tbody class="nhsuk-table__body">
@@ -65,7 +67,8 @@
                 {{ participant.demographicInformation.dateOfBirth | formatRelativeDate(true) }} old
               {% endset %}
               <a href="/participants/{{ participant.id }}" class="nhsuk-link">
-                {{ participant | getFullNameReversed }}
+                {# {{ participant | getFullNameReversed }} #}
+                {{ participant | getFullName }}
               </a><br>
               {{ dob | asHint }}
             </td>
@@ -73,6 +76,26 @@
               {{ participant.demographicInformation.address.postcode }}
             </td>
             <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber | formatNhsNumber | noWrap }}</td>
+            <td class="nhsuk-table__cell">
+              {% set mostRecentClinic = data | getParticipantMostRecentClinic(participant.id) %}
+              {% if mostRecentClinic %}
+                {{ mostRecentClinic | log }}
+                {{ mostRecentClinic.event.timing.startTime | formatDate }}<br>
+                {{ mostRecentClinic.event.timing.startTime | formatDate | formatRelativeDate | asHint }}
+              {% else %}
+                  {{ "Not known" | asHint }}
+              {% endif %}
+            </td>
+            <td class="nhsuk-table__cell">
+              {% set upcomingClinics = data | getParticipantUpcomingClinics(participant.id) %}
+              {% if upcomingClinics %}
+                {{ upcomingClinics | log }}
+                {{ upcomingClinics[0].event.timing.startTime | formatDate }}<br>
+                {{ upcomingClinics[0].event.timing.startTime | formatDate | formatRelativeDate | asHint }}
+              {% else %}
+                  {{ "Not known" | asHint }}
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>

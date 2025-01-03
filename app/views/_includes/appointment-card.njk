@@ -3,7 +3,7 @@
     {{ participant | getFullName }}
   </a>
 </p>
-{% if event.details.isSpecialAppointment %}<br>
+{% if event.details.isSpecialAppointment %}
   {{ tag({
     text: "Special appointment",
     classes: "nhsuk-tag--orange nhsuk-u-margin-top-2"
@@ -13,6 +13,12 @@
   DOB: {{ participant.demographicInformation.dateOfBirth | formatDate }} ({{ participant.demographicInformation.dateOfBirth | formatRelativeDate(true) }})
   <br>
   NHS Number: {{ participant.medicalInformation.nhsNumber | formatNhsNumber }}
+  <br>
+  {% set lastScreenedDate = data | getParticipantMostRecentClinicDate(participant.id) %}
+  {% if lastScreenedDate %}
+    Last screened: {{ lastScreenedDate | formatDate }} ({{ lastScreenedDate | formatRelativeDate }})
+  {% endif %}
+  
 {#   <br>
   SX Number: {{ participant.sxNumber }} #}
 </p>

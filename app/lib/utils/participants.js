@@ -69,33 +69,79 @@ const sortBySurname = (participants) => {
 }
 
 /**
- * Get clinic history for a participant
+ * Get clinic history for a participant with optional filters
  * @param {Object} data - Session data containing clinics and events
  * @param {string} participantId - Participant ID to get history for
- * @returns {Array} Array of clinic/event pairs
+ * @param {Object} options - Filter options
+ * @param {string} options.filter - Filter type: 'historic', 'upcoming', or 'all'
+ * @param {boolean} options.mostRecent - If true, returns only the most recent matching clinic
+ * @returns {Array|Object} Array of clinic/event pairs, or single most recent pair
  */
-const getParticipantClinicHistory = (data, participantId) => {
+const getParticipantClinicHistory = (data, participantId, options = {}) => {
+  const { filter = 'all', mostRecent = false } = options
+  
   if (!data?.events || !data?.clinics || !participantId) return []
 
-  const participantEvents = data.events.filter(event =>
-    event.participantId === participantId
-  )
-
-  // Get clinic details for each event
-  return participantEvents.map(event => {
-    const clinic = data.clinics.find(clinic => clinic.id === event.clinicId)
-    const unit = data.breastScreeningUnits.find(unit => unit.id === clinic.breastScreeningUnitId)
-    const location = unit.locations.find(location => location.id === clinic.locationId)
-    // console.log({location})
-
-    return {
-      clinic,
-      unit,
-      location,
-      event,
+  const today = new Date().setHours(0, 0, 0, 0)
+  
+  // Get participant events with clinic details
+  const history = data.events
+    .filter(event => event.participantId === participantId)
+    .map(event => {
+      const clinic = data.clinics.find(clinic => clinic.id === event.clinicId)
+      if (!clinic) return null
+      
+      const unit = data.breastScreeningUnits.find(unit => unit.id === clinic.breastScreeningUnitId)
+      const location = unit.locations.find(location => location.id === clinic.locationId)
+      
+      return {
+        clinic,
+        unit,
+        location,
+        event,
+      }
+    })
+    .filter(Boolean) // Remove null entries
+    
+  // Apply date filtering
+  const filtered = history.filter(item => {
+    const clinicDate = new Date(item.clinic.date).setHours(0, 0, 0, 0)
+    
+    switch (filter) {
+      case 'historic':
+        return clinicDate < today
+      case 'upcoming':
+        return clinicDate >= today
+      default:
+        return true
     }
-  }).filter(history => history.clinic) // Remove any with missing clinics
+  })
+  
+  // Sort by date, most recent first
+  const sorted = filtered.sort((a, b) => 
+    new Date(b.clinic.date) - new Date(a.clinic.date)
+  )
+  
+  return mostRecent ? sorted[0] || null : sorted
 }
+
+// Helper functions for common use cases
+const getParticipantMostRecentClinic = (data, participantId) => 
+  getParticipantClinicHistory(data, participantId, { filter: 'historic', mostRecent: true })
+
+const getParticipantMostRecentClinicDate = (data, participantId) => {
+  const clinic = getParticipantClinicHistory(data, participantId, { filter: 'historic', mostRecent: true })
+  if (clinic) {
+    return clinic.event.timing.startTime
+  }
+  else return false
+}
+
+const getParticipantHistoricClinics = (data, participantId) => 
+  getParticipantClinicHistory(data, participantId, { filter: 'historic' })
+
+const getParticipantUpcomingClinics = (data, participantId) => 
+  getParticipantClinicHistory(data, participantId, { filter: 'upcoming' })
 
 module.exports = {
   getFullName,
@@ -105,4 +151,8 @@ module.exports = {
   getAge,
   sortBySurname,
   getParticipantClinicHistory,
+  getParticipantMostRecentClinic,
+  getParticipantMostRecentClinicDate,
+  getParticipantHistoricClinics,
+  getParticipantUpcomingClinics
 }

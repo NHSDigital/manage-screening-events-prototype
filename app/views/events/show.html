@@ -21,6 +21,7 @@
 
   {% set activeTab = 'all' %}
 
+  {# Show tabs if we've done mammography #}
   {% if event.status == "complete" %}
     {% include "event-navigation.njk" %}
   {% endif %}
