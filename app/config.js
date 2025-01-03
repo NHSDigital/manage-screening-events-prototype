@@ -5,7 +5,7 @@ const path = require('path')
 
 module.exports = {
   // Service name
-  serviceName: 'Manage screening events',
+  serviceName: 'Manage breast screening',
 
   // Port to run nodemon on locally
   port: 2000,

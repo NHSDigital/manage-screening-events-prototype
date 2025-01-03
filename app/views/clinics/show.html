@@ -49,26 +49,39 @@
   {% if filteredEvents.length === 0 %}
     <p>No participants scheduled for this clinic.</p>
   {% else %}
+
+{#   {% for event in filteredEvents %}
+    {% set participant = data.participants | findById(event.participantId) %}
+    {% include "appointment-card.njk" %}
+  {% endfor %} #}
+
     {# <p>{{ filteredEvents.length }} scheduled participants</p> #}
 
     <table class="nhsuk-table">
       <thead class="nhsuk-table__head">
         <tr>
           <th class="nhsuk-table__header">Time</th>
-          <th class="nhsuk-table__header">Name</th>
+          <th class="nhsuk-table__header">Details</th>
           {# <th class="nhsuk-table__header">Postcode</th> #}
-          <th class="nhsuk-table__header">NHS number</th>
+          {# <th class="nhsuk-table__header">NHS number</th> #}
           <th class="nhsuk-table__header">Appointment status</th>
-          <th class="nhsuk-table__header">Actions</th>
+          {# <th class="nhsuk-table__header">Actions</th> #}
         </tr>
       </thead>
       <tbody class="nhsuk-table__body">
         {% for event in filteredEvents %}
           {% set participant = data.participants | findById(event.participantId) %}
+
           <tr>
+
+            {# Appointment time #}
             <td class="nhsuk-table__cell">{{ event.statusHistory[0].timestamp | formatTime }}</td>
+
+            {# Appointment details #}
             <td class="nhsuk-table__cell">
-              <a href="/clinics/{{ clinicId }}/events/{{ event.id }}" class="nhsuk-link">
+              {% include "appointment-card.njk" %}
+
+              {# <a href="/clinics/{{ clinicId }}/events/{{ event.id }}" class="nhsuk-link">
                 {{ participant | getFullName }}
               </a>
               {% if event.details.isSpecialAppointment %}<br>
@@ -76,22 +89,38 @@
                   text: "Special appointment",
                   classes: "nhsuk-tag--orange nhsuk-u-margin-top-2"
                 })}}
-              {% endif %}
+              {% endif %} #}
             </td>
-            <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber | formatNhsNumber | noWrap }}</td>
+
+            {# NHS Number #}
+            {# <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber | formatNhsNumber | noWrap }}</td> #}
+
+            {# Appointment status #}
             <td class="nhsuk-table__cell">
               {{ tag({
                 text: event.status | formatWords | sentenceCase,
                 classes: "nhsuk-tag--" + event.status | getStatusTagColour
               })}}
+
+              {% if event.status === 'scheduled' %}
+              <div class="nhsuk-u-margin-top-2">
+                {# <br> #}
+                <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}?currentFilter={{ currentFilter }}" class="nhsuk-link">
+                  {{ "Check in participant" | noWrap }}
+                </a>
+              </div>
+              
+              {% endif %}
             </td>
-            <td class="nhsuk-table__cell">
+
+            {# Check-in action #}
+            {# <td class="nhsuk-table__cell">
               {% if event.status === 'scheduled' %}
                 <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}?currentFilter={{ currentFilter }}" class="nhsuk-link">
                   {{ "Check in" | noWrap }}
                 </a>
               {% endif %}
-            </td>
+            </td> #}
           </tr>
         {% endfor %}
       </tbody>
