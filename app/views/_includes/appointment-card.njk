@@ -13,12 +13,6 @@
   DOB: {{ participant.demographicInformation.dateOfBirth | formatDate }} ({{ participant.demographicInformation.dateOfBirth | formatRelativeDate(true) }})
   <br>
   NHS Number: {{ participant.medicalInformation.nhsNumber | formatNhsNumber }}
-  <br>
-  {% set lastScreenedDate = data | getParticipantMostRecentClinicDate(participant.id) %}
-  {% if lastScreenedDate %}
-    Last screened: {{ lastScreenedDate | formatDate }} ({{ lastScreenedDate | formatRelativeDate }})
-  {% endif %}
-  
 {#   <br>
   SX Number: {{ participant.sxNumber }} #}
 </p>
