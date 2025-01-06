@@ -15,6 +15,12 @@ module.exports = [
     phoneNumber: '01865235621',
     abbreviation: 'WSB',
     clinicTypes: ['screening', 'assessment'], // Can do both
+    riskLevelHandling: {
+      routine: true,
+      moderate: true,
+      // high: false,
+      // veryHigh: false
+    },
     // Default operating hours for the BSU
     sessionPatterns: [
       // {
@@ -39,6 +45,13 @@ module.exports = [
         name: 'West Sussex BSS',
         type: 'hospital',
         isMainSite: true,
+        // Main sites can handle all supported risk levels
+        riskLevelHandling: {
+          routine: true,
+          moderate: true,
+          // high: false,
+          // veryHigh: false
+        },
         address: {
           line1: 'Breast Screening Unit',
           line2: 'Worthing Hospital',
@@ -66,6 +79,11 @@ module.exports = [
         type: 'mobile_unit',
         isMainSite: false,
         clinicTypes: ['screening'], // Can only do screening
+        // Mobile units only handle routine screening
+        riskLevelHandling: {
+          routine: true,
+          moderate: false,
+        },
         registration: 'JA1 CP7',
         // Override BSU session patterns for this location
         sessionPatterns: [
@@ -84,6 +102,11 @@ module.exports = [
         type: 'mobile_unit',
         isMainSite: false,
         clinicTypes: ['screening'], // Can only do screening
+        // Mobile units only handle routine screening
+        riskLevelHandling: {
+          routine: true,
+          moderate: false,
+        },
         registration: 'WX71 HCR',
         // Override BSU session patterns for this location
         sessionPatterns: [
@@ -102,6 +125,11 @@ module.exports = [
       //   type: "mobile_unit",
       //   isMainSite: false,
       //   clinicTypes: ['screening'],  // Can only do screening
+      //   // Mobile units only handle routine screening
+      //   riskLevelHandling: {
+      //     routine: true,
+      //     moderate: false,
+      //   },
       //   registration: "CD1 5HR",
       //   // Override BSU session patterns for this location
       //   sessionPatterns: [
