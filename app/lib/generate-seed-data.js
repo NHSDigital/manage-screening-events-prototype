@@ -165,6 +165,14 @@ const generateClinicsForDay = (date, allParticipants, unit) => {
   }
 }
 
+// Generate array of dates for a snapshot period
+const generateSnapshotPeriod = (startDate, numberOfDays) => {
+  return Array.from(
+    { length: numberOfDays },
+    (_, i) => dayjs(startDate).add(i, 'days')
+  )
+}
+
 const generateData = async () => {
   if (!fs.existsSync(config.paths.generatedData)) {
     fs.mkdirSync(config.paths.generatedData, { recursive: true })
@@ -192,36 +200,50 @@ const generateData = async () => {
   console.log('Generating clinics and events...')
   const today = dayjs().startOf('day')
 
-  // Helper function to generate multiple days from a start date
-  const generateDayRange = (startDate, numberOfDays) => {
-    return Array.from(
-      { length: numberOfDays },
-      (_, i) => dayjs(startDate).add(i, 'days')
-    )
-  }
-
-  // Generate days for each historical period
-  const historicalSnapshots = [
-    ...generateDayRange(today.subtract(9, 'year').add(3, 'month'), config.clinics.daysToGenerate),
-    ...generateDayRange(today.subtract(6, 'year').add(2, 'month'), config.clinics.daysToGenerate),
-    ...generateDayRange(today.subtract(3, 'year').add(1, 'month'), config.clinics.daysToGenerate),
+  // Define snapshots from newest to oldest
+  const snapshots = [
+    // Current period
+    generateSnapshotPeriod(
+      today.subtract(config.clinics.daysBeforeToday, 'days'),
+      config.clinics.daysToGenerate
+    ),
+    // Historical periods
+    generateSnapshotPeriod(
+      today.subtract(3, 'year').add(1, 'month'),
+      config.clinics.daysToGenerate
+    ),
+    generateSnapshotPeriod(
+      today.subtract(6, 'year').add(2, 'month'),
+      config.clinics.daysToGenerate
+    ),
+    generateSnapshotPeriod(
+      today.subtract(9, 'year').add(3, 'month'),
+      config.clinics.daysToGenerate
+    ),
   ]
-
-  // Generate recent days
-  const recentSnapshots = generateDayRange(
-    today.subtract(config.clinics.daysBeforeToday, 'days'),
-    config.clinics.daysToGenerate
-  )
-
-  const snapshots = [...historicalSnapshots, ...recentSnapshots]
 
   // Generate all data in batches per BSU
   const allData = breastScreeningUnits.map(unit => {
-    const unitSnapshots = snapshots.map(date => generateClinicsForDay(date, participants, unit))
+    console.log(`Generating data for ${unit.name}...`)
+    
+    // Process each snapshot
+    const unitData = snapshots.map(dates => {
+      // Process each day in the snapshot
+      const snapshotData = dates.map(date => 
+        generateClinicsForDay(date, participants, unit)
+      )
+
+      return {
+        clinics: [].concat(...snapshotData.map(s => s.clinics)),
+        events: [].concat(...snapshotData.map(s => s.events)),
+        newParticipants: [].concat(...snapshotData.map(s => s.newParticipants)),
+      }
+    })
+
     return {
-      clinics: [].concat(...unitSnapshots.map(s => s.clinics)),
-      events: [].concat(...unitSnapshots.map(s => s.events)),
-      newParticipants: [].concat(...unitSnapshots.map(s => s.newParticipants)),
+      clinics: [].concat(...unitData.map(d => d.clinics)),
+      events: [].concat(...unitData.map(d => d.events)),
+      newParticipants: [].concat(...unitData.map(d => d.newParticipants)),
     }
   })
 
