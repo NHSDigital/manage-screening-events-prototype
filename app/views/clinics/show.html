@@ -65,6 +65,7 @@
           {# <th class="nhsuk-table__header">Postcode</th> #}
           {# <th class="nhsuk-table__header">NHS number</th> #}
           <th class="nhsuk-table__header">Last screened</th>
+          <th class="nhsuk-table__header">Risk level</th>
           <th class="nhsuk-table__header">Appointment status</th>
           {# <th class="nhsuk-table__header">Actions</th> #}
         </tr>
@@ -103,6 +104,10 @@
               {% else %}
                   {{ "Not known" | asHint }}
               {% endif %}
+            </td>
+            {# Risk level #}
+            <td class="nhsuk-table__cell">
+              {{ participant | getCurrentRiskLevel | sentenceCase }}
             </td>
 
             {# NHS Number #}
