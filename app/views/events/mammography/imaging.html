@@ -129,11 +129,10 @@
       </div>
     </div>
 
-    
   {% endset %}
 
   {{ card({
-    heading: "Image " + params.index,
+    heading: "Image " + params.index + " - " + (params.timeNow | formatTime('H:mm:ss')),
     headingLevel: "3",
     descriptionHtml: summaryListHtml,
     classes: "nhsuk-u-margin-bottom-3 app-image-card app-hidden"
@@ -158,11 +157,21 @@
   {{ loadingSpinner() }}
 
   <div class="nhsuk-u-margin-bottom-4">
+
+    {% set timeNow = "" | now %}
+
     {% for image in images %}
+
+      {% if not loop.first %}
+        {% set randomSeconds = [3,4,5] | random %}
+        {% set timeNow = dayjs(timeNow).add(randomSeconds, 'seconds')  %}
+      {% endif %}
+
       {% set params = {
         view: image.view,
         side: image.side,
-        index: loop.index
+        index: loop.index,
+        timeNow: timeNow
       } %}
 
       {# Hack in some titles for left and right #}

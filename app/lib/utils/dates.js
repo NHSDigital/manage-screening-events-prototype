@@ -154,6 +154,14 @@ const today = () => {
 }
 
 /**
+ * Get current date and time
+ * @returns {string} Current date/time as ISO string
+ */
+const now = () => {
+  return dayjs().toISOString()
+}
+
+/**
  * Format a date range
  * @param {string} startDate - ISO date string
  * @param {string} endDate - ISO date string
@@ -206,6 +214,7 @@ const getWeekDates = (dateString) => {
   })
 }
 
+
 module.exports = {
   formatDate,
   formatTime,
@@ -219,6 +228,7 @@ module.exports = {
   isBeforeDate,
   isAfterDate,
   today,
+  now,
   getWeekDates,
   // Export dayjs instance for direct use if needed
   dayjs,
