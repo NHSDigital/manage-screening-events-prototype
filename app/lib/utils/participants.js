@@ -43,14 +43,15 @@ const findBySXNumber = (participants, sxNumber) => {
 /**
  * Get participant's age
  * @param {Object} participant - Participant object
+ * @param {Date} [referenceDate=new Date()] - Optional date to calculate age from
+ * @returns {number|null} Age in years or null if no date of birth
  */
-const getAge = (participant) => {
+const getAge = (participant, referenceDate = new Date()) => {
   if (!participant?.demographicInformation?.dateOfBirth) return null
   const dob = new Date(participant.demographicInformation.dateOfBirth)
-  const today = new Date()
-  let age = today.getFullYear() - dob.getFullYear()
-  const monthDiff = today.getMonth() - dob.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+  let age = referenceDate.getFullYear() - dob.getFullYear()
+  const monthDiff = referenceDate.getMonth() - dob.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && referenceDate.getDate() < dob.getDate())) {
     age--
   }
   return age
