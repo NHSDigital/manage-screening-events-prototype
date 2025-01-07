@@ -5,6 +5,49 @@ const generateId = require('../utils/id-generator')
 const weighted = require('weighted')
 const { generateBSUAppropriateAddress } = require('./address-generator')
 const _ = require('lodash')
+const riskLevels = require('../../data/risk-levels')
+const dayjs = require('dayjs')
+
+/**
+ * Generate a precise date of birth within the specified age range
+ * @param {Object} options - Generation options
+ * @param {string} options.riskLevel - Risk level to use for age range
+ * @param {Date} [options.referenceDate] - Date to calculate age from (defaults to today)
+ * @returns {string} ISO date string for date of birth
+ */
+const generateDateOfBirth = (riskLevel, referenceDate = new Date() ) => {
+  const refDate = dayjs(referenceDate)
+  let minAge, maxAge
+  
+  if (riskLevel && riskLevels[riskLevel]) {
+    const ageRange = riskLevels[riskLevel].ageRange
+    minAge = ageRange.lower
+    maxAge = ageRange.upper
+  } else {
+    // Default to routine screening age range if no risk level specified
+    minAge = riskLevels.routine.ageRange.lower
+    maxAge = riskLevels.routine.ageRange.upper
+  }
+
+  // Calculate start and end dates for the range
+  const from = dayjs(refDate).subtract(maxAge, 'year').toDate()
+  const to = dayjs(refDate).subtract(minAge, 'year').toDate()
+  
+  return faker.date.between({ from, to }).toISOString()
+}
+
+// Pick a random risk level based on configured weights
+const pickRiskLevel = () => {
+  // Create weights object from risk levels
+  const weights = {}
+  Object.entries(riskLevels).forEach(([level, data]) => {
+    if (data.weight) {
+      weights[level] = data.weight
+    }
+  })
+
+  return weighted.select(weights)
+}
 
 // List of possible extra needs
 const EXTRA_NEEDS = [
@@ -185,10 +228,15 @@ const generateParticipant = ({
   ethnicities,
   breastScreeningUnits,
   extraNeedsConfig = { probability: 0.08 },
+  riskLevel = null,
   overrides = null,
 }) => {
 
   const id = generateId()
+
+  // Determine risk level first as it affects age generation
+  const participantRiskLevel = riskLevel || pickRiskLevel()
+  // const participantRiskLevel = 'moderate'
 
   // First get or generate BSU
   const assignedBSU = overrides?.assignedBSU 
@@ -203,15 +251,12 @@ const generateParticipant = ({
     sxNumber: generateSXNumber(faker.helpers.arrayElement(breastScreeningUnits).abbreviation),
     assignedBSU: assignedBSU.id,
     extraNeeds: generateExtraNeeds(extraNeedsConfig),
+    hasRiskFactors: riskLevel !== 'routine',
     demographicInformation: {
       firstName: faker.person.firstName('female'),
       middleName: Math.random() < 0.3 ? faker.person.firstName('female') : null,
       lastName: faker.person.lastName(),
-      dateOfBirth: faker.date.birthdate({
-        min: 50,
-        max: 70,
-        mode: 'age',
-      }).toISOString(),
+      dateOfBirth: generateDateOfBirth(participantRiskLevel),
       address: generateBSUAppropriateAddress(assignedBSU),
       phone: generateUKPhoneNumber(),
       email: `${faker.internet.username().toLowerCase()}@example.com`,

@@ -1,4 +1,5 @@
 // app/lib/utils/participants.js
+const riskLevels = require('../../data/risk-levels.js')
 
 /**
  * Get full name of participant
@@ -143,6 +144,37 @@ const getParticipantHistoricClinics = (data, participantId) =>
 const getParticipantUpcomingClinics = (data, participantId) => 
   getParticipantClinicHistory(data, participantId, { filter: 'upcoming' })
 
+/**
+ * Determine a participant's current risk level based on age and risk factors
+ * @param {Object} participant - Participant object
+ * @returns {string} Current risk level (routine, moderate, or high)
+ */
+const getCurrentRiskLevel = (participant, referenceDate = new Date()) => {
+  const age = getAge(participant, referenceDate)
+  if (!age) return 'routine'
+
+  // If they don't have risk factors, they're routine
+  if (!participant.hasRiskFactors) {
+    return 'routine'
+  }
+
+  // Check if they're in the moderate risk age range
+  const moderateRange = riskLevels.moderate.ageRange
+  if (age >= moderateRange.lower && age < moderateRange.upper) {
+    return 'moderate'
+  }
+
+  // Check if they're in the high risk age range
+  const highRange = riskLevels.high.ageRange
+  if (age >= highRange.lower && age <= highRange.upper) {
+    return 'high'
+  }
+
+  // Default to routine for any other age ranges
+  return 'routine'
+}
+
+
 module.exports = {
   getFullName,
   getFullNameReversed,
@@ -154,5 +186,6 @@ module.exports = {
   getParticipantMostRecentClinic,
   getParticipantMostRecentClinicDate,
   getParticipantHistoricClinics,
-  getParticipantUpcomingClinics
+  getParticipantUpcomingClinics,
+  getCurrentRiskLevel
 }
