@@ -236,6 +236,7 @@ const generateParticipant = ({
 
   // Determine risk level first as it affects age generation
   const participantRiskLevel = riskLevel || pickRiskLevel()
+
   // const participantRiskLevel = 'moderate'
 
   // First get or generate BSU
@@ -251,7 +252,8 @@ const generateParticipant = ({
     sxNumber: generateSXNumber(faker.helpers.arrayElement(breastScreeningUnits).abbreviation),
     assignedBSU: assignedBSU.id,
     extraNeeds: generateExtraNeeds(extraNeedsConfig),
-    hasRiskFactors: riskLevel !== 'routine',
+    hasRiskFactors: participantRiskLevel !== 'routine',
+    seedRiskLevel: participantRiskLevel,
     demographicInformation: {
       firstName: faker.person.firstName('female'),
       middleName: Math.random() < 0.3 ? faker.person.firstName('female') : null,

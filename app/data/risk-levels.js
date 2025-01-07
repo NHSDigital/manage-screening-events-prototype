@@ -3,7 +3,7 @@
 module.exports = {
 
   routine: {
-    weight: 0.5,
+    weight: 0.7,
     frequency: 36, // months
     ageRange: {
       upper: 70,
@@ -11,7 +11,7 @@ module.exports = {
     }
   },
   moderate: {
-    weight: 0.45,
+    weight: 0.25,
     frequency: 12, // months
     ageRange: {
       upper: 50,

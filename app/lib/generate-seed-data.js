@@ -27,7 +27,7 @@ const testScenarios = require('../data/test-scenarios')
 // Create an index of participants by risk level for efficient lookup
 // Create an index of participants by risk level for efficient lookup
 const createParticipantIndices = (participants, clinicDate, events = []) => {
-  console.time('Creating participant indices')
+  // console.time('Creating participant indices')
   
   const riskLevelIndex = {}
   const screeningHistoryIndex = new Map()
@@ -35,8 +35,9 @@ const createParticipantIndices = (participants, clinicDate, events = []) => {
   // Single pass through participants
   participants.forEach(participant => {
     const riskLevel = getCurrentRiskLevel(participant, clinicDate.toDate())
+
     const age = dayjs(clinicDate).diff(dayjs(participant.demographicInformation.dateOfBirth), 'year')
-    
+
     // Check if they're age-eligible for their risk level
     const ageRange = riskLevels[riskLevel].ageRange
     if (age >= ageRange.lower && age <= ageRange.upper) {
@@ -54,8 +55,6 @@ const createParticipantIndices = (participants, clinicDate, events = []) => {
     screeningHistoryIndex.set(participant.id, participantEvents)
   })
 
-  console.timeEnd('Creating participant indices')
-  
   return {
     riskLevelIndex,
     screeningHistoryIndex,
@@ -161,11 +160,6 @@ const generateClinicsForDay = (date, allParticipants, unit, usedParticipantsInSn
     remainingSlots.forEach(slot => {
       // Pick risk level based on clinic's supported levels
       const availableRiskLevels = clinic.riskLevels
-        .filter(level => indices.riskLevelIndex[level]?.length > 0)
-
-      if (availableRiskLevels.length === 0) {
-        return // Skip if no suitable risk levels available
-      }
 
       const selectedRiskLevel = weighted.select(
         Object.fromEntries(
@@ -181,11 +175,13 @@ const generateClinicsForDay = (date, allParticipants, unit, usedParticipantsInSn
         .filter(p => !usedParticipantsInSnapshot.has(p.id))
 
       if (availableParticipants.length === 0) {
+        
         const newParticipant = generateParticipant({
           ethnicities,
           breastScreeningUnits: [unit],
           riskLevel: selectedRiskLevel,
         })
+        // console.log(`Not enough participants, creating a new one ${newParticipant.id}`)
         participants.push(newParticipant)
         availableParticipants.push(newParticipant)
       }
@@ -250,6 +246,8 @@ const generateData = async () => {
   // Combine test and random participants
   const participants = [...testParticipants, ...randomParticipants]
 
+  console.log(`Made ${participants.length} participants`)
+
   console.log('Generating clinics and events...')
   const today = dayjs().startOf('day')
 
@@ -288,9 +286,9 @@ const generateData = async () => {
 
       // Create indices for this snapshot using the first date
       const indices = createParticipantIndices(participants, dates[0], unitEvents)
-      console.log(`Created indices for snapshot ${dates[0].format('YYYY-MM-DD')}:`)
-      console.log(`- ${Object.keys(indices.riskLevelIndex).length} risk levels`)
-      console.log(`- ${indices.screeningHistoryIndex.size} participants with history`)
+      // console.log(`Created indices for snapshot ${dates[0].format('YYYY-MM-DD')}:`)
+      // console.log(`- ${Object.keys(indices.riskLevelIndex).length} risk levels`)
+      // console.log(`- ${indices.screeningHistoryIndex.size} participants with history`)
 
       // Process each day in the snapshot
       const snapshotData = dates.map(date => 
@@ -369,7 +367,7 @@ const generateData = async () => {
 
   console.log('\nData generation complete!')
   console.log('Generated:')
-  console.log(`- ${participants.length} participants`)
+  console.log(`- ${finalParticipants.length} participants`)
   console.log(`- ${allClinics.length} clinics`)
   console.log(`- ${allEvents.length} events`)
 }
