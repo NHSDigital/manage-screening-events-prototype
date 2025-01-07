@@ -53,10 +53,9 @@ const findNearestSlot = (slots, targetTime) => {
   })
 }
 
-const generateClinicsForDay = (date, allParticipants, unit) => {
+const generateClinicsForDay = (date, allParticipants, unit, usedParticipantsInSnapshot) => {
   const clinics = []
   const events = []
-  const usedParticipantsInSnapshot = new Set()
   const participants = [...allParticipants]
 
   // Check if this snapshot date is for the recent period (not historical)
@@ -115,19 +114,15 @@ const generateClinicsForDay = (date, allParticipants, unit) => {
 
   // Handle regular clinic slot allocation for all clinics
   newClinics.forEach(clinic => {
-    // Continue with random slot allocation as before
     const remainingSlots = clinic.slots
       .filter(() => Math.random() < config.generation.bookingProbability)
-      // Filter out slots used by test participants
       .filter(slot => !events.some(e => e.slotId === slot.id))
 
     remainingSlots.forEach(slot => {
-      // Filter from pre-filtered eligible participants
       const availableParticipants = eligibleParticipants.filter(p =>
         !usedParticipantsInSnapshot.has(p.id)
       )
 
-      // If we need more participants, create them
       if (availableParticipants.length === 0) {
         const newParticipant = generateParticipant({
           ethnicities,
@@ -228,9 +223,12 @@ const generateData = async () => {
     
     // Process each snapshot
     const unitData = snapshots.map(dates => {
+      // Create a set to track used participants for this entire snapshot
+      const usedParticipantsInSnapshot = new Set()
+
       // Process each day in the snapshot
       const snapshotData = dates.map(date => 
-        generateClinicsForDay(date, participants, unit)
+        generateClinicsForDay(date, participants, unit, usedParticipantsInSnapshot)
       )
 
       return {
