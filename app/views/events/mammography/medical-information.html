@@ -64,11 +64,109 @@
 
   {% endif %}
 
-{#   {{ makeRow({
-  title: "Breast implants"
-})}} #}
+{% set insetHtml %}
+<p>No details recorded. <a href="#">Provide details</a>.</p>
+{% endset %}
 
-  {{ summaryList({
+
+<h2>Breast cancer history</h2>
+<p>Any history of breast cancer in participant or immediate family</p>
+{{ insetText({
+  html: insetHtml
+}) }}
+
+<h2>Breast proceedures</h2>
+<p>Including cysts, benign lumps, other breast surgery, previous biopsy, non-implant based augmentation</p>
+{{ insetText({
+  html: insetHtml
+}) }}
+
+<h2>Breast symptoms</h2>
+<p>Current or hisoric breast symptoms</p>
+{{ insetText({
+  html: insetHtml
+}) }}
+
+<h2>Scars / visual features</h2>
+<p>Including cysts, benign lumps, other breast surgery, previous biopsy, non-implant based augmentation</p>
+{{ insetText({
+  html: insetHtml
+}) }}
+
+<h2>Other items</h2>
+{{ summaryList({
+  rows: [
+    {
+      key: {
+        text: "Mammographer notes"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "name"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Pregnancy and breastfeeding"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "date of birth"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Lymph nodes - medications or conditions"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "date of birth"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Menopause"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "date of birth"
+          }
+        ]
+      }
+    }
+  ]
+}) }}
+  {# {{ summaryList({
   rows: [
     {
       key: {
@@ -260,9 +358,34 @@
       }
     }
   ]
+}) }} #}
+
+{{ radios({
+  idPrefix: "example",
+  name: "example",
+  fieldset: {
+    legend: {
+      text: "How should empty sections be completed?",
+      classes: "nhsuk-fieldset__legend--m",
+      isPageHeading: false
+    }
+  },
+  items: [
+    {
+      value: "yes",
+      text: "Set remaining sections to 'none' / 'negative'",
+      _hint: {
+        text: "Sections without answers will be set to 'none'"
+      }
+    },
+    {
+      value: "no",
+      text: "Leave as incomplete"
+    }
+  ]
 }) }}
 
-  {% if query.taskStatus !== 'complete' %}
+{#   {% if query.taskStatus !== 'complete' %}
     <div class="nhsuk-form-group">
       {{ button({
         text: "Answer all incomplete as 'No' / 'None'",
@@ -270,7 +393,7 @@
         href: "./medical-information?taskStatus=complete"
       }) }}
     </div>
-  {% endif %}
+  {% endif %} #}
 
 
   {{ button({

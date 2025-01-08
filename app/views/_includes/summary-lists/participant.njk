@@ -20,8 +20,6 @@
   <a href="#" class="nhsuk-link">Enter ethnicity details</a>
 {% endset %}
 
-{# {% set ethnicGroup = false %} #}
-
 {% set ethnicityHtml %}
 {% if ethnicGroup %}
   {{ ethnicGroup }}
@@ -33,6 +31,19 @@
 {% endif %}
 
   
+{% endset %}
+
+{% set lastMammogramHtml %}
+  {% set mostRecentClinic = data | getParticipantMostRecentClinic(participant.id) %}
+  {% if mostRecentClinic %}
+    {{ mostRecentClinic | log }}
+    {{ mostRecentClinic.event.timing.startTime | formatDate }} ({{ mostRecentClinic.event.timing.startTime | formatDate | formatRelativeDate | asHint }})</br>
+    {{ mostRecentClinic.location.name }}</br>
+    {{ mostRecentClinic.event.type | sentenceCase }}
+    {# {{ mostRecentClinic | log("Most recent clinic")}} #}
+  {% else %}
+      {{ "Not known" | asHint }}
+  {% endif %}
 {% endset %}
 
 {{ summaryList({
@@ -174,6 +185,23 @@
           } if allowEdits
         ]
       }
-   } if not isMinimalParticipant
+   } if not isMinimalParticipant,
+   {
+     key: {
+       text: "Last known mammogram"
+     },
+     value: {
+       html: lastMammogramHtml
+     },
+     actions: {
+        items: [
+          {
+            href: "#",
+            text: "View or update screening history",
+            visuallyHiddenText: "email"
+          }
+        ]
+      }
+   }
   ]
 }) }}

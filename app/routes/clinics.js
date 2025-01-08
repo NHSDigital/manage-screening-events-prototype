@@ -2,6 +2,7 @@
 
 const dayjs = require('dayjs')
 const { getFilteredClinics, getClinicEvents } = require('../lib/utils/clinics')
+const { filterEventsByStatus } = require('../lib/utils/status')
 
 /**
  * Get clinic and its related data from id
@@ -222,18 +223,18 @@ module.exports = router => {
     const event = data.events[eventIndex]
 
     // Only allow check-in if currently scheduled
-    if (event.status !== 'scheduled') {
+    if (event.status !== 'event_scheduled') {
       return res.redirect(`/clinics/${clinicId}/${currentFilter}`)
     }
 
     // Update the event
     data.events[eventIndex] = {
       ...event,
-      status: 'checked_in',
+      status: 'event_checked_in',
       statusHistory: [
         ...event.statusHistory,
         {
-          status: 'checked_in',
+          status: 'event_checked_in',
           timestamp: new Date().toISOString(),
         },
       ],
@@ -251,19 +252,6 @@ module.exports = router => {
     }
   })
 
-  function filterEvents (events, filter) {
-    switch (filter) {
-      case 'scheduled':
-        return events.filter(e => e.status === 'scheduled')
-      case 'checked-in':
-        console.log('filtering checked in')
-        return events.filter(e => e.status === 'checked_in')
-      case 'complete':
-        return events.filter(e => ['complete', 'attended_not_screened'].includes(e.status))
-      default:
-        return events
-    }
-  }
 
   // Single clinic view
   const VALID_FILTERS = ['scheduled', 'checked-in', 'complete', 'all']
@@ -284,7 +272,7 @@ module.exports = router => {
       return res.redirect(`/clinics/${req.params.id}`)
     }
 
-    const filteredEvents = filterEvents(clinicData.events, filter)
+    const filteredEvents = filterEventsByStatus(clinicData.events, filter)
 
     res.render('clinics/show', {
       clinicId: req.params.id,

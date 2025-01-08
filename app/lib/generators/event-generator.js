@@ -24,11 +24,14 @@ const determineEventStatus = (slotDateTime, currentDateTime, attendanceWeights) 
 
   // For future dates or future slots today, always return scheduled
   if (slotDateTime.isAfter(simulatedTime)) {
-    return 'scheduled'
+    return weighted.select({
+      event_scheduled: 0.95,
+      event_cancelled: 0.05,
+    })
   }
 
   if (slotDate.isBefore(currentDate)) {
-    const finalStatuses = ['complete', 'did_not_attend', 'attended_not_screened']
+    const finalStatuses = ['event_screened', 'event_partially_screened', 'event_did_not_attend', 'event_attended_not_screened']
     return weighted.select(finalStatuses, attendanceWeights)
   }
 
@@ -39,17 +42,17 @@ const determineEventStatus = (slotDateTime, currentDateTime, attendanceWeights) 
   if (minutesPassed <= 60) {
     // Within 30 mins of appointment
     return weighted.select({
-      checked_in: 0.6,
-      complete: 0.1,
-      attended_not_screened: 0.1,
-      scheduled: 0.2,
+      event_checked_in: 0.6,
+      event_screened: 0.1,
+      event_attended_not_screened: 0.1,
+      event_scheduled: 0.2,
     })
   } else {
     // More than 30 mins after appointment
     return weighted.select({
-      complete: 0.6,
-      attended_not_screened: 0.1,
-      scheduled: 0.2,
+      event_screened: 0.6,
+      event_attended_not_screened: 0.1,
+      event_scheduled: 0.2,
     })
   }
 }
@@ -69,13 +72,11 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
   const endDateTime = dayjs(slot.dateTime).add(duration, 'minute')
 
   const attendanceWeights = clinic.clinicType === 'assessment'
-    ? [0.9, 0.015, 0]
-    : [0.70, 0.25, 0.05]
+    ? [0.8, 0.1, 0.015, 0]
+    : [0.70, 0.1, 0.15, 0.05]
 
   // We'll use forceStatus if provided, otherwise calculate based on timing
-  const eventStatus = forceStatus || (isPast 
-    ? determineEventStatus(slotDateTime, simulatedDateTime, attendanceWeights)
-    : 'scheduled')
+  const eventStatus = forceStatus || determineEventStatus(slotDateTime, simulatedDateTime, attendanceWeights)
 
   const eventBase = {
     id: generateId(),
@@ -97,7 +98,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
     },
     statusHistory: [
       {
-        status: 'scheduled',
+        status: 'event_scheduled',
         timestamp: dayjs(slot.dateTime).subtract(1, 'day').toISOString(),
       },
     ],
@@ -113,17 +114,17 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
       ...eventBase,
       details: {
         ...eventBase.details,
-        imagesTaken: eventStatus === 'complete'
+        imagesTaken: eventStatus === 'event_complete'
           ? ['RCC', 'LCC', 'RMLO', 'LMLO']
           : null,
-        notScreenedReason: eventStatus === 'attended_not_screened'
+        notScreenedReason: eventStatus === 'event_attended_not_screened'
           ? faker.helpers.arrayElement(NOT_SCREENED_REASONS)
           : null,
       },
     }
 
     // Add timing details for completed appointments
-    if (eventStatus === 'complete') {
+    if (eventStatus === 'event_complete') {
       const actualStartOffset = faker.number.int({ min: -5, max: 5 })
       const durationOffset = isSpecialAppointment
         ? faker.number.int({ min: -3, max: 10 })
@@ -152,12 +153,12 @@ const generateStatusHistory = (finalStatus, dateTime) => {
 
   // Always starts with scheduled status
   history.push({
-    status: 'scheduled',
+    status: 'event_scheduled',
     timestamp: new Date(baseDate.getTime() - (24 * 60 * 60 * 1000)).toISOString(), // Day before
   })
 
   // Add intermediate statuses based on final status
-  if (finalStatus === 'complete') {
+  if (finalStatus === 'event_complete') {
     history.push(
       {
         status: 'checked_in',

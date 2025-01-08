@@ -135,7 +135,7 @@ module.exports = router => {
     const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
     req.session.data.events[eventIndex] = updateEventStatus(
       req.session.data.events[eventIndex],
-      'attended_not_screened'
+      'event_attended_not_screened'
     )
 
     res.redirect(`/clinics/${clinicId}/events/${eventId}`)
@@ -149,7 +149,7 @@ module.exports = router => {
     const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
     req.session.data.events[eventIndex] = updateEventStatus(
       req.session.data.events[eventIndex],
-      'complete'
+      'event_complete'
     )
 
     res.redirect(`/clinics/${clinicId}/events/${eventId}`)

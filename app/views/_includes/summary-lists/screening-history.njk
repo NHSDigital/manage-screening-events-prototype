@@ -33,7 +33,7 @@
            <td>{{ unit.name }}</td>
            <td>
              {{ tag({
-               text: event.status | formatWords | sentenceCase,
+               text: event.status | getStatusText,
                classes: "nhsuk-tag--" + event.status | getStatusTagColour
              }) }}
            </td>
@@ -74,7 +74,7 @@
          <td>{{ unit.name }}</td>
          <td>
            {{ tag({
-             text: event.status | formatWords | sentenceCase,
+             text: event.status | getStatusText,
              classes: "nhsuk-tag--" + event.status | getStatusTagColour
            }) }}
          </td>

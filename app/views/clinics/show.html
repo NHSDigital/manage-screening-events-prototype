@@ -116,11 +116,11 @@
             {# Appointment status #}
             <td class="nhsuk-table__cell">
               {{ tag({
-                text: event.status | formatWords | sentenceCase,
+                text: event.status | getStatusText,
                 classes: "nhsuk-tag--" + event.status | getStatusTagColour
               })}}
 
-              {% if event.status === 'scheduled' %}
+              {% if event.status === 'event_scheduled' %}
               <div class="nhsuk-u-margin-top-2">
                 {# <br> #}
                 <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}?currentFilter={{ currentFilter }}" class="nhsuk-link">
@@ -133,7 +133,7 @@
 
             {# Check-in action #}
             {# <td class="nhsuk-table__cell">
-              {% if event.status === 'scheduled' %}
+              {% if event.status === 'event_scheduled' %}
                 <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}?currentFilter={{ currentFilter }}" class="nhsuk-link">
                   {{ "Check in" | noWrap }}
                 </a>

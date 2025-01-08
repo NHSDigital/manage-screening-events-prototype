@@ -20,6 +20,17 @@ const push = (array, item) => {
 }
 
 /**
+ * Check if an array includes a value
+ * @param {Array} array - Array to check
+ * @param {*} value - Value to look for
+ * @returns {boolean} True if array includes value, false otherwise
+ */
+const includes = (array, value) => {
+  if (!array || !Array.isArray(array)) return false
+  return array.includes(value)
+}
+
+/**
  * Remove empty items from arrays or strings
  * @param {Array|string} items - Items to filter
  * @returns {Array|string|undefined} Filtered items or undefined if empty
@@ -39,6 +50,7 @@ const removeEmpty = (items) => {
 
 module.exports = {
   push,
+  includes,
   removeEmpty,
   findById,
 }
