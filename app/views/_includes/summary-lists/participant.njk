@@ -14,6 +14,27 @@
 
 {% set allowEdits = allowEdits | default(true) %}
 
+{% set ethnicGroup = participant.demographicInformation.ethnicGroup  %}
+{% set ethnicBackground = participant.demographicInformation.ethnicBackground %}
+{% set ethnicityDetailsLink %}
+  <a href="#" class="nhsuk-link">Enter ethnicity details</a>
+{% endset %}
+
+{# {% set ethnicGroup = false %} #}
+
+{% set ethnicityHtml %}
+{% if ethnicGroup %}
+  {{ ethnicGroup }}
+  {% if ethnicBackground and ethnicBackground != 'Not provided' %}
+    ({{ethnicBackground | replace('Any other', 'any other')}})
+  {% endif %}
+{% else %}
+  {{ ethnicityDetailsLink | safe }}
+{% endif %}
+
+  
+{% endset %}
+
 {{ summaryList({
   rows: [
    {
@@ -85,6 +106,23 @@
         items: [
         ]
      }
+   },
+   {
+     key: {
+       text: "Ethnicity"
+     },
+     value: {
+       html: ethnicityHtml | safe
+     },
+     actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "address"
+          } if false
+        ]
+      }
    },
    {
      key: {

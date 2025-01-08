@@ -15,104 +15,6 @@
   text: "Back to clinic"
 } %}
 
-{% macro makeImage(params) %}
-
-  {% set summaryListHtml %}
-    <div class="nhsuk-grid-row">
-      <div class="nhsuk-grid-column-one-quarter">
-        
-        <div class="app-mammogram-image--placeholder">
-          <p>[IMAGE HERE]</p>
-        </div>
-      </div>
-      <div class="nhsuk-grid-column-three-quarters">
-        {{ summaryList({
-          rows: [
-            {
-              key: {
-                text: "Side"
-              },
-              value: {
-                text: params.side
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "side"
-                  }
-                ]
-              }
-            },
-            {
-              key: {
-                text: "View"
-              },
-              value: {
-                text: params.view
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "view"
-                  }
-                ]
-              }
-            },
-            {
-              key: {
-                text: "Is a repeat"
-              },
-              value: {
-                text: "No"
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "is a repeat"
-                  }
-                ]
-              }
-            },
-            {
-              key: {
-                text: "Comment"
-              },
-              value: {
-                text: "Not provided"
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "is a repeat"
-                  }
-                ]
-              }
-            }
-          ]
-        }) }}
-      </div>
-    </div>
-
-    
-  {% endset %}
-
-  {{ card({
-    heading: "Image " + params.index,
-    headingLevel: "3",
-    descriptionHtml: summaryListHtml,
-    classes: "nhsuk-u-margin-bottom-3"
-  }) }}
-
-{% endmacro %}
-
 {% block pageContent %}
 
   {{ participant | log }}
@@ -123,35 +25,8 @@
 
   {% include "event-navigation.njk" %}
 
-  {% set images = [
-    {
-      view: "Cranio-caudal",
-      side: "Right"
-    },
-    {
-      view: "Dutch oblique",
-      side: "Right"
-    },
-    {
-      view: "Cranio-caudal",
-      side: "Left"
-    },
-    {
-      view: "Dutch oblique",
-      side: "Left"
-    }
-  ] %}
 
-  <div class="nhsuk-u-margin-bottom-4">
-    {% for image in images %}
-      {% set params = {
-        view: image.view,
-        side: image.side,
-        index: loop.index
-      } %}
-      {{ makeImage(params) }}
-    {% endfor %}
-  </div>
+  {% include "fake-images.njk" %}
 
 
 {% endblock %}

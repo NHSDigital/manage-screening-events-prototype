@@ -1,0 +1,11 @@
+
+
+// Reduce the large default margins the component comes with
+.nhsuk-inset-text {
+  @include nhsuk-responsive-margin(3, "top");
+  @include nhsuk-responsive-margin(4, "bottom");
+}
+
+p:has(+ .nhsuk-inset-text) {
+  margin-bottom: 0;
+}

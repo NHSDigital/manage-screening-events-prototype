@@ -18,7 +18,7 @@ const dayjs = require('dayjs')
 const generateDateOfBirth = (riskLevel, referenceDate = new Date() ) => {
   const refDate = dayjs(referenceDate)
   let minAge, maxAge
-  
+
   if (riskLevel && riskLevels[riskLevel]) {
     const ageRange = riskLevels[riskLevel].ageRange
     minAge = ageRange.lower
@@ -32,9 +32,36 @@ const generateDateOfBirth = (riskLevel, referenceDate = new Date() ) => {
   // Calculate start and end dates for the range
   const from = dayjs(refDate).subtract(maxAge, 'year').toDate()
   const to = dayjs(refDate).subtract(minAge, 'year').toDate()
-  
+
   return faker.date.between({ from, to }).toISOString()
 }
+
+
+const generateEthnicity = (ethnicities) => {
+  // 50% chance of having ethnicity data at all
+  if (Math.random() > 0.5) {
+    return {
+      ethnicGroup: null,
+      ethnicBackground: null
+    }
+  }
+
+  const ethnicGroup = weighted.select(Object.keys(ethnicities), [0.85, 0.08, 0.03, 0.02, 0.02])
+  
+  // 20% chance of having background set to "Not provided"
+  if (Math.random() < 0.2) {
+    return {
+      ethnicGroup,
+      ethnicBackground: 'Not provided'
+    }
+  }
+
+  return {
+    ethnicGroup,
+    ethnicBackground: faker.helpers.arrayElement(ethnicities[ethnicGroup])
+  }
+}
+
 
 // Pick a random risk level based on configured weights
 const pickRiskLevel = () => {
@@ -244,7 +271,9 @@ const generateParticipant = ({
     ? breastScreeningUnits.find(bsu => bsu.id === overrides.assignedBSU)
     : faker.helpers.arrayElement(breastScreeningUnits)
 
-  const ethnicGroup = weighted.select(Object.keys(ethnicities), [0.85, 0.08, 0.03, 0.02, 0.02])
+  // Generate ethnicity data using new function
+  const ethnicityData = generateEthnicity(ethnicities)
+  console.log(ethnicityData)
 
   // Generate base random participant first
   const baseParticipant = {
@@ -262,8 +291,8 @@ const generateParticipant = ({
       address: generateBSUAppropriateAddress(assignedBSU),
       phone: generateUKPhoneNumber(),
       email: `${faker.internet.username().toLowerCase()}@example.com`,
-      ethnicGroup,
-      ethnicBackground: faker.helpers.arrayElement(ethnicities[ethnicGroup]),
+      ethnicGroup: ethnicityData.ethnicGroup,
+      ethnicBackground: ethnicityData.ethnicBackground,
     },
     medicalInformation: {
       nhsNumber: generateNHSNumber(),
