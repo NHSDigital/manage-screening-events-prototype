@@ -262,7 +262,7 @@ const generateParticipant = ({
   const id = generateId()
 
   // Determine risk level first as it affects age generation
-  const participantRiskLevel = riskLevel || pickRiskLevel()
+  const participantRiskLevel = overrides?.defaultRiskLevel || riskLevel || pickRiskLevel()
 
   // const participantRiskLevel = 'moderate'
 

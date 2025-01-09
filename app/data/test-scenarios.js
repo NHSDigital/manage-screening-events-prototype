@@ -20,6 +20,7 @@ module.exports = [
         ethnicBackground: null,
       },
       extraNeeds: ['Wheelchair user'],
+      defaultRiskLevel: 'routine',
     },
     scheduling: {
       whenRelativeToToday: 0,
@@ -39,6 +40,7 @@ module.exports = [
         ethnicBackground: null,
       },
       extraNeeds: null,
+      defaultRiskLevel: 'routine',
     },
     scheduling: {
       whenRelativeToToday: 0,

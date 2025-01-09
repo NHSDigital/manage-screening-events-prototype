@@ -4,7 +4,7 @@
 
 {% set pageHeading = "Medical information" %}
 
-{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+{% set gridColumn = "nhsuk-grid-column-full" %}
 
 {% set formAction = './ready-for-imaging' %}
 
@@ -63,7 +63,7 @@
     {% set valueHtml = "Incomplete" | asHint %}
 
   {% endif %}
-
+{# 
 {% set insetHtml %}
 <p>No details recorded. <a href="#">Provide details</a>.</p>
 {% endset %}
@@ -165,7 +165,7 @@
       }
     }
   ]
-}) }}
+}) }} #}
   {# {{ summaryList({
   rows: [
     {
@@ -360,23 +360,66 @@
   ]
 }) }} #}
 
+  {% set sections = [
+    ["Breast implants"],
+    ["Breast cancer history", "Including close family history"],
+    ["Other breast diagnosis"],
+    ["Hormone replacement therapy (HRT)"],
+    ["Pregnancy and breastfeeding"],
+    ["Recent breast changes"],
+    ["Other physical or mental health issues"],
+    ["Physical observations", "This could include tattoos, lumps, moles or scars on the breasts."]
+  ] %}
+
+  {% set taskListSections = [] %}
+
+  {% for section in sections %}
+    {% set taskListSections = taskListSections | push({
+        title: {
+          text: section[0]
+        },
+        hint: {
+          text: section[1]
+        } if section[1],
+        href: "#",
+        status: {
+          tag: {
+            text: "Incomplete",
+            classes: "nhsuk-tag--blue"
+          }
+        }
+      }) %}
+    
+  {% endfor %}
+
+  {% set medicalInformationCardHtml %}
+    {{ taskList({
+      idPrefix: "your-health",
+      items: taskListSections
+    }) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Medical information",
+    headingLevel: "2",
+    feature: true,
+    descriptionHtml: medicalInformationCardHtml
+  }) }}
+
 {{ radios({
   idPrefix: "example",
   name: "example",
   fieldset: {
     legend: {
-      text: "How should empty sections be completed?",
-      classes: "nhsuk-fieldset__legend--m",
+      text: "How should incomplete sections be answered?",
+      classes: "nhsuk-fieldset__legend--s",
       isPageHeading: false
     }
   },
   items: [
     {
       value: "yes",
-      text: "Set remaining sections to 'none'",
-      _hint: {
-        text: "Sections without answers will be set to 'none'"
-      }
+      text: "Answer incomplete sections as 'no' or 'none'"
     },
     {
       value: "no",
