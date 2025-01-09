@@ -104,13 +104,13 @@ module.exports = router => {
           'checked_in'
         )
       }
-      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information`)
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-background`)
     } else {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
     }
   })
 
-  const MAMMOGRAPHY_VIEWS = ['medical-information', 'images', 'imaging', 'confirm', 'attended-not-screened-reason']
+  const MAMMOGRAPHY_VIEWS = ['medical-background', 'medical-details', 'ready-for-imaging', 'images', 'imaging', 'confirm', 'attended-not-screened-reason']
 
   // Event within clinic context
   router.get('/clinics/:clinicId/events/:eventId/:view', (req, res, next) => {
@@ -118,6 +118,42 @@ module.exports = router => {
       res.render(`events/mammography/${req.params.view}`, {
       })
     } else next()
+  })
+
+  // Handle screening completion
+  router.post('/clinics/:clinicId/events/:eventId/medical-background-answer', (req, res) => {
+    const { clinicId, eventId } = req.params
+    const data = req.session.data
+    const hasDetailsToRecord = data.medicalBackgroundQuestion
+    delete data.hasDetailsToRecord
+
+    const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
+
+    if (!hasDetailsToRecord) {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-background`)
+    } else if (hasDetailsToRecord === 'yes') {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-details`)
+    } else {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/ready-for-imaging`)
+    }
+  })
+
+  // Handle screening completion
+  router.post('/clinics/:clinicId/events/:eventId/imaging-answer', (req, res) => {
+    const { clinicId, eventId } = req.params
+    const data = req.session.data
+    const imagingComplete = data.imagingComplete
+    delete data.imagingComplete
+
+    const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
+
+    if (!imagingComplete) {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/imaging`)
+    } else if (imagingComplete === 'yes' || imagingComplete === 'yesPartial') {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/confirm`)
+    } else {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
+    }
   })
 
   // // Advance status to attened / complete

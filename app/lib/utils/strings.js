@@ -23,6 +23,21 @@ const startLowerCase = (input) => {
 }
 
 /**
+ * Convert string to camelCase
+ * Example: 'hello world' becomes 'helloWorld'
+ * @param {string} input - String to convert
+ * @returns {string} Camel case string
+ */
+const camelCase = (input) => {
+  if (!input) return ''
+  if (typeof input !== 'string') return input
+
+  return input
+    .toLowerCase()
+    .replace(/[^a-zA-Z0-9]+(.)/g, (match, char) => char.toUpperCase())
+}
+
+/**
  * Separate words with hyphens
  * @param {string} input - String to convert
  * @returns {string} Hyphen-separated string
@@ -230,6 +245,7 @@ module.exports = {
   formatNhsNumber,
   formatWords,
   isString,
+  camelCase,
   kebabCase,
   noWrap,
   asHint,

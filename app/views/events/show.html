@@ -22,7 +22,7 @@
   {% set activeTab = 'all' %}
 
   {# Show tabs if we've done mammography #}
-  {% if ['event_screened', 'event_partially_screened'] | includes(event.status) %}
+  {% if ['event_complete', 'event_partially_screened'] | includes(event.status) %}
     {% include "event-navigation.njk" %}
   {% endif %}
 

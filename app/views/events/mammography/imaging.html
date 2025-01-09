@@ -2,11 +2,11 @@
 {% extends 'layout-app.html' %}
 
 
-{% set pageHeading = "Imaging" %}
+{% set pageHeading = "5 images taken" %}
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
 
-{% set formAction = './confirm' %}
+{% set formAction = './imaging-answer' %}
 
 
 
@@ -16,10 +16,10 @@
 
   {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
 
-  <h1 class="nhsuk-heading-l">
-    <span class="nhsuk-caption-l">
-      {{ participant | getFullName }}
-    </span>
+  <span class="nhsuk-caption-l">
+    {{ participant | getFullName }}
+  </span>
+  <h1 class="nhsuk-heading-l js-image-count">
     {{ pageHeading }}
   </h1>
 
@@ -29,7 +29,27 @@
 
 
 
-  <div class='app-hidden' id="imaging-form">
+
+  {% set observationHtml %}
+    <p>This could include tattoos, lumps, moles or scars on the breasts.</p>
+    {% set insetHtml %}
+      <p>No physical observations recorded</p>
+    {% endset %}
+    {{ insetText({
+      html: insetHtml
+    }) }}
+
+    <p><a href="#">Add physical observation</a></p>
+  {% endset %}
+
+  {{ card({
+    heading: "Physical observations",
+    headingLevel: "2",
+    descriptionHtml: observationHtml
+  }) }}
+
+    <hr class="nhsuk-section-break nhsuk-section-break--l nhsuk-section-break--visible">
+
     <div class="nhsuk-grid-row">
       <div class="nhsuk-grid-column-two-thirds">
         {% set reasonHtml %}
@@ -41,19 +61,32 @@
             }
           }) }}
         {% endset %}
-        
-        {{ checkboxes({
-          idPrefix: "partialMammography",
-          name: "partialMammography",
-          classes: "nhsuk-u-margin-bottom-5",
+
+        {{ radios({
+          idPrefix: "imagingComplete",
+          name: "imagingComplete",
+          fieldset: {
+            legend: {
+              text: "Is imaging complete?",
+              classes: "nhsuk-fieldset__legend--m",
+              isPageHeading: false
+            }
+          },
           items: [
             {
-              value: "partial",
-              text: "Partial mammography only",
-              
+              value: "yes",
+              text: "Yes - full mammography"
+            },
+            {
+              value: "yesPartial",
+              text: "Yes - partial mammography only",
               conditional: {
                 html: reasonHtml
               }
+            },
+            {
+              value: "no",
+              text: "No, the images could not be taken"
             }
           ]
         }) }}
@@ -61,11 +94,14 @@
         {{ button({
           text: "Continue"
         }) }}
+
       </div>
     </div>
-  </div>
 
-  <p><a href="./attended-not-screened-reason">Screening cannot proceed</a></p>
+
+
+
+  {# <p><a href="./attended-not-screened-reason">Screening cannot proceed</a></p> #}
 
 {% endblock %}
 

@@ -15,7 +15,7 @@ const getStatusTagColour = (status) => {
     // Event statuses
     event_scheduled: 'blue', // default blue
     event_checked_in: '', // no colour will get solid dark blue
-    event_screened: 'green',
+    event_complete: 'green',
     event_partially_screened: 'orange',
     event_did_not_attend: 'red',
     event_cancelled: 'red',
@@ -35,7 +35,7 @@ const getStatusText = (status) => {
     event_scheduled: 'Confirmed', // default blue
     // Event statuses
     event_checked_in: 'Checked in', // no colour will get solid dark blue
-    event_screened: 'Screened',
+    event_complete: 'Screened',
     event_partially_screened: 'Partially screened',
     event_did_not_attend: 'Did not attend',
     event_attended_not_screened: 'Attended not screened',
@@ -51,7 +51,7 @@ const filterEventsByStatus = (events, filter) => {
     case 'checked-in':
       return events.filter(e => e.status === 'event_checked_in')
     case 'complete':
-      return events.filter(e => ['event_screened', 'event_partially_screened', 'event_attended_not_screened'].includes(e.status))
+      return events.filter(e => ['event_complete', 'event_partially_screened', 'event_attended_not_screened'].includes(e.status))
     default:
       return events
   }

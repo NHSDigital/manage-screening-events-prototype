@@ -31,7 +31,7 @@ const determineEventStatus = (slotDateTime, currentDateTime, attendanceWeights) 
   }
 
   if (slotDate.isBefore(currentDate)) {
-    const finalStatuses = ['event_screened', 'event_partially_screened', 'event_did_not_attend', 'event_attended_not_screened']
+    const finalStatuses = ['event_complete', 'event_partially_screened', 'event_did_not_attend', 'event_attended_not_screened']
     return weighted.select(finalStatuses, attendanceWeights)
   }
 
@@ -43,14 +43,14 @@ const determineEventStatus = (slotDateTime, currentDateTime, attendanceWeights) 
     // Within 30 mins of appointment
     return weighted.select({
       event_checked_in: 0.6,
-      event_screened: 0.1,
+      event_complete: 0.1,
       event_attended_not_screened: 0.1,
       event_scheduled: 0.2,
     })
   } else {
     // More than 30 mins after appointment
     return weighted.select({
-      event_screened: 0.6,
+      event_complete: 0.6,
       event_attended_not_screened: 0.1,
       event_scheduled: 0.2,
     })

@@ -1,19 +1,26 @@
 {% set images = [
   {
-    view: "Cranio-caudal",
+    view: "CC (cranio-caudal)",
     side: "Right"
   },
   {
-    view: "Mediolateral oblique",
+    view: "MLO (mediolateral oblique)",
     side: "Right"
   },
   {
-    view: "Cranio-caudal",
+    view: "CC (cranio-caudal)",
     side: "Left"
   },
   {
-    view: "Mediolateral oblique",
-    side: "Left"
+    view: "MLO (mediolateral oblique)",
+    side: "Left",
+    comment: "Blurry"
+  },
+  {
+    view: "MLO (mediolateral oblique)",
+    side: "Left",
+    repeat: "Yes",
+    comment: "Needed clearer image"
   }
 ] %}
 
@@ -34,105 +41,90 @@
 
 
 {% macro makeImage(params) %}
-
-  {% set summaryListHtml %}
-    <div class="nhsuk-grid-row">
-      <div class="nhsuk-grid-column-one-quarter">
-        
-        <div class="app-mammogram-image--placeholder">
-          <p>[IMAGE HERE]</p>
-        </div>
-      </div>
-      <div class="nhsuk-grid-column-three-quarters">
-        {{ summaryList({
-          rows: [
-            {
-              key: {
-                text: "Side"
-              },
-              value: {
-                text: params.side
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "side"
-                  }
-                ]
-              }
-            },
-            {
-              key: {
-                text: "View"
-              },
-              value: {
-                text: params.view
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "view"
-                  }
-                ]
-              }
-            },
-            {
-              key: {
-                text: "Is a repeat"
-              },
-              value: {
-                text: "No"
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "is a repeat"
-                  }
-                ]
-              }
-            },
-            {
-              key: {
-                text: "Comment"
-              },
-              value: {
-                text: "Not provided"
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "is a repeat"
-                  }
-                ]
-              }
-            }
-          ]
-        }) }}
-      </div>
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-one-quarter">
+    
+    <div class="app-mammogram-image--placeholder">
+      <p>[IMAGE HERE]</p>
     </div>
+  </div>
+  <div class="nhsuk-grid-column-three-quarters">
 
-  {% endset %}
-
-  {% set classes = "nhsuk-u-margin-bottom-3 app-image-card" %}
-  {% if animateImages %}
-    {% set classes = classes + " app-hidden" %}
-  {% endif %}
-
-  {{ card({
-    heading: "Image " + params.index + " - " + (params.timeNow | formatTime('H:mm:ss')),
-    headingLevel: "3",
-    descriptionHtml: summaryListHtml,
-    classes: classes
-  }) }}
-
+    {# {
+          key: {
+            text: "Side"
+          },
+          value: {
+            text: params.side
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "side"
+              }
+            ]
+          }
+        }, #}
+    {{ summaryList({
+      classes: "nhsuk-u-margin-bottom-0",
+      rows: [
+        {
+          key: {
+            text: "View"
+          },
+          value: {
+            text: params.view
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "view"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Is a repeat"
+          },
+          value: {
+            text: params.repeat or "No"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "is a repeat"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Comment"
+          },
+          value: {
+            text: params.comment or "Not provided"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "is a repeat"
+              }
+            ]
+          }
+        }
+      ]
+    }) }}
+  </div>
+</div>
 {% endmacro %}
 
 {# Show loading spinner initially #}
@@ -144,30 +136,49 @@
 
   {% set timeNow = "" | now %}
 
-  {% for image in images %}
+  {% set imageSides = images | groupby("side") %}
 
-    {% if not loop.first %}
-      {% set randomSeconds = [3,4,5] | random %}
-      {% set timeNow = dayjs(timeNow).add(randomSeconds, 'seconds')  %}
-    {% endif %}
+  {% for imageSide, sideImages in imageSides %}
 
-    {% set params = {
-      view: image.view,
-      side: image.side,
-      index: loop.index,
-      timeNow: timeNow
-    } %}
+    {% set heading %}
+      {{ sideImages | length }} {{ imageSide | lower }} breast images
+    {% endset %}
 
-    {# Hack in some titles for left and right #}
-    {% if loop.index == 1 %}
-      <h3>Right breast images</h3>
-    {% elseif loop.index == 3 %}
-      <h3>Left breast images</h3>
-    {% endif %}
+    {% set imageSideHtml %}
+      {% for image in sideImages %}
 
-    {{ makeImage(params) }}
+        {% if not loop.first %}
+          {% set randomSeconds = [3,4,5] | random %}
+          {% set timeNow = dayjs(timeNow).add(randomSeconds, 'seconds')  %}
+        {% endif %}
 
+        {% set params = {
+          view: image.view,
+          side: image.side,
+          repeat: image.repeat or "No",
+          comment: image.comment,
+          index: loop.index,
+          timeNow: timeNow
+        } %}
+
+        {{ makeImage(params) }}
+        {% if not loop.last %}
+          <hr class="nhsuk-section-break nhsuk-section-break--m nhsuk-section-break--visible">
+        {% endif %}
+
+      {% endfor %}
+    {% endset %}
+
+    {{ card({
+      heading: heading,
+      headingLevel: "2",
+      feature: true,
+      descriptionHtml: imageSideHtml
+    }) }}
+    
   {% endfor %}
+
+  
 </div>
 
 
