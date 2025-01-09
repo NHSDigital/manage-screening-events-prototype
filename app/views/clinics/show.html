@@ -64,7 +64,7 @@
           <th class="nhsuk-table__header">Details</th>
           {# <th class="nhsuk-table__header">Postcode</th> #}
           {# <th class="nhsuk-table__header">NHS number</th> #}
-          <th class="nhsuk-table__header">Last screened</th>
+          {# <th class="nhsuk-table__header">Last screened</th> #}
           <th class="nhsuk-table__header">Risk level</th>
           <th class="nhsuk-table__header">Appointment status</th>
           {# <th class="nhsuk-table__header">Actions</th> #}
@@ -95,7 +95,7 @@
             </td>
 
             {# Last screened #}
-            <td class="nhsuk-table__cell">
+            {# <td class="nhsuk-table__cell">
               {% set mostRecentClinic = data | getParticipantMostRecentClinic(participant.id) %}
               {% if mostRecentClinic %}
                 {{ mostRecentClinic | log }}
@@ -104,7 +104,7 @@
               {% else %}
                   {{ "Not known" | asHint }}
               {% endif %}
-            </td>
+            </td> #}
             {# Risk level #}
             <td class="nhsuk-table__cell">
               {{ participant | getCurrentRiskLevel | sentenceCase }}

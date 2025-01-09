@@ -202,6 +202,23 @@
           }
         ]
       }
+   },
+   {
+     key: {
+       text: "Risk level"
+     },
+     value: {
+       html: participant | getCurrentRiskLevel | sentenceCase
+     },
+     actions: {
+        items: [
+          {
+            href: "#",
+            text: "View or update screening history",
+            visuallyHiddenText: "email"
+          } if false
+        ]
+      }
    }
   ]
 }) }}

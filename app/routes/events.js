@@ -110,7 +110,7 @@ module.exports = router => {
     }
   })
 
-  const MAMMOGRAPHY_VIEWS = ['medical-background', 'medical-details', 'ready-for-imaging', 'images', 'imaging', 'confirm', 'attended-not-screened-reason']
+  const MAMMOGRAPHY_VIEWS = ['medical-background', 'medical-details', 'ready-for-imaging', 'images', 'imaging', 'confirm', 'screening-complete', 'attended-not-screened-reason']
 
   // Event within clinic context
   router.get('/clinics/:clinicId/events/:eventId/:view', (req, res, next) => {
@@ -188,6 +188,6 @@ module.exports = router => {
       'event_complete'
     )
 
-    res.redirect(`/clinics/${clinicId}/events/${eventId}`)
+    res.redirect(`/clinics/${clinicId}/events/${eventId}/screening-complete`)
   })
 }
