@@ -9,8 +9,8 @@
 
 
 {% set back = {
-  href: "/participants",
-  text: "Back to participants"
+  href: "/participants" | orReferrer(referrer),
+  text: "Back to participants" if not referrer else "Back to appointment"
 } %}
 
 {% block pageContent %}

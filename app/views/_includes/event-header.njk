@@ -38,5 +38,5 @@
 
 <p>{{ event.timing.startTime | formatTime }} ({{ event.timing.duration }} minutes) - {{ clinic.date | formatDate }} ({{ clinic.date | formatRelativeDate }})<span class="nhsuk-u-margin-left-3"><a href="#">Reschedule appointment</a></span></p>
 
-<p class="nhsuk-u-margin-bottom-4"><a href="/participants/{{ participant.id }}">View participant record</a></p>
+<p class="nhsuk-u-margin-bottom-4"><a href="{{ '/participants/' + participant.id | withReferrer(currentUrl) }}">View participant record</a></p>
 

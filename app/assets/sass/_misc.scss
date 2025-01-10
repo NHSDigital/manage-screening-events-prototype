@@ -14,3 +14,9 @@
   text-decoration: none;
   color: $nhsuk-secondary-text-color;
 }
+
+
+.app-image-flip-horizontal {
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+}

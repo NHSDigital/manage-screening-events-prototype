@@ -1,9 +1,17 @@
 // app/locals.js
 
 module.exports = (config) => (req, res, next) => {
-  res.locals.serviceName = config.serviceName
-  res.locals.url = req.path
-  res.locals.flash = req.flash()
-  res.locals.query = req.query
+
+  const locals = {
+    serviceName: config.serviceName,
+    currentUrl: req.path,
+    flash: req.flash(),
+    query: req.query,
+    referrer: req.query.referrer
+  }
+
+  // Assign all local variables at once
+  Object.assign(res.locals, locals)
+
   next()
 }
