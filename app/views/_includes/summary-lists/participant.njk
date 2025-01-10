@@ -14,6 +14,38 @@
 
 {% set allowEdits = allowEdits | default(true) %}
 
+{% set ethnicGroup = participant.demographicInformation.ethnicGroup  %}
+{% set ethnicBackground = participant.demographicInformation.ethnicBackground %}
+{% set ethnicityDetailsLink %}
+  <a href="#" class="nhsuk-link">Enter ethnicity details</a>
+{% endset %}
+
+{% set ethnicityHtml %}
+{% if ethnicGroup %}
+  {{ ethnicGroup }}
+  {% if ethnicBackground and ethnicBackground != 'Not provided' %}
+    ({{ethnicBackground | replace('Any other', 'any other')}})
+  {% endif %}
+{% else %}
+  {{ ethnicityDetailsLink | safe }}
+{% endif %}
+
+  
+{% endset %}
+
+{% set lastMammogramHtml %}
+  {% set mostRecentClinic = data | getParticipantMostRecentClinic(participant.id) %}
+  {% if mostRecentClinic %}
+    {{ mostRecentClinic | log }}
+    {{ mostRecentClinic.event.timing.startTime | formatDate }} ({{ mostRecentClinic.event.timing.startTime | formatDate | formatRelativeDate | asHint }})</br>
+    {{ mostRecentClinic.location.name }}</br>
+    {{ mostRecentClinic.event.type | sentenceCase }}
+    {# {{ mostRecentClinic | log("Most recent clinic")}} #}
+  {% else %}
+      {{ "Not known" | asHint }}
+  {% endif %}
+{% endset %}
+
 {{ summaryList({
   rows: [
    {
@@ -88,6 +120,23 @@
    },
    {
      key: {
+       text: "Ethnicity"
+     },
+     value: {
+       html: ethnicityHtml | safe
+     },
+     actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "address"
+          } if false
+        ]
+      }
+   },
+   {
+     key: {
        text: "Address"
      },
      value: {
@@ -136,6 +185,40 @@
           } if allowEdits
         ]
       }
-   } if not isMinimalParticipant
+   } if not isMinimalParticipant,
+   {
+     key: {
+       text: "Last known mammogram"
+     },
+     value: {
+       html: lastMammogramHtml
+     },
+     actions: {
+        items: [
+          {
+            href: "#",
+            text: "View or update screening history",
+            visuallyHiddenText: "email"
+          }
+        ]
+      }
+   },
+   {
+     key: {
+       text: "Risk level"
+     },
+     value: {
+       html: participant | getCurrentRiskLevel | sentenceCase
+     },
+     actions: {
+        items: [
+          {
+            href: "#",
+            text: "View or update screening history",
+            visuallyHiddenText: "email"
+          } if false
+        ]
+      }
+   }
   ]
 }) }}

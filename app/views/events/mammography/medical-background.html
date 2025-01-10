@@ -1,0 +1,81 @@
+
+{% extends 'layout-app.html' %}
+
+
+{% set pageHeading = "Medical background" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './medical-background-answer' %}
+
+{# {% set back = {
+  href: "/clinics/" + clinicId,
+  text: "Back to clinic"
+} %}
+ #}
+
+
+
+
+{% block pageContent %}
+
+  {{ participant | log }}
+
+  {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
+
+  <h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">
+      {{ participant | getFullName }}
+    </span>
+    {{ pageHeading }}
+  </h1>
+
+
+  {% set insetHtml %}
+    <p>The participant did not complete a pre-appointment questionnaire</p>
+  {% endset %}
+  {{ insetText({
+    html: insetHtml
+  }) }}
+
+  <p>Ask them whether:</p>
+  <ul class="nhsuk-list nhsuk-list--bullet">
+    <li>they have any breast implants</li>
+    <li>there is a history of breast cancer in their family</li>
+    <li>they have had any other breast diagnosis, procedure or surgery</li>
+    <li>they are taking hormone replacement therapy (HRT) or any other medication</li>
+    <li>they are pregnant or breastfeeding</li>
+    <li>they have noticed any recent changes or symptoms in their breast</li>
+    <li>they currently have any other physical or mental health issues</li>
+  </ul>
+ 
+  {{ radios({
+    idPrefix: "medicalBackgroundQuestion",
+    name: "medicalBackgroundQuestion",
+    fieldset: {
+      legend: {
+        text: "Do you need to record any medical information?",
+        classes: "nhsuk-fieldset__legend--s",
+        isPageHeading: false
+      }
+    },
+    items: [
+      {
+        value: "yes",
+        text: "Yes"
+      },
+      {
+        value: "no",
+        text: "No - proceed to imaging"
+      }
+    ]
+  }) }}
+
+  {{ button({
+    text: "Continue"
+  }) }}
+
+  <p><a href="./attended-not-screened-reason">Screening cannot proceed</a></p>
+
+{% endblock %}
+

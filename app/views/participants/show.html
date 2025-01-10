@@ -9,8 +9,8 @@
 
 
 {% set back = {
-  href: "/participants",
-  text: "Back to participants"
+  href: "/participants" | orReferrer(referrer),
+  text: "Back to participants" if not referrer else "Back to appointment"
 } %}
 
 {% block pageContent %}
@@ -64,138 +64,6 @@
     headingLevel: "2",
     descriptionHtml: screeningHistoryHtml
   }) }}
-
-  {% set medicalInformationHtml %}
-    {% set riskFactorsList %}
-      <ul class="nhsuk-list nhsuk-list--bullet">
-       {% for factor in participant.medicalInformation.riskFactors %}
-         <li>{{ factor | formatWords | sentenceCase }}</li>
-       {% endfor %}
-      </ul>
-    {% endset %}
-
-    {% set medicationsList %}
-      <ul class="nhsuk-list nhsuk-list--bullet">
-       {% for medication in participant.currentHealthInformation.medications %}
-         <li>{{ medication | formatWords | sentenceCase }}</li>
-       {% endfor %}
-      </ul>
-    {% endset %}
-
-    {{ summaryList({
-      rows: [
-       {
-         key: {
-           text: "Risk factors"
-         },
-         value: {
-           html: riskFactorsList
-         }
-       } if participant.medicalInformation.riskFactors.length > 0,
-       {
-         key: {
-           text: "Current medications"
-         }, 
-         value: {
-           html: medicationsList
-         }
-       } if participant.currentHealthInformation.medications.length > 0
-      ] | removeEmpty
-    }) }}
-
-    {# Medical history survey information #}
-  {% if participant.medicalInformation.medicalHistorySurvey %}
-    {# Previous cancer history #}
-    {% if participant.medicalInformation.previousCancerHistory %}
-      {% set cancer = participant.medicalInformation.previousCancerHistory %}
-      {% set treatmentsList %}
-        <ul class="nhsuk-list nhsuk-list--bullet">
-        {% for treatment in cancer.treatments %}
-          <li>{{ treatment.type | formatWords | sentenceCase }} - {{ treatment.details }}</li>
-        {% endfor %}
-        </ul>
-      {% endset %}
-
-      {{ summaryList({
-        rows: [
-          {
-            key: { text: "Previous breast cancer" },
-            value: { text: "Yes, " + cancer.yearDiagnosed }
-          },
-          {
-            key: { text: "Position" },
-            value: { text: cancer.position }
-          } if cancer.position,
-          {
-            key: { text: "Treatments" },
-            value: { html: treatmentsList }
-          },
-          {
-            key: { text: "Hospital" },
-            value: { text: cancer.hospital }
-          }
-        ] | removeEmpty
-      }) }}
-    {% endif %}
-
-    {# Non-cancerous procedures #}
-    {% if participant.medicalInformation.medicalHistorySurvey.nonCancerousProcedures %}
-      {% set procedures = participant.medicalInformation.medicalHistorySurvey.nonCancerousProcedures %}
-      {% set proceduresList %}
-        <ul class="nhsuk-list nhsuk-list--bullet">
-        {% for procedure in procedures %}
-          <li>
-            {{ procedure.type | formatWords | sentenceCase }}
-            {% if procedure.date %}({{ procedure.date | formatDate }}){% endif %}
-            {% if procedure.location %} - {{ procedure.location }}{% endif %}
-            {% if procedure.notes %} - {{ procedure.notes }}{% endif %}
-          </li>
-        {% endfor %}
-        </ul>
-      {% endset %}
-
-      {{ summaryList({
-        rows: [
-          {
-            key: { text: "Previous procedures" },
-            value: { html: proceduresList }
-          }
-        ]
-      }) }}
-    {% endif %}
-
-    {# Other medical history #}
-    {% if participant.medicalInformation.medicalHistorySurvey.otherMedicalHistory %}
-      {% set otherHistoryList %}
-        <ul class="nhsuk-list nhsuk-list--bullet">
-        {% for item in participant.medicalInformation.medicalHistorySurvey.otherMedicalHistory %}
-          <li>{{ item }}</li>
-        {% endfor %}
-        </ul>
-      {% endset %}
-
-      {{ summaryList({
-        rows: [
-          {
-            key: { text: "Other medical history" },
-            value: { html: otherHistoryList }
-          }
-        ]
-      }) }}
-    {% endif %}
-  {% endif %}
-
-  {% endset %}
-
-  {# {% if participant.medicalInformation.riskFactors | length or participant.currentHealthInformation.medications | length %} #}
-    {{ card({
-      heading: "Medical information",
-      headingLevel: "2",
-      descriptionHtml: medicalInformationHtml
-    }) }}
-  {# {% endif %} #}
-
-
 
 
 {% endblock %}

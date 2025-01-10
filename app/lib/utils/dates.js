@@ -86,11 +86,21 @@ const formatDateTime = (dateString, format = 'D MMMM YYYY, HH:mm') => {
  */
 const formatRelativeDate = (dateString, withoutSuffix = false) => {
   if (!dateString) return ''
-  const date = dayjs(dateString)
+  const date = dayjs(dateString).startOf('day')
+  const now = dayjs().startOf('day')
 
   if (date.isToday()) return 'today'
   if (date.isTomorrow()) return 'tomorrow'
   if (date.isYesterday()) return 'yesterday'
+
+  // Calculate days difference for near dates
+  const daysDiff = date.diff(now, 'day')
+  if (daysDiff > 0 && daysDiff <= 6) {
+    return `in ${daysDiff} day${daysDiff > 1 ? 's' : ''}`
+  }
+  if (daysDiff < 0 && daysDiff >= -6) {
+    return `${Math.abs(daysDiff)} day${Math.abs(daysDiff) > 1 ? 's' : ''} ago`
+  }
 
   return date.fromNow(withoutSuffix)
 }
@@ -141,6 +151,14 @@ const isAfterDate = (inputDate, compareDate = dayjs()) => {
 */
 const today = () => {
   return dayjs().startOf('day').toISOString()
+}
+
+/**
+ * Get current date and time
+ * @returns {string} Current date/time as ISO string
+ */
+const now = () => {
+  return dayjs().toISOString()
 }
 
 /**
@@ -196,6 +214,7 @@ const getWeekDates = (dateString) => {
   })
 }
 
+
 module.exports = {
   formatDate,
   formatTime,
@@ -209,6 +228,7 @@ module.exports = {
   isBeforeDate,
   isAfterDate,
   today,
+  now,
   getWeekDates,
   // Export dayjs instance for direct use if needed
   dayjs,

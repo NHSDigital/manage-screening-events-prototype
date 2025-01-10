@@ -2,7 +2,7 @@
 {% extends 'layout-app.html' %}
 
 {% set pageHeading %}
-  {{ clinic.clinicType | sentenceCase }} for {{ participant | getFullName }}
+  {{ participant | getFullName }}
 {% endset %}
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
@@ -21,23 +21,24 @@
 
   {% set activeTab = 'all' %}
 
-  {% if event.status == "complete" %}
+  {# Show tabs if we've done mammography #}
+  {% if ['event_complete', 'event_partially_screened'] | includes(event.status) %}
     {% include "event-navigation.njk" %}
   {% endif %}
 
   {% set statusHtml %}
     {{ tag({
-      text: event.status | formatWords | sentenceCase,
+      text: event.status | getStatusText,
       classes: "nhsuk-tag--" + event.status | getStatusTagColour
     }) }}
-    {% if event.status === 'scheduled' %}
+    {% if event.status === 'event_event_scheduled' %}
       {% set href -%}
         /clinics/{{ clinicId }}/check-in/{{ event.id }}?returnTo=/clinics/{{ clinicId }}/events/{{ eventId }}
       {%- endset %}
       <p class="nhsuk-u-margin-top-2"><a href="{{href | trim}}">Check in participant</a></p>
 
     {% endif %}
-    {% if event.status === "attended_not_screened" %}
+    {% if event.status === "event_attended_not_screened" %}
       <p class="nhsuk-u-margin-top-2">[Reason for not screened here]</p>
     {% endif %}
   {% endset %}
@@ -48,6 +49,26 @@
     <p>{{ event.timing.startTime | formatTime }} ({{ event.timing.duration }} minutes)</p>
     
   {% endset %}
+
+  {% set specialAppointmentHtml %}
+    {% if participant.extraNeeds | length > 1 %}
+      <ul>
+        {% for need in participant.extraNeeds %}
+          <li>{{need}}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>{{ participant.extraNeeds }}</p>
+    {% endif %}
+    <p><a href="#">Change</a></p>
+  {% endset %}
+
+  {% if event.details.isSpecialAppointment %}
+    {{ warningCallout({
+      heading: "Special appointment",
+      HTML: specialAppointmentHtml
+    }) }}
+  {% endif %}
 
   {% set otherDetailsHtml %}
     {% if event.details.isSpecialAppointment %}
@@ -86,7 +107,7 @@
                 href: "#",
                 text: "Reschedule appointment",
                 visuallyHiddenText: "name"
-              } if event.status == "scheduled"
+              } if event.status == "event_scheduled"
             ]
           }
         },
@@ -137,11 +158,18 @@
     }) }}
   {% endset %}
 
-  {{ card({
+  {# {{ card({
     heading: "Appointment",
     headingLevel: "2",
     descriptionHtml: appointmentHtml
-  }) }}
+  }) }} #}
+
+  {# {{ card({
+    heading: "Appointment",
+    headingLevel: "2",
+    descriptionHtml: appointmentHtml,
+    feature: true
+  }) }} #}
 
   {% set participantDetailsHtml %}
     {% set isMinimalParticipant = true %}
@@ -151,7 +179,9 @@
 
 
   {{ card({
-    heading: "Participant",
+    _heading: "Important details",
+    headingHtml: " ",
+    _feature: true,
     headingLevel: "2",
     descriptionHtml: participantDetailsHtml
   }) }}
@@ -163,7 +193,7 @@
     {% set lastMammogram = null %}
 
     {% for record in clinicHistory %}
-       {% if record.event.status === 'complete' and (not lastMammogram or record.event.timing.startTime > lastMammogram.event.timing.startTime) %}
+       {% if record.event.status === 'event_complete' and (not lastMammogram or record.event.timing.startTime > lastMammogram.event.timing.startTime) %}
          {% set lastMammogram = record %}
        {% endif %}
     {% endfor %}
@@ -224,11 +254,11 @@
 
   {% endset %}
 
-  {{ card({
+  {# {{ card({
     heading: "Screening history",
     headingLevel: "2",
     descriptionHtml: screeningHistoryHtml
-  }) }}
+  }) }} #}
 
 
 {#   {% set preAppointmentQuestionnaireHtml %}
@@ -261,51 +291,58 @@
     descriptionHtml: preAppointmentQuestionnaireHtml
   }) }} #}
 
+
+
+{% set screeningHint %}
+Before you proceed, check the participant’s identity and confirm that their last mammogram was more than 6 months ago
+{% endset %}
+
   {% set screeningHtml %}
-
-  <h3 class="nhsuk-heading-s">Confirm the following before continuing</h3>
-
-  <ul>
-    <li>Identity has been confirmed</li>
-    <li>Mammogram history
-      <ul>
-        <li>Date and location of last mammogram</li>
-        <li>No mammograms within last 6 months</li>
-      </ul>
-    </li>
-  </ul>
-
     <form action="./{{eventId}}/start" method="post">
+      <div class="nhsuk-grid-row">
+        <div class="nhsuk-grid-column-two-thirds">
+          {{ radios({
+            idPrefix: "beginScreening",
+            name: "beginScreening",
+            fieldset: {
+              legend: {
+                text: "Can screening go ahead?",
+                classes: "nhsuk-fieldset__legend--m",
+                isPageHeading: false
+              }
+            },
+              hint: {
+                text: screeningHint
+              },
+            items: [
+              {
+                value: "yes",
+                text: "Yes"
+              },
+              {
+                value: "no",
+                text: "No, screening cannot proceed"
+              }
+            ]
+          }) }}
+        </div>
+      </div>
 
-      {# {{ input({
-        label: {
-          text: "Full name"
-        },
-        id: "example",
-        name: "save[participant--" + participantId + "][first-name]"
-      }) }} #}
 
-      {{ radios({
-        idPrefix: "beginScreening",
-        name: "beginScreening",
-        fieldset: {
-          legend: {
-            text: "Can screening proceed?",
-            classes: "nhsuk-fieldset__legend--s",
-            isPageHeading: false
-          }
-        },
-        items: [
+      {# 
+      ,
           {
-            value: "yes",
-            text: "Yes"
+            value: "no-identity",
+            text: "No, I cannot confirm the participant’s identity"
           },
           {
-            value: "no",
-            text: "No, screening cannot proceed"
-          }
-        ]
-      }) }}
+            value: "no-recent-mammogram",
+            text: "No, their last mammogram is too recent"
+          },
+          {
+            value: "no-other-reason",
+            text: "No, for a different reason"
+          } #}
 
       {{ button({
         text: "Continue"
@@ -316,12 +353,13 @@
 
   {% endset %}
 
-  {% if event.status == 'checked_in' or event.status == 'scheduled' %}
-    {{ card({
+  {% if event.status == 'event_checked_in' or event.status == 'event_scheduled' %}
+    {{ screeningHtml | safe}}
+    {# {{ card({
       heading: "Pre-screening checks",
       headingLevel: "2",
       descriptionHtml: screeningHtml
-    }) }}
+    }) }} #}
   {% endif %}
 
 

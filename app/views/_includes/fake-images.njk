@@ -1,0 +1,245 @@
+{% set images = [
+  {
+    view: "CC (craniocaudal)",
+    side: "Right"
+  },
+  {
+    view: "MLO (mediolateral oblique)",
+    side: "Right"
+  },
+  {
+    view: "CC (craniocaudal)",
+    side: "Left"
+  },
+  {
+    view: "MLO (mediolateral oblique)",
+    side: "Left",
+    comment: "Blurry"
+  },
+  {
+    view: "MLO (mediolateral oblique)",
+    side: "Left",
+    repeat: "Yes",
+    comment: "Needed clearer image"
+  }
+] %}
+
+{# {% set back = {
+  href: "/clinics/" + clinicId,
+  text: "Back to clinic"
+} %}
+ #}
+{# Loading state macro #}
+{% macro loadingSpinner() %}
+<div id="loading-spinner" class="">
+  <div class="nhsuk-loader">
+    <span class="nhsuk-u-visually-hidden">Loading images...</span>
+  </div>
+  <p class="nhsuk-u-margin-top-3 nhsuk-u-secondary-text-color">Waiting for mammogram images...</p>
+</div>
+{% endmacro %}
+
+
+{% macro makeImage(params) %}
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-one-quarter">
+    
+    <div class="app-mammogram-image--placeholder">
+      <img class="nhsuk-image__img {{ 'app-image-flip-horizontal' if params.side == 'Right' }}" src="/images/mammograms/nci-vol-9405-72.jpg" alt="Close-up of a person’s tummy showing a number of creases in the skin under their belly button. Shown on light brown skin.">
+      <p>[IMAGE HERE]</p>
+    </div>
+  </div>
+  <div class="nhsuk-grid-column-three-quarters">
+
+    {# {
+          key: {
+            text: "Side"
+          },
+          value: {
+            text: params.side
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "side"
+              }
+            ]
+          }
+        }, #}
+    {{ summaryList({
+      classes: "nhsuk-u-margin-bottom-0",
+      rows: [
+        {
+          key: {
+            text: "View"
+          },
+          value: {
+            text: params.view
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "view"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Is a repeat"
+          },
+          value: {
+            html: params.repeat or "No"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "is a repeat"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Comment"
+          },
+          value: {
+            text: params.comment or "Not provided"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "is a repeat"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Details",
+            classes: "foo"
+          },
+          value: {
+            html: params.details or "Not provided"
+          },
+          actions: {
+            items: []
+          },
+          classes: "nhsuk-summary-list--no-border"
+        }
+      ]
+    }) }}
+  </div>
+</div>
+{% endmacro %}
+
+{# Show loading spinner initially #}
+{# {% if animateImages %}
+  {{ loadingSpinner() }}
+{% endif %}
+ #}
+<div class="nhsuk-u-margin-bottom-4">
+
+  {% set timeNow = dayjs().subtract(1, 'minute')  %}
+
+  {% set imageSides = images | groupby("side") %}
+
+  {% for imageSide, sideImages in imageSides %}
+
+    {% set heading %}
+      {{ sideImages | length }} {{ imageSide | lower }} breast images
+    {% endset %}
+
+    {% set imageSideHtml %}
+      {% for image in sideImages %}
+
+        {# {% if not loop.first %} #}
+          {% set randomSeconds = [24,49,52] | random %}
+          {% set timeNow = dayjs(timeNow).add(randomSeconds, 'seconds')  %}
+        {# {% endif %} #}
+
+        {% set detailsHtml -%}
+        Captured:
+        {{ timeNow | formatDate("D MMMM YYYY h:mm:ss")}}
+        Accession: 
+        9583011-14/{{loop.index}}
+        {%- endset %}
+        
+
+        {% set params = {
+          view: image.view,
+          side: image.side,
+          repeat: image.repeat or "No",
+          comment: image.comment,
+          index: loop.index,
+          timeNow: timeNow,
+          details: detailsHtml | trim | nl2br
+        } %}
+
+        {{ makeImage(params) }}
+        {% if not loop.last %}
+          <hr class="nhsuk-section-break nhsuk-section-break--m nhsuk-section-break--visible">
+        {% endif %}
+
+      {% endfor %}
+    {% endset %}
+
+    {{ card({
+      heading: heading,
+      headingLevel: "2",
+      feature: true,
+      descriptionHtml: imageSideHtml
+    }) }}
+    
+  {% endfor %}
+
+  
+</div>
+
+
+{% block pageScripts %}
+  {% if animateImages %}
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const loadingSpinner = document.getElementById('loading-spinner')
+        const imageCards = document.querySelectorAll('.app-image-card')
+        const imagingForm = document.getElementById('imaging-form')
+
+        // Hide spinner after initial delay
+        setTimeout(() => {
+          loadingSpinner.classList.add('app-hidden')
+          
+          // Show each image sequentially
+          imageCards.forEach((card, index) => {
+            // Increased time between images to 2 seconds
+            const loadTime = 1000 + (index * 2000)
+            
+            setTimeout(() => {
+              card.classList.remove('app-hidden')
+              card.style.opacity = 0
+              card.style.transition = 'opacity 0.5s ease-in'
+              setTimeout(() => card.style.opacity = 1, 50)
+
+              // Show form at same time as first image
+              if (index === 0) {
+                imagingForm.classList.remove('app-hidden')
+                imagingForm.style.opacity = 0
+                imagingForm.style.transition = 'opacity 0.5s ease-in'
+                setTimeout(() => imagingForm.style.opacity = 1, 50)
+              }
+            }, loadTime)
+          })
+        }, 1000)
+      })
+      </script>
+  {% endif %}
+
+{% endblock %}

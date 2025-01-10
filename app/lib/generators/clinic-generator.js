@@ -136,6 +136,11 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes, overr
   const clinicType = overrides?.clinicType || determineClinicType(location, breastScreeningUnit)
   const slots = generateTimeSlots(date, sessionTimes, clinicType)
 
+  // Get supported risk levels - intersect BSU and location capabilities
+  const riskLevels = location.riskLevelHandling
+    ? location.riskLevelHandling.filter(risk => breastScreeningUnit.riskLevelHandling.includes(risk))
+    : breastScreeningUnit.riskLevelHandling
+
   // Check if clinic is for today
   const today = dayjs().startOf('day')
   const clinicDate = dayjs(date).startOf('day')
@@ -150,6 +155,7 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes, overr
     breastScreeningUnitId: breastScreeningUnit.id,
     locationType: location.type,
     clinicType,
+    riskLevels,
     locationId: location.id,
     siteName: location.type === 'mobile_unit' ? generateMobileSiteName() : null,
     slots,

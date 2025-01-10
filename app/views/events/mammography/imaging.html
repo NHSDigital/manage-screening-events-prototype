@@ -2,144 +2,13 @@
 {% extends 'layout-app.html' %}
 
 
-{% set pageHeading = "Imaging" %}
+{% set pageHeading = "5 images taken" %}
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
 
-{% set formAction = './complete' %}
-
-{% set images = [
-  {
-    view: "Cranio-caudal",
-    side: "Right"
-  },
-  {
-    view: "Mediolateral oblique",
-    side: "Right"
-  },
-  {
-    view: "Cranio-caudal",
-    side: "Left"
-  },
-  {
-    view: "Mediolateral oblique",
-    side: "Left"
-  }
-] %}
-
-{# {% set back = {
-  href: "/clinics/" + clinicId,
-  text: "Back to clinic"
-} %}
- #}
-{# Loading state macro #}
-{% macro loadingSpinner() %}
-<div id="loading-spinner" class="">
-  <div class="nhsuk-loader">
-    <span class="nhsuk-u-visually-hidden">Loading images...</span>
-  </div>
-  <p class="nhsuk-u-margin-top-3 nhsuk-u-secondary-text-color">Waiting for mammogram images...</p>
-</div>
-{% endmacro %}
+{% set formAction = './imaging-answer' %}
 
 
-{% macro makeImage(params) %}
-
-  {% set summaryListHtml %}
-    <div class="nhsuk-grid-row">
-      <div class="nhsuk-grid-column-one-quarter">
-        
-        <div class="app-mammogram-image--placeholder">
-          <p>[IMAGE HERE]</p>
-        </div>
-      </div>
-      <div class="nhsuk-grid-column-three-quarters">
-        {{ summaryList({
-          rows: [
-            {
-              key: {
-                text: "Side"
-              },
-              value: {
-                text: params.side
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "side"
-                  }
-                ]
-              }
-            },
-            {
-              key: {
-                text: "View"
-              },
-              value: {
-                text: params.view
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "view"
-                  }
-                ]
-              }
-            },
-            {
-              key: {
-                text: "Is a repeat"
-              },
-              value: {
-                text: "No"
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "is a repeat"
-                  }
-                ]
-              }
-            },
-            {
-              key: {
-                text: "Comment"
-              },
-              value: {
-                text: "Not provided"
-              },
-              actions: {
-                items: [
-                  {
-                    href: "#",
-                    text: "Change",
-                    visuallyHiddenText: "is a repeat"
-                  }
-                ]
-              }
-            }
-          ]
-        }) }}
-      </div>
-    </div>
-
-    
-  {% endset %}
-
-  {{ card({
-    heading: "Image " + params.index,
-    headingLevel: "3",
-    descriptionHtml: summaryListHtml,
-    classes: "nhsuk-u-margin-bottom-3 app-image-card app-hidden"
-  }) }}
-
-{% endmacro %}
 
 {% block pageContent %}
 
@@ -147,37 +16,40 @@
 
   {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
 
-  <h1 class="nhsuk-heading-l">
-    <span class="nhsuk-caption-l">
-      {{ participant | getFullName }}
-    </span>
+  <span class="nhsuk-caption-l">
+    {{ participant | getFullName }}
+  </span>
+  <h1 class="nhsuk-heading-l js-image-count">
     {{ pageHeading }}
   </h1>
 
-  {# Show loading spinner initially #}
-  {{ loadingSpinner() }}
 
-  <div class="nhsuk-u-margin-bottom-4">
-    {% for image in images %}
-      {% set params = {
-        view: image.view,
-        side: image.side,
-        index: loop.index
-      } %}
+  {% set animateImages = true %}
+  {% include "fake-images.njk" %}
 
-      {# Hack in some titles for left and right #}
-      {% if loop.index == 1 %}
-        <h3>Right breast images</h3>
-      {% elseif loop.index == 3 %}
-        <h3>Left breast images</h3>
-      {% endif %}
 
-      {{ makeImage(params) }}
 
-    {% endfor %}
-  </div>
 
-  <div class='app-hidden' id="imaging-form">
+  {% set observationHtml %}
+    <p>This could include tattoos, lumps, moles or scars on the breasts.</p>
+    {% set insetHtml %}
+      <p>No physical observations recorded</p>
+    {% endset %}
+    {{ insetText({
+      html: insetHtml
+    }) }}
+
+    <p><a href="#">Add physical observation</a></p>
+  {% endset %}
+
+  {{ card({
+    heading: "Physical observations",
+    headingLevel: "2",
+    descriptionHtml: observationHtml
+  }) }}
+
+    <hr class="nhsuk-section-break nhsuk-section-break--l nhsuk-section-break--visible">
+
     <div class="nhsuk-grid-row">
       <div class="nhsuk-grid-column-two-thirds">
         {% set reasonHtml %}
@@ -189,66 +61,48 @@
             }
           }) }}
         {% endset %}
-        
-        {{ checkboxes({
-          idPrefix: "partialMammography",
-          name: "partialMammography",
-          classes: "nhsuk-u-margin-bottom-5",
+
+        {{ radios({
+          idPrefix: "imagingComplete",
+          name: "imagingComplete",
+          fieldset: {
+            legend: {
+              text: "Is imaging complete?",
+              classes: "nhsuk-fieldset__legend--m",
+              isPageHeading: false
+            }
+          },
           items: [
             {
-              value: "partial",
-              text: "Partial mammography only",
-              
+              value: "yes",
+              text: "Yes - full mammography"
+            },
+            {
+              value: "yesPartial",
+              text: "Yes - partial mammography only",
               conditional: {
                 html: reasonHtml
               }
+            },
+            {
+              value: "no",
+              text: "No, the images could not be taken"
             }
           ]
         }) }}
 
         {{ button({
-          text: "Confirm all images and complete screening"
+          text: "Continue"
         }) }}
+
       </div>
     </div>
-  </div>
 
-  <p><a href="./attended-not-screened-reason">Screening cannot proceed</a></p>
+
+
+
+  {# <p><a href="./attended-not-screened-reason">Screening cannot proceed</a></p> #}
 
 {% endblock %}
 
-{% block pageScripts %}
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const loadingSpinner = document.getElementById('loading-spinner')
-  const imageCards = document.querySelectorAll('.app-image-card')
-  const imagingForm = document.getElementById('imaging-form')
 
-  // Hide spinner after initial delay
-  setTimeout(() => {
-    loadingSpinner.classList.add('app-hidden')
-    
-    // Show each image sequentially
-    imageCards.forEach((card, index) => {
-      // Increased time between images to 2 seconds
-      const loadTime = 1000 + (index * 2000)
-      
-      setTimeout(() => {
-        card.classList.remove('app-hidden')
-        card.style.opacity = 0
-        card.style.transition = 'opacity 0.5s ease-in'
-        setTimeout(() => card.style.opacity = 1, 50)
-
-        // Show form at same time as first image
-        if (index === 0) {
-          imagingForm.classList.remove('app-hidden')
-          imagingForm.style.opacity = 0
-          imagingForm.style.transition = 'opacity 0.5s ease-in'
-          setTimeout(() => imagingForm.style.opacity = 1, 50)
-        }
-      }, loadTime)
-    })
-  }, 1000)
-})
-</script>
-{% endblock %}

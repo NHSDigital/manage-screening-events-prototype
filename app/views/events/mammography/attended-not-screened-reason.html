@@ -2,7 +2,7 @@
 {% extends 'layout-app.html' %}
 
 
-{% set pageHeading = "Screening cannot proceed" %}
+{% set pageHeading = "Appointment cannot go ahead" %}
 
 {# {% set gridColumn = "nhsuk-grid-column-full" %} #}
 
@@ -28,20 +28,59 @@
     {{ pageHeading }}
   </h1>
 
-  {{ textarea({
-    name: "example",
-    id: "example",
-    label: {
-      text: "Details of why screening cannot proceed"
-    }
+  {% macro makeCheckboxConditionalItem(params) %}
+    {{ input({
+      label: {
+        text: "Provide details"
+      },
+      id: params.value + "Details",
+      name: params.value + "Details"
+    }) }}
+  {% endmacro %}
+
+  {% set checkboxItems = [] %}
+
+  {% for reason in [
+    'Participant did not attend',
+    'Failed identity check',
+    'Language difficulties',
+    'Physical health issue',
+    'Mental health issue',
+    'Last mammogram within 6 months',
+    'Breast implant risks',
+    'Pain during screening',
+    'Technical issues',
+    'Participant withdrew consent',
+    'Other'
+  ] %}
+    {% set checkboxItems = checkboxItems | push({
+      text: reason,
+      value: reason | camelCase,
+      conditional: {
+        html: makeCheckboxConditionalItem({value:reason | camelCase})
+      }
+    }) %}
+  {% endfor %}
+
+  {{ checkboxes({
+    idPrefix: "appointment-stopped-reason",
+    name: "appointment-stopped-reason",
+    fieldset: {
+      legend: {
+        text: "Why can this appointment not go ahead?",
+        classes: "nhsuk-fieldset__legend--s",
+        isPageHeading: false
+      }
+    },
+    items: checkboxItems
   }) }}
 
   {{ radios({
-    idPrefix: "example",
-    name: "example",
+    idPrefix: "appointmentReschedule",
+    name: "appointmentReschedule",
     fieldset: {
       legend: {
-        text: "Follow-up action",
+        text: "Does the appointment need to be rescheduled?",
         classes: "nhsuk-fieldset__legend--s",
         isPageHeading: false
       }
@@ -49,15 +88,11 @@
     items: [
       {
         value: "yes",
-        text: "Reschedule appointment"
+        text: "Yes"
       },
       {
         value: "no",
-        text: "Review with clinician"
-      },
-      {
-        value: "no",
-        text: "Other"
+        text: "No"
       }
     ]
   }) }}
