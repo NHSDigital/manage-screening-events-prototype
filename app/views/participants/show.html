@@ -16,6 +16,7 @@
 {% block pageContent %}
 
   {{ participant | log }}
+  {{ event | log }}
 
   <h1 class="nhsuk-heading-l">
     {{ pageHeading }}
@@ -47,7 +48,7 @@
       rows: [
         {
           key: { text: "Date of last mammogram" },
-          value: { 
+          value: {
             html: lastMammogramDateHtml
           }
         }

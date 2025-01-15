@@ -48,7 +48,7 @@
     <li>they have noticed any recent changes or symptoms in their breast</li>
     <li>they currently have any other physical or mental health issues</li>
   </ul>
- 
+
   {{ radios({
     idPrefix: "medicalBackgroundQuestion",
     name: "medicalBackgroundQuestion",
@@ -75,7 +75,7 @@
     text: "Continue"
   }) }}
 
-  <p><a href="./attended-not-screened-reason">Screening cannot proceed</a></p>
+  {% include "screening-cannot-proceed-link.njk" %}
 
 {% endblock %}
 

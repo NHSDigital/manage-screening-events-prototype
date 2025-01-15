@@ -74,7 +74,7 @@
         {% for event in filteredEvents %}
           {% set participant = data.participants | findById(event.participantId) %}
 
-          <tr>
+          <tr id="event-row-{{event.id}}">
 
             {# Appointment time #}
             <td class="nhsuk-table__cell">{{ event.statusHistory[0].timestamp | formatTime }}</td>
@@ -113,32 +113,15 @@
             {# NHS Number #}
             {# <td class="nhsuk-table__cell">{{ participant.medicalInformation.nhsNumber | formatNhsNumber | noWrap }}</td> #}
 
-            {# Appointment status #}
+            {# Appointment status and check-in #}
             <td class="nhsuk-table__cell">
-              {{ tag({
-                text: event.status | getStatusText,
-                classes: "nhsuk-tag--" + event.status | getStatusTagColour
+              {# Status tag with check-in link #}
+              {{ eventStatus({
+                clinicId: clinicId,
+                event: event,
+                referrer: currentUrl + "#event-row-" + event.id
               })}}
-
-              {% if event.status === 'event_scheduled' %}
-              <div class="nhsuk-u-margin-top-2">
-                {# <br> #}
-                <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}?currentFilter={{ currentFilter }}" class="nhsuk-link">
-                  {{ "Check in participant" | noWrap }}
-                </a>
-              </div>
-              
-              {% endif %}
             </td>
-
-            {# Check-in action #}
-            {# <td class="nhsuk-table__cell">
-              {% if event.status === 'event_scheduled' %}
-                <a href="/clinics/{{ clinicId }}/check-in/{{ event.id }}?currentFilter={{ currentFilter }}" class="nhsuk-link">
-                  {{ "Check in" | noWrap }}
-                </a>
-              {% endif %}
-            </td> #}
           </tr>
         {% endfor %}
       </tbody>
@@ -146,7 +129,7 @@
   {% endif %}
 
   <h2 class="nhsuk-heading-m">Details</h2>
-  
+
   <dl class="nhsuk-summary-list">
     <div class="nhsuk-summary-list__row">
       <dt class="nhsuk-summary-list__key">Location</dt>
@@ -157,17 +140,17 @@
         {% endfor %}
       </dd>
     </div>
-    
+
     <div class="nhsuk-summary-list__row">
       <dt class="nhsuk-summary-list__key">Phone</dt>
       <dd class="nhsuk-summary-list__value">{{ unit.phoneNumber }}</dd>
     </div>
-    
+
     <div class="nhsuk-summary-list__row">
       <dt class="nhsuk-summary-list__key">Date</dt>
       <dd class="nhsuk-summary-list__value">{{ clinic.date | formatDate }}</dd>
     </div>
-    
+
     <div class="nhsuk-summary-list__row">
       <dt class="nhsuk-summary-list__key">Location</dt>
       <dd class="nhsuk-summary-list__value">{{ clinic.locationType | formatWords | sentenceCase }}</dd>
@@ -178,5 +161,9 @@
       <dd class="nhsuk-summary-list__value">{{ clinic.clinicType | sentenceCase }}</dd>
     </div>
   </dl>
+
+{% endblock %}
+
+{% block pageScripts %}
 
 {% endblock %}

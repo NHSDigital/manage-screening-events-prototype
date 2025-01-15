@@ -216,6 +216,9 @@ module.exports = router => {
     const eventIndex = data.events.findIndex(e => e.id === eventId && e.clinicId === clinicId)
 
     if (eventIndex === -1) {
+      if (req.headers.accept?.includes('application/json')) {
+        return res.status(404).json({ error: 'Event not found' })
+      }
       return res.redirect(`/clinics/${clinicId}/${currentFilter}`)
     }
 
@@ -224,6 +227,9 @@ module.exports = router => {
 
     // Only allow check-in if currently scheduled
     if (event.status !== 'event_scheduled') {
+      if (req.headers.accept?.includes('application/json')) {
+        return res.status(400).json({ error: 'Event cannot be checked in' })
+      }
       return res.redirect(`/clinics/${clinicId}/${currentFilter}`)
     }
 
@@ -243,10 +249,18 @@ module.exports = router => {
     // Save back to session
     req.session.data = data
 
+    // If this was an AJAX request, send JSON response
+    if (req.headers.accept?.includes('application/json')) {
+      return res.json({
+        status: 'success',
+        event: data.events[eventIndex]
+      })
+    }
+
     // If there's a returnTo path, use that, otherwise go back to the filter view
-    const returnTo = req.query.returnTo
-    if (returnTo) {
-      res.redirect(returnTo)
+    const referrer = req.query.referrer
+    if (referrer) {
+      res.redirect(referrer)
     } else {
       res.redirect(`/clinics/${clinicId}/${currentFilter}`)
     }

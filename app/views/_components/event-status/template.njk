@@ -1,0 +1,29 @@
+{% from 'tag/macro.njk' import tag %}
+
+{% set tagClasses %}
+  {% if params.event.status | getStatusTagColour %}
+    nhsuk-tag--{{ params.event.status | getStatusTagColour}}
+  {% endif %}
+{% endset %}
+
+<div data-event-status-container="{{ params.event.id }}">
+  {{ tag({
+    text: params.event.status | getStatusText,
+    classes: tagClasses | trim
+  })}}
+
+  {# Build href with optional referrer #}
+  {% set href -%}
+  /clinics/{{ params.clinicId }}/check-in/{{ params.event.id }}
+  {%- if params.referrer %}?referrer={{ params.referrer }}{% endif %}
+  {%- endset %}
+
+  {% if params.event.status === 'event_scheduled' %}
+    <p class="nhsuk-u-margin-top-2">
+      <a href="{{ href | trim }}" class="nhsuk-link nhsuk-link--no-visited-state js-check-in-link" data-clinic-id="{{ params.clinicId }}"
+        data-event-id="{{ params.event.id }}">
+        Check in participant
+      </a>
+    </p>
+  {% endif %}
+</div>
