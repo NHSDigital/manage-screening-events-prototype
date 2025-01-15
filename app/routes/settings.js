@@ -15,11 +15,16 @@ module.exports = router => {
     res.redirect('/settings')
   })
 
-  // Handle regenerate data action
+  // Handle clear data action
   router.get('/clear-data', async (req, res) => {
     console.log('Clearing session data')
     req.session.data = {}
     req.flash('success', 'Session data cleared')
+
+    if (req.headers['accept'] === 'application/json') {
+      return res.json({ success: true })
+    }
+
     res.redirect('/settings')
   })
 }

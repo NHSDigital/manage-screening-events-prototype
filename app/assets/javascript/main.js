@@ -44,4 +44,35 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
   })
+
+  // Handle clear data link with AJAX
+  const clearDataLinks = document.querySelectorAll('a[href="/clear-data"]')
+  clearDataLinks.forEach(link => {
+    link.addEventListener('click', async (e) => {
+      e.preventDefault()
+      try {
+        const response = await fetch('/clear-data', {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to clear data')
+        }
+
+        const result = await response.json()
+        if (result.success) {
+          // Refresh the page to reflect the cleared data
+          window.location.reload()
+        } else {
+          throw new Error('Failed to clear data')
+        }
+      } catch (error) {
+        console.error('Error clearing data:', error)
+        window.location.href = link.href
+      }
+    })
+  })
 })
