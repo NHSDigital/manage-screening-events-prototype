@@ -16,6 +16,7 @@
 {% block pageContent %}
 
   {{ participant | log("Participant:") }}
+  {{ event | log("Event:") }}
 
   {% include "event-header.njk" %}
 
@@ -27,17 +28,13 @@
   {% endif %}
 
   {% set statusHtml %}
-    {{ tag({
-      text: event.status | getStatusText,
-      classes: "nhsuk-tag--" + event.status | getStatusTagColour
-    }) }}
-    {% if event.status === 'event_event_scheduled' %}
-      {% set href -%}
-        /clinics/{{ clinicId }}/check-in/{{ event.id }}?returnTo=/clinics/{{ clinicId }}/events/{{ eventId }}
-      {%- endset %}
-      <p class="nhsuk-u-margin-top-2"><a href="{{href | trim}}">Check in participant</a></p>
+    {# Status tag with check-in link #}
+    {{ eventStatus({
+      clinicId: clinicId,
+      event: event,
+      referrer: currentUrl
+    })}}
 
-    {% endif %}
     {% if event.status === "event_attended_not_screened" %}
       <p class="nhsuk-u-margin-top-2">[Reason for not screened here]</p>
     {% endif %}
@@ -47,7 +44,7 @@
   {% set appointmentTimeHtml -%}
     <p>{{ clinic.date | formatDate }} ({{ clinic.date | formatRelativeDate }})</p>
     <p>{{ event.timing.startTime | formatTime }} ({{ event.timing.duration }} minutes)</p>
-    
+
   {% endset %}
 
   {% set specialAppointmentHtml %}
@@ -88,7 +85,7 @@
     {% else %}
      {{ "Not provided" | asHint }}
     {% endif %}
-    
+
   {% endset %}
 
   {% set appointmentHtml %}
@@ -120,7 +117,7 @@
           },
           actions: {
             items: [
-              
+
             ]
           }
         },
@@ -133,7 +130,7 @@
           },
           actions: {
             items: [
-              
+
             ]
           }
         },
@@ -329,7 +326,7 @@ Before you proceed, check the participant’s identity and confirm that their la
       </div>
 
 
-      {# 
+      {#
       ,
           {
             value: "no-identity",
