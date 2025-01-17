@@ -98,10 +98,10 @@ module.exports = router => {
     if (!canBeginScreening) {
       res.redirect(`/clinics/${clinicId}/events/${eventId}`)
     } else if (canBeginScreening === 'yes') {
-      if (req.session.data.events[eventIndex].status !== 'checked_in') {
+      if (req.session.data.events[eventIndex].status !== 'event_checked_in') {
         req.session.data.events[eventIndex] = updateEventStatus(
           req.session.data.events[eventIndex],
-          'checked_in'
+          'event_checked_in'
         )
       }
       res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-background`)
