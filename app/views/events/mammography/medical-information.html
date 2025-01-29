@@ -2,11 +2,11 @@
 {% extends 'layout-app.html' %}
 
 
-{% set pageHeading = "Medical background" %}
+{% set pageHeading = "Medical information" %}
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
-{% set formAction = './medical-background-answer' %}
+{% set formAction = './medical-information-answer' %}
 
 {# {% set back = {
   href: "/clinics/" + clinicId,
@@ -38,15 +38,14 @@
     html: insetHtml
   }) }}
 
-  <p>Ask them whether:</p>
+  <p>Ask them about any:</p>
   <ul class="nhsuk-list nhsuk-list--bullet">
-    <li>they have any breast implants</li>
-    <li>there is a history of breast cancer in their family</li>
-    <li>they have had any other breast diagnosis, procedure or surgery</li>
-    <li>they are taking hormone replacement therapy (HRT) or any other medication</li>
-    <li>they are pregnant or breastfeeding</li>
-    <li>they have noticed any recent changes or symptoms in their breast</li>
-    <li>they currently have any other physical or mental health issues</li>
+    <li>history of breast cancer</li>
+    <li>lump examinations or biopsies</li>
+    <li>other procedures in the breast or chest area</li>
+    <li>recent breast changes or symptoms</li>
+    <li>breast features (such as moles) that may appear on an x-ray</li>
+    <li>relevant medication (such as HRT)</li>
   </ul>
 
   {{ radios({
@@ -54,8 +53,8 @@
     name: "medicalBackgroundQuestion",
     fieldset: {
       legend: {
-        text: "Do you need to record any medical information?",
-        classes: "nhsuk-fieldset__legend--s",
+        text: "Has the participant shared any relevant medical information?",
+        classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }
     },

@@ -2,27 +2,17 @@
 {% extends 'layout-app.html' %}
 
 
-{% set pageHeading = "Medical information" %}
+{% set pageHeading = "Record medical information" %}
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
 
-{% set formAction = './ready-for-imaging' %}
+{% set formAction = './record-medical-information-answer' %}
 
 {# {% set back = {
   href: "/clinics/" + clinicId,
   text: "Back to clinic"
 } %}
  #}
-
-{% macro makeRow(params) %}
-<h3>{{ params.title }}</h3>
-
-<p>{{params.content}}</p>
-
-<p><a href="#">Provide details</a></p>
-
-{% endmacro %}
-
 
 {% block pageContent %}
 
@@ -408,22 +398,22 @@
 
 {{ radios({
   idPrefix: "example",
-  name: "example",
+  name: "imagingCanProceed",
   fieldset: {
     legend: {
-      text: "How should incomplete sections be answered?",
-      classes: "nhsuk-fieldset__legend--s",
+      text: "Can imaging go ahead?",
+      classes: "nhsuk-fieldset__legend--m",
       isPageHeading: false
     }
   },
   items: [
     {
       value: "yes",
-      text: "Answer incomplete sections as 'no' or 'none'"
+      text: "Yes, mark incomplete sections as ‘none’ or ‘no’"
     },
     {
       value: "no",
-      text: "Leave as incomplete"
+      text: "No, appointment needs to stop"
     }
   ]
 }) }}
@@ -443,7 +433,7 @@
     text: "Continue"
   }) }}
 
-  {% include "screening-cannot-proceed-link.njk" %}
+  {# {% include "screening-cannot-proceed-link.njk" %} #}
 
 {% endblock %}
 

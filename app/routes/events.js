@@ -105,13 +105,13 @@ module.exports = router => {
           'event_checked_in'
         )
       }
-      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-background`)
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information`)
     } else {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
     }
   })
 
-  const MAMMOGRAPHY_VIEWS = ['medical-background', 'medical-details', 'ready-for-imaging', 'awaiting-images', 'images', 'imaging', 'confirm', 'screening-complete', 'attended-not-screened-reason']
+  const MAMMOGRAPHY_VIEWS = ['medical-information', 'record-medical-information', 'ready-for-imaging', 'awaiting-images', 'images', 'imaging', 'confirm', 'screening-complete', 'attended-not-screened-reason']
 
   // Event within clinic context
   router.get('/clinics/:clinicId/events/:eventId/:view', (req, res, next) => {
@@ -121,8 +121,8 @@ module.exports = router => {
     } else next()
   })
 
-  // Handle screening completion
-  router.post('/clinics/:clinicId/events/:eventId/medical-background-answer', (req, res) => {
+  // Handle medical information answer
+  router.post('/clinics/:clinicId/events/:eventId/medical-information-answer', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
     const hasDetailsToRecord = data.medicalBackgroundQuestion
@@ -131,11 +131,29 @@ module.exports = router => {
     const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
 
     if (!hasDetailsToRecord) {
-      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-background`)
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information`)
     } else if (hasDetailsToRecord === 'yes') {
-      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-details`)
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/record-medical-information`)
     } else {
-      res.redirect(`/clinics/${clinicId}/events/${eventId}/ready-for-imaging`)
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/awaiting-images`)
+    }
+  })
+
+  // Handle record medical information answer
+  router.post('/clinics/:clinicId/events/:eventId/record-medical-information-answer', (req, res) => {
+    const { clinicId, eventId } = req.params
+    const data = req.session.data
+    const imagingCanProceed = data.imagingCanProceed
+    delete data.imagingCanProceed
+
+    const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
+
+    if (!imagingCanProceed) {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/record-medical-information`)
+    } else if (imagingCanProceed === 'yes') {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/awaiting-images`)
+    } else {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
     }
   })
 

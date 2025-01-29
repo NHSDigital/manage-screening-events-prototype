@@ -3,16 +3,10 @@
     {{ participant | getFullName }}
   </a>
 </p>
-{% if event.details.isSpecialAppointment %}
-  {{ tag({
-    text: "Special appointment",
-    classes: "nhsuk-tag--orange nhsuk-u-margin-top-2"
-  })}}
-{% endif %}
 <p class="app-text-grey nhsuk-u-margin-bottom-0">
-  DOB: {{ participant.demographicInformation.dateOfBirth | formatDate }} ({{ participant.demographicInformation.dateOfBirth | formatRelativeDate(true) }})
-  <br>
-  NHS Number: {{ participant.medicalInformation.nhsNumber | formatNhsNumber }}
+  {# DOB: {{ participant.demographicInformation.dateOfBirth | formatDate }} ({{ participant.demographicInformation.dateOfBirth | formatRelativeDate(true) }})
+  <br> #}
+  NHS: {{ participant.medicalInformation.nhsNumber | formatNhsNumber }}
 {#   <br>
   SX Number: {{ participant.sxNumber }} #}
 </p>

@@ -93,9 +93,17 @@
           type: "success"
         }) }}
       {% else %}
+        {% set html = flashSuccess.html %}
+        {% if flashSuccess.wrapWithHeading %}
+          {% set html %}
+            <p class="app-notification-banner__heading">
+              {{ flashSuccess.wrapWithHeading | safe }}
+            </p>
+          {% endset %}
+        {% endif %}
         {{ appNotificationBanner({
           title: flashSuccess.title,
-          html: flashSuccess.html,
+          html: html,
           text: flashSuccess.text,
           type: "success"
         }) }}
