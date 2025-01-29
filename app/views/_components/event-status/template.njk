@@ -6,6 +6,8 @@
   {% endif %}
 {% endset %}
 
+{% set tagClasses = tagClasses + " app-nowrap" %}
+
 <div data-event-status-container="{{ params.event.id }}">
   {{ tag({
     text: params.event.status | getStatusText,
@@ -22,7 +24,7 @@
     <p class="nhsuk-u-margin-top-2">
       <a href="{{ href | trim }}" class="nhsuk-link nhsuk-link--no-visited-state js-check-in-link" data-clinic-id="{{ params.clinicId }}"
         data-event-id="{{ params.event.id }}">
-        Check in participant
+        Check in
       </a>
     </p>
   {% endif %}

@@ -1,4 +1,5 @@
 // app/routes/events.js
+const { getFullName } = require('../lib/utils/participants')
 
 /**
  * Get single event and its related data
@@ -167,6 +168,10 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/attended-not-screened-answer', (req, res) => {
     const { clinicId, eventId } = req.params
 
+    const eventData = getEventData(req.session.data, clinicId, eventId)
+    const participantName = getFullName(eventData.participant)
+    const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
+
     // Update event status to attended
     const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
     req.session.data.events[eventIndex] = updateEventStatus(
@@ -174,12 +179,22 @@ module.exports = router => {
       'event_attended_not_screened'
     )
 
-    res.redirect(`/clinics/${clinicId}/events/${eventId}`)
+    const successMessage = `
+    ${participantName} has been is ‘attended not screened’. <a href="${participantEventUrl}" class="app-nowrap">View their appointment</a>`
+
+    req.flash('success', { wrapWithHeading: successMessage})
+
+
+    res.redirect(`/clinics/${clinicId}/`)
   })
 
   // Handle screening completion
   router.post('/clinics/:clinicId/events/:eventId/complete', (req, res) => {
     const { clinicId, eventId } = req.params
+
+    const eventData = getEventData(req.session.data, clinicId, eventId)
+    const participantName = getFullName(eventData.participant)
+    const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
     // Update event status to attended
     const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
@@ -188,6 +203,13 @@ module.exports = router => {
       'event_complete'
     )
 
-    res.redirect(`/clinics/${clinicId}/events/${eventId}/screening-complete`)
+    const successMessage = `
+    ${participantName} has been screened. <a href="${participantEventUrl}" class="app-nowrap">View their appointment</a>`
+
+    req.flash('success', { wrapWithHeading: successMessage})
+
+    res.redirect(`/clinics/${clinicId}/`)
+
+    // res.redirect(`/clinics/${clinicId}/events/${eventId}/screening-complete`)
   })
 }

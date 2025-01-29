@@ -34,6 +34,22 @@ const formatDate = (dateString, format = 'D MMMM YYYY') => {
 }
 
 /**
+ * Format a date in UK format with special month abbreviations
+ * For months with 4 letters (June, July), use the full name
+ * For other months, use 3 letter abbreviation
+ * @param {string} dateString - ISO date string
+ * @returns {string} Formatted date string
+ */
+const formatDateShort = (dateString) => {
+  if (!dateString) return ''
+
+  const date = dayjs(dateString)
+  const monthFormat = ['June', 'July'].includes(date.format('MMMM')) ? 'MMMM' : 'MMM'
+
+  return `${date.format('D')} ${date.format(monthFormat)} ${date.format('YYYY')}`
+}
+
+/**
  * Format a time in UK format
  * @param {string} dateString - ISO date string
  * @param {string} format - Optional format string
@@ -44,9 +60,9 @@ const formatTime = (dateString, format = 'H:mm') => {
 }
 
 /**
- * Format a time in 12-hour format
+ * Format a time in 12-hour format with special cases for round hours, midday and midnight
  * @param {string} input - Either a time string (e.g. "17:00") or full date/datetime
- * @returns {string} Formatted time (e.g. "5:00pm")
+ * @returns {string} Formatted time (e.g. "5pm", "5:30pm", "midday", "midnight")
  */
 const formatTimeString = (input) => {
   if (!input) return ''
@@ -56,7 +72,19 @@ const formatTimeString = (input) => {
     ? input
     : `2000-01-01T${input}`
 
-  return dayjs(datetime).format('h:mma')
+  const time = dayjs(datetime)
+  const hour = time.hour()
+  const minute = time.minute()
+
+  // Handle special cases
+  if (minute === 0) {
+    if (hour === 0) return 'midnight'
+    if (hour === 12) return 'midday'
+    return `${time.format('h')}${time.format('a')}`
+  }
+
+  // For non-zero minutes, return full format
+  return time.format('h:mma')
 }
 
 /**
@@ -217,6 +245,7 @@ const getWeekDates = (dateString) => {
 
 module.exports = {
   formatDate,
+  formatDateShort,
   formatTime,
   formatTimeString,
   formatTimeRange,
