@@ -268,7 +268,7 @@ module.exports = router => {
 
 
   // Single clinic view
-  const VALID_FILTERS = ['scheduled', 'checked-in', 'complete', 'all']
+  const VALID_FILTERS = ['remaining', 'scheduled', 'checked-in', 'complete', 'all']
 
   // Support both /clinics/:id and /clinics/:id/:filter
   router.get(['/clinics/:id', '/clinics/:id/:filter'], (req, res) => {
@@ -279,7 +279,7 @@ module.exports = router => {
     }
 
     // Check filter from either URL param or query string
-    const filter = req.params.filter || req.query.filter || 'all'
+    const filter = req.params.filter || req.query.filter || 'remaining'
 
     // Validate filter
     if (!VALID_FILTERS.includes(filter)) {

@@ -52,6 +52,8 @@ const filterEventsByStatus = (events, filter) => {
       return events.filter(e => e.status === 'event_checked_in')
     case 'complete':
       return events.filter(e => ['event_complete', 'event_partially_screened', 'event_attended_not_screened'].includes(e.status))
+    case 'remaining':
+        return events.filter(e => ['event_scheduled', 'event_checked_in'].includes(e.status))
     default:
       return events
   }

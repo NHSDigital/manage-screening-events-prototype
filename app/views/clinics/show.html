@@ -19,7 +19,7 @@
     {% if clinic.riskLevels | length == 1 %}
       {{ clinic.riskLevels[0] }}
     {% else %}
-      Mixed risk
+      Mixed
     {% endif %}
   {% endset %}
 
@@ -27,7 +27,7 @@
     <h1 class="nhsuk-heading-l">
       {# "Screening mixed risk clinic" #}
       <span class="nhsuk-caption-l">{{ unit.name }}</span>
-      {{ clinic.clinicType | sentenceCase }} {{ clinicRiskType | lower }} clinic
+      {{ clinicRiskType }} risk {{ clinic.clinicType | lower }} clinic
     </h1>
     <div class="app-header-with-status__status-tag">
       {{ tag({
@@ -44,14 +44,15 @@
 
   {% set secondaryNavItems = [] %}
 
+  {#     { id: 'scheduled', label: 'Scheduled' }, #}
   {% for filter in [
-    { id: 'all', label: 'All participants' },
-    { id: 'scheduled', label: 'Scheduled' },
+    { id: 'remaining', label: 'Remaining' },
     { id: 'checked-in', label: 'Checked in' },
-    { id: 'complete', label: 'Complete' }
+    { id: 'complete', label: 'Complete' },
+    { id: 'all', label: 'All' }
   ] %}
     {% set href -%}
-      /clinics/{{ clinicId }}/{{ filter.id if filter.id !== 'all' }}
+      /clinics/{{ clinicId }}/{{ filter.id if filter.id !== 'remaining' }}
     {% endset %}
     {% set secondaryNavItems = secondaryNavItems | push({
       text: (filter.label + " " + appCount(events | filterEventsByStatus(filter.id) | length)) | safe,
