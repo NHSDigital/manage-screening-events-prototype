@@ -58,10 +58,10 @@
       <thead class="nhsuk-table__head">
         <tr>
           <th scope="col">Location</th>
-          <th scope="col">Date</th>
+          <th scope="col">Date and time</th>
           <th scope="col">Clinic type</th>
-          <th scope="col">Status</th>
           <th scope="col" class="nhsuk-table__cell--numeric">Participants</th>
+          <th scope="col">Status</th>
         </tr>
       </thead>
       <tbody class="nhsuk-table__body">
@@ -78,21 +78,35 @@
                 {% else %}
                   {{ location.name }}
                 {% endif %}
+                <br>
+                ({{ clinic.sessionType | sentenceCase }})
               </a>
             </td>
             <td>{{ clinic.date | formatDate |  noWrap }}<br>
-              {{ clinic.sessionType | sentenceCase | asHint }}<br>
               {{clinic.sessionTimes | formatTimeRange | asHint }}
             </td>
-            <td>{{ clinic.clinicType | sentenceCase }}</td>
+            <td>
+              {{ clinic.clinicType | sentenceCase }}
+              <br>
+              {% set clinicRiskType %}
+                {% if clinic.riskLevels | length == 1 %}
+                  {{ clinic.riskLevels[0] }}
+                {% else %}
+                  Mixed
+                {% endif %}
+              {% endset %}
+              <span class="app-text-grey">{{ clinicRiskType | sentenceCase }} risk</span>
+
+            </td>
+
+            <td class="nhsuk-table__cell--numeric">
+              {{ events.length }}
+            </td>
             <td class="nhsuk-table__cell--numeric">
               {{ tag({
                 html: clinic.status | formatWords | sentenceCase | noWrap,
                 classes: "nhsuk-tag--" + clinic.status | getStatusTagColour
               })}}
-            </td>
-            <td class="nhsuk-table__cell--numeric">
-              {{ events.length }}
             </td>
           </tr>
         {% endfor %}

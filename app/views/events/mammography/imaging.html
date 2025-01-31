@@ -5,9 +5,7 @@
 {% set pageHeading = "5 images taken" %}
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
-
 {% set formAction = './imaging-answer' %}
-
 
 
 {% block pageContent %}
@@ -23,83 +21,55 @@
     {{ pageHeading }}
   </h1>
 
-
   {% set animateImages = true %}
   {% include "fake-images.njk" %}
 
 
+  <hr class="nhsuk-section-break nhsuk-section-break--l nhsuk-section-break--visible">
 
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      {% set reasonHtml %}
+        {{ textarea({
+          name: "partialMammographyReason",
+          id: "partialMammographyReason",
+          label: {
+            text: "Reason for partial mammography"
+          }
+        }) }}
+      {% endset %}
 
-  {% set observationHtml %}
-    <p>This could include tattoos, lumps, moles or scars on the breasts.</p>
-    {% set insetHtml %}
-      <p>No physical observations recorded</p>
-    {% endset %}
-    {{ insetText({
-      html: insetHtml
-    }) }}
-
-    <p><a href="#">Add physical observation</a></p>
-  {% endset %}
-
-  {{ card({
-    heading: "Physical observations",
-    headingLevel: "2",
-    descriptionHtml: observationHtml
-  }) }}
-
-    <hr class="nhsuk-section-break nhsuk-section-break--l nhsuk-section-break--visible">
-
-    <div class="nhsuk-grid-row">
-      <div class="nhsuk-grid-column-two-thirds">
-        {% set reasonHtml %}
-          {{ textarea({
-            name: "partialMammographyReason",
-            id: "partialMammographyReason",
-            label: {
-              text: "Reason for partial mammography"
-            }
-          }) }}
-        {% endset %}
-
-        {{ radios({
-          idPrefix: "imagingComplete",
-          name: "imagingComplete",
-          fieldset: {
-            legend: {
-              text: "Is imaging complete?",
-              classes: "nhsuk-fieldset__legend--m",
-              isPageHeading: false
-            }
+      {{ radios({
+        idPrefix: "imagingComplete",
+        name: "imagingComplete",
+        fieldset: {
+          legend: {
+            text: "Has the full mammography been taken?",
+            classes: "nhsuk-fieldset__legend--m",
+            isPageHeading: false
+          }
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes"
           },
-          items: [
-            {
-              value: "yes",
-              text: "Yes - full mammography"
-            },
-            {
-              value: "yesPartial",
-              text: "Yes - partial mammography only",
-              conditional: {
-                html: reasonHtml
-              }
-            },
-            {
-              value: "no",
-              text: "No, the images could not be taken"
+          {
+            value: "yesPartial",
+            text: "No, partial mammography only",
+            conditional: {
+              html: reasonHtml
             }
-          ]
-        }) }}
+          }
+        ]
+      }) }}
 
-        {{ button({
-          text: "Continue"
-        }) }}
+      {{ button({
+        text: "Continue"
+      }) }}
 
-      </div>
     </div>
-
-
-
+  </div>
 
   {# <p><a href="./attended-not-screened-reason">Screening cannot proceed</a></p> #}
 

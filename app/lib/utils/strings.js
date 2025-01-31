@@ -1,14 +1,16 @@
 // app/lib/utils/strings.js
 
 /**
- * Convert string to sentence case
+ * Convert string to sentence case, removing leading/trailing whitespace
  * @param {string} input - String to convert
- * @returns {string} Sentence case string
+ * @returns {string} Trimmed sentence case string
  */
 const sentenceCase = (input) => {
   if (!input) return ''
   if (typeof input !== 'string') return input
-  return input.charAt(0).toUpperCase() + input.slice(1)
+
+  const trimmed = input.trim()
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
 }
 
 /**

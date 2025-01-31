@@ -85,6 +85,46 @@
       }) }}
     {% endif %}
 
+    {% if flash.success %}
+      {% set flashSuccess = flash.success[0] %}
+      {% if flashSuccess | isString %}
+        {{ appNotificationBanner({
+          text: flashSuccess,
+          type: "success"
+        }) }}
+      {% else %}
+        {% set html = flashSuccess.html %}
+        {% if flashSuccess.wrapWithHeading %}
+          {% set html %}
+            <p class="app-notification-banner__heading">
+              {{ flashSuccess.wrapWithHeading | safe }}
+            </p>
+          {% endset %}
+        {% endif %}
+        {{ appNotificationBanner({
+          title: flashSuccess.title,
+          html: html,
+          text: flashSuccess.text,
+          type: "success"
+        }) }}
+      {% endif %}
+
+    {% endif %}
+
+    {% if flash.info %}
+      {{ appNotificationBanner({
+        html: flash.info,
+        type: "info"
+      }) }}
+    {% endif %}
+
+    {% if flash.warning %}
+      {{ appNotificationBanner({
+        html: flash.warning,
+        type: "warning"
+      }) }}
+    {% endif %}
+
     {% if formAction or isForm %}
       <form action="{{formAction or './'}}" method="{{ formMethod or 'POST'}}">
     {% endif %}

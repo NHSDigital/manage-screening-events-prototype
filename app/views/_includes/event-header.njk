@@ -9,16 +9,15 @@
 })}}
 {% endset %}
 
-<div class="app-event-header">
+<div class="app-header-with-status">
   <h1 class="nhsuk-heading-l">
     <span class="nhsuk-caption-l">
       {{ clinic.clinicType | sentenceCase }} appointment
-
     </span>
     {{ pageHeading }}
   </h1>
 
-  <div class="app-event-status">
+  <div class="app-header-with-status__status-tag">
     {{ statusHtml | safe }}
   </div>
 </div>
@@ -27,7 +26,7 @@
 <p class="app-text-grey"><span>NHS Number: {{ participant.medicalInformation.nhsNumber | formatNhsNumber }}</span><span class="nhsuk-u-margin-left-4">SX Number: {{ participant.sxNumber }}</span></p>
 {{appointmentTimeHtml}}
 
-<p>{{ event.timing.startTime | formatTime }} ({{ event.timing.duration }} minutes) - {{ clinic.date | formatDate }} ({{ clinic.date | formatRelativeDate }})<span class="nhsuk-u-margin-left-3"><a href="#">Reschedule appointment</a></span></p>
+<p>{{ event.timing.startTime | formatTimeString }} ({{ event.timing.duration }} minutes) - {{ clinic.date | formatDate }} ({{ clinic.date | formatRelativeDate }})<span class="nhsuk-u-margin-left-3"><a href="#">Reschedule appointment</a></span></p>
 
 <p class="nhsuk-u-margin-bottom-4"><a href="{{ '/participants/' + participant.id | withReferrer(currentUrl) }}">View participant record</a></p>
 

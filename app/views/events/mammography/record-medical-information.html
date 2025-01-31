@@ -1,0 +1,262 @@
+
+{% extends 'layout-app.html' %}
+
+
+{% set pageHeading = "Record medical information" %}
+
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
+{% set formAction = './record-medical-information-answer' %}
+
+{# {% set back = {
+  href: "/clinics/" + clinicId,
+  text: "Back to clinic"
+} %}
+ #}
+
+{% block pageContent %}
+
+  {{ participant | log }}
+
+  {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
+
+  <h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">
+      {{ participant | getFullName }}
+    </span>
+    {{ pageHeading }}
+  </h1>
+
+  {% set taskStatus = {} %}
+  {% set valueHtml = "" %}
+
+  {{ query.taskStatus | log }}
+
+{% set valueHtml = null %}
+
+
+  {% set sections = [
+    ["Breast implants"],
+    ["Breast cancer history", "Including close family history"],
+    ["Other breast diagnosis"],
+    ["Hormone replacement therapy (HRT)"],
+    ["Pregnancy and breastfeeding"],
+    ["Recent breast changes"],
+    ["Other physical or mental health issues"],
+    ["Physical observations", "This could include tattoos, lumps, moles or scars on the breasts."]
+  ] %}
+
+  {% set taskListSections = [] %}
+
+  {% for section in sections %}
+    {% set taskListSections = taskListSections | push({
+        title: {
+          text: section[0]
+        },
+        hint: {
+          text: section[1]
+        } if section[1],
+        href: "#",
+        status: {
+          tag: {
+            text: "Incomplete",
+            classes: "nhsuk-tag--blue"
+          }
+        }
+      }) %}
+
+  {% endfor %}
+
+  {% set medicalInformationCardHtml %}
+    {# {{ taskList({
+      idPrefix: "your-health",
+      items: taskListSections
+    }) }} #}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Breast cancer history"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "breast cancer history"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Non-cancerous lump disagnoses"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "non-cancerous lump disagnoses"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Other breast or chest proceedures"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "other breast or chest proceedures"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Recent breast changes or symptoms"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "recent breast changes or symptoms"
+              }
+            ]
+          }
+        }
+      ]
+    } | showMissingInformationLink) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Medical information",
+    headingLevel: "2",
+    feature: false,
+    descriptionHtml: medicalInformationCardHtml
+  }) }}
+
+  {% set otherInformationHtml %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Hormone replacement therapy (HRT)"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "hormone replacement therapy (HRT)"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Pregnancy and breastfeeding"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "pregnancy and breastfeeding"
+              }
+            ]
+          }
+        }
+      ]
+    } | showMissingInformationLink) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Other information",
+    headingLevel: "2",
+    feature: false,
+    descriptionHtml: otherInformationHtml
+  }) }}
+
+{% set observationHtml %}
+  {% set insetHtml %}
+    <p>No breast features have been recorded for this participant. Add any scars, moles, warts or lumps observed or reported during the appointment.</p>
+  {% endset %}
+  {{ insetText({
+    html: insetHtml
+  }) }}
+
+  <p><a href="#">Add a feature</a></p>
+{% endset %}
+
+{{ card({
+  heading: "Breast features",
+  headingLevel: "2",
+  descriptionHtml: observationHtml
+}) }}
+
+
+{{ radios({
+  idPrefix: "example",
+  name: "imagingCanProceed",
+  fieldset: {
+    legend: {
+      text: "Can imaging go ahead?",
+      classes: "nhsuk-fieldset__legend--m",
+      isPageHeading: false
+    }
+  },
+  items: [
+    {
+      value: "yes",
+      text: "Yes, mark incomplete sections as ‘none’ or ‘no’"
+    },
+    {
+      value: "no",
+      text: "No, appointment needs to stop"
+    }
+  ]
+}) }}
+
+{#   {% if query.taskStatus !== 'complete' %}
+    <div class="nhsuk-form-group">
+      {{ button({
+        text: "Answer all incomplete as 'No' / 'None'",
+        classes: "nhsuk-button--secondary",
+        href: "./medical-information?taskStatus=complete"
+      }) }}
+    </div>
+  {% endif %} #}
+
+
+  {{ button({
+    text: "Continue"
+  }) }}
+
+  {# {% include "screening-cannot-proceed-link.njk" %} #}
+
+{% endblock %}
+

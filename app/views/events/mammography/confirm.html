@@ -2,7 +2,7 @@
 {% extends 'layout-app.html' %}
 
 
-{% set pageHeading = "Complete screening" %}
+{% set pageHeading = "Confirm information" %}
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
 
@@ -153,28 +153,150 @@
       ]
     }) }}
   {% endset %}
-
+{#
   {{ card({
     heading: "Medical information",
     headingLevel: "2",
     feature: true,
     descriptionHtml: medicalInformationCardHtml
-  }) }}
+  }) }} #}
 
-  {% set imagesCardHtml %}
-    <ul class="nhsuk-list nhsuk-list--bullet">
-      <li>2 right breast images</li>
-      <li>3 left breast images (one repeat)</li>
-    </ul>
+  {% set valueHtml = 'None' %}
 
-    <p><a href="./imaging">View images</a></p>
+  {% set medicalInformationCardHtml %}
+    {# {{ taskList({
+      idPrefix: "your-health",
+      items: taskListSections
+    }) }} #}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Breast cancer history"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "breast cancer history"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Non-cancerous lump disagnoses"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "non-cancerous lump disagnoses"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Other breast or chest proceedures"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "other breast or chest proceedures"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Recent breast changes or symptoms"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "recent breast changes or symptoms"
+              }
+            ]
+          }
+        }
+      ]
+    } | showMissingInformationLink) }}
   {% endset %}
 
   {{ card({
-    heading: "5 images taken",
+    heading: "Medical information",
     headingLevel: "2",
-    feature: true,
-    descriptionHtml: imagesCardHtml
+    feature: false,
+    descriptionHtml: medicalInformationCardHtml
+  }) }}
+
+  {% set valueHtml = "No" %}
+
+  {% set otherInformationHtml %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Hormone replacement therapy (HRT)"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "hormone replacement therapy (HRT)"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Pregnancy and breastfeeding"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "pregnancy and breastfeeding"
+              }
+            ]
+          }
+        }
+      ]
+    } | showMissingInformationLink) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Other information",
+    headingLevel: "2",
+    feature: false,
+    descriptionHtml: otherInformationHtml
   }) }}
 
   {% set observationsCardHtml %}
@@ -230,14 +352,30 @@
       ]
     }) }}
 
-    <p><a href="#">Add physical observation</a></p>
+    <p><a href="#">Add a feature</a></p>
   {% endset %}
 
   {{ card({
-    heading: "Physical observations",
+    heading: "Breast features",
+    headingLevel: "2",
+    feature: false,
+    descriptionHtml: observationsCardHtml
+  }) }}
+
+  {% set imagesCardHtml %}
+    <ul class="nhsuk-list nhsuk-list--bullet">
+      <li>2 right breast images</li>
+      <li>3 left breast images (one repeat)</li>
+    </ul>
+
+    <p><a href="./imaging">View or update imaging information</a></p>
+  {% endset %}
+
+  {{ card({
+    heading: "5 images taken",
     headingLevel: "2",
     feature: true,
-    descriptionHtml: observationsCardHtml
+    descriptionHtml: imagesCardHtml
   }) }}
 
   {% set otherDetailsCardHtml %}
@@ -246,7 +384,7 @@
       {% if event.details.isSpecialAppointment %}
         {{ tag({
           text: "Special appointment",
-          classes: "nhsuk-tag--orange nhsuk-u-margin-bottom-3"
+          classes: "nhsuk-tag--yellow nhsuk-u-margin-bottom-3"
         })}}
         <ul class="nhsuk-list nhsuk-list--bullet">
           {% for need in participant.extraNeeds %}
@@ -306,7 +444,7 @@
   }) }}
 
   {{ button({
-    text: "Complete screening"
+    text: "Complete screening and return to clinic"
   }) }}
 
   {# <p><a href="./attended-not-screened-reason">Screening cannot proceed</a></p> #}

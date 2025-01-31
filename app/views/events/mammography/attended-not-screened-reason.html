@@ -67,10 +67,13 @@
     name: "appointment-stopped-reason",
     fieldset: {
       legend: {
-        text: "Why can this appointment not go ahead?",
-        classes: "nhsuk-fieldset__legend--s",
+        text: "Why has this appointment been stopped?",
+        classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }
+    },
+    hint: {
+      text: "Select all that apply"
     },
     items: checkboxItems
   }) }}
@@ -81,14 +84,14 @@
     fieldset: {
       legend: {
         text: "Does the appointment need to be rescheduled?",
-        classes: "nhsuk-fieldset__legend--s",
+        classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }
     },
     items: [
       {
         value: "yes",
-        text: "Yes"
+        text: "Yes, add participant to reinvite list"
       },
       {
         value: "no",
@@ -99,7 +102,7 @@
 
 
   {{ button({
-    text: "Save"
+    text: "Save and return to clinic"
   }) }}
 
 {% endblock %}
