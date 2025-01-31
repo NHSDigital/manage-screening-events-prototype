@@ -31,324 +31,9 @@
   {% set valueHtml = "" %}
 
   {{ query.taskStatus | log }}
-  {% if query.taskStatus == 'complete' %}
-    {% set taskStatus = {
-        text: "Completed",
-        classes: "nhsuk-task-list__status--completed"
-      }
-     %}
-     {% set valueHtml = "None" %}
-  {% else %}
-    {% set taskStatus = {
-        tag: {
-          text: "Incomplete",
-          classes: "nhsuk-tag--blue"
-        }
-      }
-     %}
-     {# {% set valueHtml = tag({
-          text: "Incomplete",
-          classes: "nhsuk-tag--blue"
-        }) %} #}
-    {% set valueHtml = "Incomplete" | asHint %}
 
-  {% endif %}
-{#
-{% set insetHtml %}
-<p>No details recorded. <a href="#">Provide details</a>.</p>
-{% endset %}
+{% set valueHtml = null %}
 
-
-<h2>Breast cancer history</h2>
-<p>Any history of breast cancer in participant or immediate family</p>
-{{ insetText({
-  html: insetHtml
-}) }}
-
-<h2>Breast proceedures</h2>
-<p>Including cysts, benign lumps, other breast surgery, previous biopsy, non-implant based augmentation</p>
-{{ insetText({
-  html: insetHtml
-}) }}
-
-<h2>Breast symptoms</h2>
-<p>Current or hisoric breast symptoms</p>
-{{ insetText({
-  html: insetHtml
-}) }}
-
-<h2>Scars / visual features</h2>
-<p>Including cysts, benign lumps, other breast surgery, previous biopsy, non-implant based augmentation</p>
-{{ insetText({
-  html: insetHtml
-}) }}
-
-<h2>Other items</h2>
-{{ summaryList({
-  rows: [
-    {
-      key: {
-        text: "Mammographer notes"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "name"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "Pregnancy and breastfeeding"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "date of birth"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "Lymph nodes - medications or conditions"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "date of birth"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "Menopause"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "date of birth"
-          }
-        ]
-      }
-    }
-  ]
-}) }} #}
-  {# {{ summaryList({
-  rows: [
-    {
-      key: {
-        text: "Breast implants"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "name"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "Implanted medical devices and pacemakers",
-        classes: "nhsuk-u-width-one-half"
-      },
-      value: {
-        html: valueHtml,
-        classes: "nhsuk-u-width-one-half"
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "name"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "Special appointment needs"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "name"
-          }
-        ]
-      }
-    } if false,
-    {
-      key: {
-        text: "Pregnancy and breastfeeding"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "name"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "History of breast cancer"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "name"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "Other breast diagnosis or proceedures"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "date of birth"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "Scars and other visual features"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "contact information"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "Current health status"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "contact details"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "Hormone replacement therapy (HRT)"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "contact details"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "Breast symptoms"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "contact details"
-          }
-        ]
-      }
-    },
-    {
-      key: {
-        text: "Appointment notes / other"
-      },
-      value: {
-        html: valueHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "#",
-            text: "Change",
-            visuallyHiddenText: "contact details"
-          }
-        ]
-      }
-    }
-  ]
-}) }} #}
 
   {% set sections = [
     ["Breast implants"],
@@ -383,18 +68,156 @@
   {% endfor %}
 
   {% set medicalInformationCardHtml %}
-    {{ taskList({
+    {# {{ taskList({
       idPrefix: "your-health",
       items: taskListSections
-    }) }}
+    }) }} #}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Breast cancer history"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "breast cancer history"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Non-cancerous lump disagnoses"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "non-cancerous lump disagnoses"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Other breast or chest proceedures"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "other breast or chest proceedures"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Recent breast changes or symptoms"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "recent breast changes or symptoms"
+              }
+            ]
+          }
+        }
+      ]
+    } | showMissingInformationLink) }}
   {% endset %}
 
   {{ card({
     heading: "Medical information",
     headingLevel: "2",
-    feature: true,
+    feature: false,
     descriptionHtml: medicalInformationCardHtml
   }) }}
+
+  {% set otherInformationHtml %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Hormone replacement therapy (HRT)"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "hormone replacement therapy (HRT)"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Pregnancy and breastfeeding"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "pregnancy and breastfeeding"
+              }
+            ]
+          }
+        }
+      ]
+    } | showMissingInformationLink) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Other information",
+    headingLevel: "2",
+    feature: false,
+    descriptionHtml: otherInformationHtml
+  }) }}
+
+{% set observationHtml %}
+  {% set insetHtml %}
+    <p>No breast features have been recorded for this participant. Add any scars, moles, warts or lumps observed or reported during the appointment.</p>
+  {% endset %}
+  {{ insetText({
+    html: insetHtml
+  }) }}
+
+  <p><a href="#">Add a feature</a></p>
+{% endset %}
+
+{{ card({
+  heading: "Breast features",
+  headingLevel: "2",
+  descriptionHtml: observationHtml
+}) }}
+
 
 {{ radios({
   idPrefix: "example",

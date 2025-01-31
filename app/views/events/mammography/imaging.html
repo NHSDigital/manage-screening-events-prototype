@@ -24,23 +24,6 @@
   {% set animateImages = true %}
   {% include "fake-images.njk" %}
 
-  {% set observationHtml %}
-    <p>This could include tattoos, lumps, moles or scars on the breasts.</p>
-    {% set insetHtml %}
-      <p>No physical observations recorded</p>
-    {% endset %}
-    {{ insetText({
-      html: insetHtml
-    }) }}
-
-    <p><a href="#">Add physical observation</a></p>
-  {% endset %}
-
-  {{ card({
-    heading: "Physical observations",
-    headingLevel: "2",
-    descriptionHtml: observationHtml
-  }) }}
 
   <hr class="nhsuk-section-break nhsuk-section-break--l nhsuk-section-break--visible">
 
