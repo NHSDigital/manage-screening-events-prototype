@@ -43,7 +43,7 @@
 {% macro makeImage(params) %}
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-one-quarter">
-    
+
     <div class="app-mammogram-image--placeholder">
       <img class="nhsuk-image__img {{ 'app-image-flip-horizontal' if params.side == 'Right' }}" src="/images/mammograms/nci-vol-9405-72.jpg" alt="Close-up of a person’s tummy showing a number of creases in the skin under their belly button. Shown on light brown skin.">
       <p>[IMAGE HERE]</p>
@@ -51,89 +51,25 @@
   </div>
   <div class="nhsuk-grid-column-three-quarters">
 
-    {# {
-          key: {
-            text: "Side"
-          },
-          value: {
-            text: params.side
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "side"
-              }
-            ]
-          }
-        }, #}
+
     {{ summaryList({
       classes: "nhsuk-u-margin-bottom-0",
       rows: [
         {
           key: {
-            text: "View"
+            text: "Captured"
           },
           value: {
             text: params.view
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "view"
-              }
-            ]
           }
         },
         {
           key: {
-            text: "Is a repeat"
+            text: "Accession"
           },
           value: {
             html: params.repeat or "No"
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "is a repeat"
-              }
-            ]
           }
-        },
-        {
-          key: {
-            text: "Comment"
-          },
-          value: {
-            text: params.comment or "Not provided"
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "is a repeat"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Details",
-            classes: "foo"
-          },
-          value: {
-            html: params.details or "Not provided"
-          },
-          actions: {
-            items: []
-          },
-          classes: "nhsuk-summary-list--no-border"
         }
       ]
     }) }}
@@ -169,10 +105,10 @@
         {% set detailsHtml -%}
         Captured:
         {{ timeNow | formatDate("D MMMM YYYY HH:mm:ss")}}
-        Accession: 
+        Accession:
         9583011-14/{{loop.index}}
         {%- endset %}
-        
+
 
         {% set params = {
           view: image.view,
@@ -192,16 +128,144 @@
       {% endfor %}
     {% endset %}
 
-    {{ card({
+    {# {{ card({
       heading: heading,
       headingLevel: "2",
       feature: true,
       descriptionHtml: imageSideHtml
-    }) }}
-    
+    }) }} #}
+
   {% endfor %}
 
-  
+  {# Convert object to an array of views #}
+  {% set mammogramViews = event.mammogramData.views | getObjectValues %}
+
+  {# Group views by view name so we get MLO or CC only #}
+  {% set groupedViews = mammogramViews | groupby("viewShort") %}
+
+  {# Iterate through each view - they should be in a set / known order #}
+  {# Todo: this won't handle cases where entire views are missing - should we iterate
+  through a hardcoded list and show gaps where there are any? #}
+  {% for viewName, view in groupedViews %}
+
+    {# General view name - "MLO views" #}
+    {% set viewNameString %}
+      {{ viewName }} views
+    {% endset %}
+
+    {# Capture html for entire view #}
+    {% set viewCardHtml %}
+
+      {# Left then right #}
+      {% for side in view %}
+        <div class="{{ 'nhsuk-u-margin-bottom-3' if not loop.last }}">
+          <h2>
+            {{ side.images | length }} {{ side.viewShortWithSide }} {{ "images" | pluralise(side.images | length) }}
+          </h2>
+
+          {# Loop through each image for each side #}
+          {% for image in side.images %}
+            <div class="nhsuk-grid-row {{ 'nhsuk-u-margin-bottom-3' if not loop.last }}">
+              <div class="nhsuk-grid-column-three-quarters">
+                {{ summaryList({
+                  classes: "nhsuk-u-margin-bottom-0",
+                  rows: [
+                    {
+                      key: {
+                        text: "Captured"
+                      },
+                      value: {
+                        text: image.timestamp | formatDateTime
+                      }
+                    },
+                    {
+                      key: {
+                        text: "Accession"
+                      },
+                      value: {
+                        html: image.accessionNumber
+                      }
+                    }
+                  ]
+                }) }}
+              </div>
+              {# Small graphic of mammogram #}
+              <div class="nhsuk-grid-column-one-quarter">
+                <div class="app-mammogram-image--placeholder">
+                  <img class="nhsuk-image__img {{ 'app-image-flip-horizontal' if side.side == 'right' }}" src="/images/mammograms/nci-vol-9405-72.jpg" alt="Mammogram image">
+                  <p>[IMAGE HERE]</p>
+                </div>
+              </div>
+            </div>
+
+          {# If there are no images, show inset text - likely partial mammography #}
+          {% else %}
+            {% set insetHtml %}
+              <p>There are no {{ side.viewShortWithSide }} images</p>
+            {% endset %}
+            {{ insetText({
+              html: insetHtml
+            }) }}
+          {% endfor %}
+
+          {# If there are repeats, show repeat ui #}
+          {% if side.images | length > 1 %}
+
+            <div class="nhsuk-grid-row">
+              <div class="nhsuk-grid-column-two-thirds nhsuk-u-margin-top-3">
+                {% set repeatReasonHtml %}
+                  {{ input({
+                    label: {
+                      text: "Repeat reason"
+                    },
+                    id: "repeatReason",
+                    name: "repeatReason" + side.viewShortWithSide,
+                    value: side.repeatReason
+                  }) }}
+                {% endset %}
+
+                {{ radios({
+                  idPrefix: "isRepeatQuestion-" + side.viewShortWithSide,
+                  name: "isRepeatQuestion-" + side.viewShortWithSide,
+                  fieldset: {
+                    legend: {
+                      text: "Why are there multiple " + side.viewShortWithSide + " images?",
+                      classes: "nhsuk-fieldset__legend--s",
+                      isPageHeading: false
+                    }
+                  },
+                  items: [
+                    {
+                      value: "isRepeat",
+                      text: "A repeat was needed",
+                      checked: true,
+                      conditional: {
+                        html: repeatReasonHtml
+                      }
+                    },
+                    {
+                      value: "extraImages",
+                      text: "Additional images were required to capture complete view"
+                    }
+                  ]
+                }) }}
+              </div>
+            </div>
+
+          {% endif %}
+        </div>
+
+      {% endfor %}
+
+    {% endset %}
+
+    {{ card({
+      heading: viewNameString | sentenceCase,
+      headingLevel: "2",
+      feature: true,
+      descriptionHtml: viewCardHtml
+    }) }}
+  {% endfor %}
 </div>
 
 
@@ -216,12 +280,12 @@
         // Hide spinner after initial delay
         setTimeout(() => {
           loadingSpinner.classList.add('app-hidden')
-          
+
           // Show each image sequentially
           imageCards.forEach((card, index) => {
             // Increased time between images to 2 seconds
             const loadTime = 1000 + (index * 2000)
-            
+
             setTimeout(() => {
               card.classList.remove('app-hidden')
               card.style.opacity = 0

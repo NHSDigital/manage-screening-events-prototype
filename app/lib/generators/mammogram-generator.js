@@ -16,14 +16,13 @@ const REPEAT_REASONS = [
   'patient movement',
   'positioning issue',
   'exposure issue',
-  'breast not fully imaged',
   'blurred image',
   'technical fault'
 ]
 
 // Probability settings for repeats
 const REPEAT_PROBABILITIES = {
-  needsRepeat: 0.15, // 15% chance of needing any repeat
+  needsRepeat: 0.35, // 15% chance of needing any repeat
   multipleRepeats: 0.2 // 20% chance of needing more than one repeat if already repeating
 }
 
@@ -63,8 +62,8 @@ const generateViewImages = ({ side, view, accessionBase, startIndex, startTime, 
     url: generateImageUrl(side, view, `${accessionBase}/${currentIndex}`)
   })
 
-  // Generate repeats if needed (and if we're in seed mode or randomly need them)
-  if (needsRepeat && isSeedData) {
+  // Generate repeats if needed
+  if (needsRepeat) {
     const repeatCount = Math.random() < REPEAT_PROBABILITIES.multipleRepeats ? 2 : 1
 
     for (let i = 0; i < repeatCount; i++) {
@@ -82,6 +81,8 @@ const generateViewImages = ({ side, view, accessionBase, startIndex, startTime, 
   return {
     side,
     view,
+    viewShort: view === 'mediolateral oblique' ? 'MLO' : 'CC',
+    viewShortWithSide: `${side === 'right' ? 'R' : 'L'}${view === 'mediolateral oblique' ? 'MLO' : 'CC'}`,
     images,
     isRepeat: needsRepeat && isSeedData,
     repeatReason: needsRepeat && isSeedData ? faker.helpers.arrayElement(REPEAT_REASONS) : null

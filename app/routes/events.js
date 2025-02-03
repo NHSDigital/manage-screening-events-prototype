@@ -1,5 +1,8 @@
 // app/routes/events.js
+const dayjs = require('dayjs')
+
 const { getFullName } = require('../lib/utils/participants')
+const { generateMammogramImages } = require('../lib/generators/mammogram-generator')
 
 /**
  * Get single event and its related data
@@ -111,7 +114,7 @@ module.exports = router => {
     }
   })
 
-  const MAMMOGRAPHY_VIEWS = ['medical-information', 'record-medical-information', 'ready-for-imaging', 'awaiting-images', 'images', 'imaging', 'confirm', 'screening-complete', 'attended-not-screened-reason']
+  const MAMMOGRAPHY_VIEWS = ['medical-information', 'record-medical-information', 'ready-for-imaging', 'awaiting-images', 'images', 'confirm', 'screening-complete', 'attended-not-screened-reason']
 
   // Event within clinic context
   router.get('/clinics/:clinicId/events/:eventId/:view', (req, res, next) => {
@@ -120,6 +123,35 @@ module.exports = router => {
       })
     } else next()
   })
+
+  // Specific route for imaging view
+  router.get('/clinics/:clinicId/events/:eventId/imaging', (req, res) => {
+    const { eventId } = req.params
+    const event = req.session.data.events.find(e => e.id === eventId)
+
+    // If no mammogram data exists, generate it
+    if (!event.mammogramData) {
+      const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
+      // Set start time to 3 minutes ago to simulate an in-progress screening
+      const startTime = dayjs().subtract(3, 'minutes').toDate()
+      const mammogramData = generateMammogramImages({
+        startTime,
+        isSeedData: false
+      })
+
+      // Update both session data and locals
+      const updatedEvent = {
+        ...event,
+        mammogramData
+      }
+
+      req.session.data.events[eventIndex] = updatedEvent
+      res.locals.event = updatedEvent
+    }
+
+    res.render('events/mammography/imaging', {})
+  })
+
 
   // Handle medical information answer
   router.post('/clinics/:clinicId/events/:eventId/medical-information-answer', (req, res) => {
