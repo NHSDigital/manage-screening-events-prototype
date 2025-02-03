@@ -95,8 +95,6 @@ module.exports = router => {
     const canBeginScreening = data.beginScreening
     delete data.beginScreening
 
-    // console.log({data})
-
     const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
 
     if (!canBeginScreening) {
@@ -126,8 +124,9 @@ module.exports = router => {
 
   // Specific route for imaging view
   router.get('/clinics/:clinicId/events/:eventId/imaging', (req, res) => {
-    const { eventId } = req.params
+    const { clinicId, eventId } = req.params
     const event = req.session.data.events.find(e => e.id === eventId)
+    const eventData = getEventData(req.session.data, clinicId, eventId)
 
     // If no mammogram data exists, generate it
     if (!event.mammogramData) {
@@ -136,7 +135,8 @@ module.exports = router => {
       const startTime = dayjs().subtract(3, 'minutes').toDate()
       const mammogramData = generateMammogramImages({
         startTime,
-        isSeedData: false
+        isSeedData: false,
+        config: eventData?.participant?.config,
       })
 
       // Update both session data and locals

@@ -10,7 +10,7 @@
 
 {% block pageContent %}
 
-  {{ participant | log }}
+  {{ participant | log("Participant") }}
 
   {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
 

@@ -47,7 +47,7 @@ const generateEthnicity = (ethnicities) => {
   }
 
   const ethnicGroup = weighted.select(Object.keys(ethnicities), [0.85, 0.08, 0.03, 0.02, 0.02])
-  
+
   // 20% chance of having background set to "Not provided"
   if (Math.random() < 0.2) {
     return {
@@ -262,18 +262,17 @@ const generateParticipant = ({
   const id = generateId()
 
   // Determine risk level first as it affects age generation
-  const participantRiskLevel = overrides?.defaultRiskLevel || riskLevel || pickRiskLevel()
+  const participantRiskLevel = overrides?.config?.defaultRiskLevel || riskLevel || pickRiskLevel()
 
   // const participantRiskLevel = 'moderate'
 
   // First get or generate BSU
-  const assignedBSU = overrides?.assignedBSU 
+  const assignedBSU = overrides?.assignedBSU
     ? breastScreeningUnits.find(bsu => bsu.id === overrides.assignedBSU)
     : faker.helpers.arrayElement(breastScreeningUnits)
 
   // Generate ethnicity data using new function
   const ethnicityData = generateEthnicity(ethnicities)
-  console.log(ethnicityData)
 
   // Generate base random participant first
   const baseParticipant = {

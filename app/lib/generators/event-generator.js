@@ -141,7 +141,8 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
       // Add mammogram images for completed events
       event.mammogramData = generateMammogramImages({
         startTime: actualStartTime,
-        isSeedData: true
+        isSeedData: true,
+        config: participant.config
       })
     }
 
