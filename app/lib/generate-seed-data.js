@@ -28,7 +28,7 @@ const testScenarios = require('../data/test-scenarios')
 // Create an index of participants by risk level for efficient lookup
 const createParticipantIndices = (participants, clinicDate, events = []) => {
   // console.time('Creating participant indices')
-  
+
   const riskLevelIndex = {}
   const screeningHistoryIndex = new Map()
 
@@ -43,13 +43,13 @@ const createParticipantIndices = (participants, clinicDate, events = []) => {
     if (age >= ageRange.lower && age <= ageRange.upper) {
       // Initialize array for this risk level if needed
       riskLevelIndex[riskLevel] = riskLevelIndex[riskLevel] || []
-      
+
       // Add participant to their risk level index
       riskLevelIndex[riskLevel].push(participant)
     }
 
     // Track all screening events for this participant
-    const participantEvents = events.filter(event => 
+    const participantEvents = events.filter(event =>
       event.participantId === participant.id
     )
     screeningHistoryIndex.set(participant.id, participantEvents)
@@ -83,12 +83,12 @@ const findNearestSlot = (slots, targetTime) => {
   return eligibleSlots.reduce((nearest, slot) => {
     const slotTime = dayjs(slot.dateTime)
     const slotMinutes = slotTime.hour() * 60 + slotTime.minute()
-    
+
     if (!nearest) return slot
 
     const currentDiff = Math.abs(targetMinutes - slotMinutes)
     const nearestDiff = Math.abs(
-      targetMinutes - 
+      targetMinutes -
       (dayjs(nearest.dateTime).hour() * 60 + dayjs(nearest.dateTime).minute())
     )
 
@@ -105,9 +105,9 @@ const generateClinicsForDay = (date, allParticipants, unit, usedParticipantsInSn
   const isRecentSnapshot = dayjs(date).isAfter(dayjs().subtract(1, 'month'))
 
   // Only look for test scenarios in recent snapshots
-  const testScenariosForDay = isRecentSnapshot 
+  const testScenariosForDay = isRecentSnapshot
     ? testScenarios.filter(scenario => {
-        const targetDate = dayjs().startOf('day').add(scenario.scheduling.whenRelativeToToday, 'day')
+        const targetDate = dayjs().startOf('day').add(scenario.participant.config.scheduling.whenRelativeToToday, 'day')
         return targetDate.isSame(dayjs(date).startOf('day'), 'day')
       })
     : []
@@ -124,14 +124,14 @@ const generateClinicsForDay = (date, allParticipants, unit, usedParticipantsInSn
   // For test scenarios, only use first clinic of the day
   if (testScenariosForDay.length > 0 && newClinics.length > 0) {
     const firstClinic = newClinics[0]
-    
+
     testScenariosForDay.forEach(scenario => {
       const participant = participants.find(p => p.id === scenario.participant.id)
       if (!participant) return
 
-      const slot = scenario.scheduling.slotIndex !== undefined
-        ? firstClinic.slots[scenario.scheduling.slotIndex]
-        : findNearestSlot(firstClinic.slots, scenario.scheduling.approximateTime)
+      const slot = scenario.participant.config.scheduling.slotIndex !== undefined
+        ? firstClinic.slots[scenario.participant.config.scheduling.slotIndex]
+        : findNearestSlot(firstClinic.slots, scenario.participant.config.scheduling.approximateTime)
 
       if (!slot) {
         console.log(`Warning: Could not find suitable slot for test participant ${participant.id}`)
@@ -143,7 +143,7 @@ const generateClinicsForDay = (date, allParticipants, unit, usedParticipantsInSn
         participant,
         clinic: firstClinic,
         outcomeWeights: config.screening.outcomes[firstClinic.clinicType],
-        forceStatus: scenario.scheduling.status,
+        forceStatus: scenario.participant.config.scheduling.status,
       })
 
       events.push(event)
@@ -164,7 +164,7 @@ const generateClinicsForDay = (date, allParticipants, unit, usedParticipantsInSn
       const selectedRiskLevel = weighted.select(
         Object.fromEntries(
           availableRiskLevels.map(level => [
-            level, 
+            level,
             riskLevels[level].weight
           ])
         )
@@ -175,7 +175,7 @@ const generateClinicsForDay = (date, allParticipants, unit, usedParticipantsInSn
         .filter(p => !usedParticipantsInSnapshot.has(p.id))
 
       if (availableParticipants.length === 0) {
-        
+
         const newParticipant = generateParticipant({
           ethnicities,
           breastScreeningUnits: [unit],
@@ -278,7 +278,7 @@ const generateData = async () => {
     console.log(`Generating data for ${unit.name}...`)
 
     let unitEvents = [] // Track events for this unit across snapshots
-    
+
     // Process each snapshot
     const unitData = snapshots.map(dates => {
       // Create a set to track used participants for this entire snapshot
@@ -291,7 +291,7 @@ const generateData = async () => {
       // console.log(`- ${indices.screeningHistoryIndex.size} participants with history`)
 
       // Process each day in the snapshot
-      const snapshotData = dates.map(date => 
+      const snapshotData = dates.map(date =>
         generateClinicsForDay(date, participants, unit, usedParticipantsInSnapshot, indices)
       )
 

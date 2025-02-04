@@ -1,5 +1,8 @@
 // app/lib/utils/strings.js
 
+const pluralizeLib = require('pluralize')
+
+
 /**
  * Convert string to sentence case, removing leading/trailing whitespace
  * @param {string} input - String to convert
@@ -240,6 +243,28 @@ const formatNhsNumber = (input) => {
 // formatNhsNumber(4857773456)   // returns '485 777 3456'
 // formatNhsNumber('485 777 3456') // returns '485 777 3456'
 
+/**
+ * Make a word plural based on a count
+ * @param {string} word - Word to pluralise
+ * @param {...*} args - Additional arguments (e.g. count) passed to pluralise
+ * @returns {string} Pluralized word
+ * @example
+ * pluralise('cat') // returns 'cats'
+ * pluralise('cat', 1) // returns 'cat'
+ * pluralise('cat', '2') // returns 'cats'
+ */
+const pluralise = (word, ...args) => {
+  if (!word) return ''
+  if (typeof word !== 'string') return word
+
+  // Convert first arg to number if it looks like one
+  if (args.length && !isNaN(args[0])) {
+    args[0] = Number(args[0])
+  }
+
+  return pluralizeLib(word, ...args)
+}
+
 module.exports = {
   addIndefiniteArticle,
   formatCurrency,
@@ -260,4 +285,5 @@ module.exports = {
   startsWith,
   stringLiteral,
   formatPhoneNumber,
+  pluralise
 }

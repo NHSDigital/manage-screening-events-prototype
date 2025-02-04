@@ -3,7 +3,7 @@
 /**
  * Test scenarios define specific participants and events that should always exist
  * in the generated data. This ensures we have consistent test cases.
- * 
+ *
  * Only specify what needs to be consistent - any unspecified fields will be randomly generated.
  * This allows natural variation while maintaining key test conditions.
  */
@@ -20,12 +20,15 @@ module.exports = [
         ethnicBackground: null,
       },
       extraNeeds: ['Wheelchair user'],
-      defaultRiskLevel: 'routine',
-    },
-    scheduling: {
-      whenRelativeToToday: 0,
-      status: 'event_scheduled',
-      approximateTime: '10:30',
+      config: {
+        defaultRiskLevel: 'routine',
+        repeatView: 'RMLO',
+        scheduling: {
+          whenRelativeToToday: 0,
+          status: 'event_scheduled',
+          approximateTime: '10:30',
+        },
+      },
     },
   },
   {
@@ -40,13 +43,15 @@ module.exports = [
         ethnicBackground: null,
       },
       extraNeeds: null,
-      defaultRiskLevel: 'routine',
-    },
-    scheduling: {
-      whenRelativeToToday: 0,
-      status: 'event_checked_in',
-      approximateTime: '11:30',
-      // slotIndex: 20,
+      config: {
+        defaultRiskLevel: 'routine',
+        scheduling: {
+          whenRelativeToToday: 0,
+          status: 'event_checked_in',
+          approximateTime: '11:30',
+          // slotIndex: 20,
+        },
+      },
     },
   },
 ]

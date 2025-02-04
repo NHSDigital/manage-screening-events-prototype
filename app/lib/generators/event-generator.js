@@ -5,6 +5,7 @@ const { faker } = require('@faker-js/faker')
 const weighted = require('weighted')
 const dayjs = require('dayjs')
 const config = require('../../config')
+const { generateMammogramImages } = require('./mammogram-generator')
 
 const NOT_SCREENED_REASONS = [
   'Recent mammogram at different facility',
@@ -114,9 +115,6 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
       ...eventBase,
       details: {
         ...eventBase.details,
-        imagesTaken: eventStatus === 'event_complete'
-          ? ['RCC', 'LCC', 'RMLO', 'LMLO']
-          : null,
         notScreenedReason: eventStatus === 'event_attended_not_screened'
           ? faker.helpers.arrayElement(NOT_SCREENED_REASONS)
           : null,
@@ -139,6 +137,13 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
         actualEndTime: actualEndTime.toISOString(),
         actualDuration: actualEndTime.diff(actualStartTime, 'minute'),
       }
+
+      // Add mammogram images for completed events
+      event.mammogramData = generateMammogramImages({
+        startTime: actualStartTime,
+        isSeedData: true,
+        config: participant.config
+      })
     }
 
     return event

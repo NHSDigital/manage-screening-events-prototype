@@ -13,7 +13,7 @@
   {# {% set events = data.events | getClinicEvents(clinicId) %} #}
   {% set events = allEvents %}
 
-  {{ clinic | log }}
+  {{ clinic | log("Clinic") }}
 
   {% set clinicRiskType %}
     {% if clinic.riskLevels | length == 1 %}
@@ -44,13 +44,27 @@
 
   {% set secondaryNavItems = [] %}
 
-  {#     { id: 'scheduled', label: 'Scheduled' }, #}
-  {% for filter in [
+  {% set tabItems = [
     { id: 'remaining', label: 'Remaining' },
     { id: 'checked-in', label: 'Checked in' },
     { id: 'complete', label: 'Complete' },
     { id: 'all', label: 'All' }
   ] %}
+
+  {% set remainingCount = events | filterEventsByStatus(filter.id) | length %}
+
+  {% if clinic.status == 'closed' or remainingCount == 0 %}
+    {% set tabItems = [
+      { id: 'complete', label: 'Complete' },
+      { id: 'all', label: 'All' }
+    ] %}
+  {% elseif clinic.status == "scheduled" %}
+    {% set tabItems = [
+      { id: 'all', label: 'All' }
+    ] %}
+  {% endif %}
+
+  {% for filter in tabItems %}
     {% set href -%}
       /clinics/{{ clinicId }}/{{ filter.id if filter.id !== 'remaining' }}
     {% endset %}
@@ -59,13 +73,14 @@
       href: href | trim,
       current: true if filter.id == status
     }) %}
-
   {% endfor %}
 
-  {{ appSecondaryNavigation({
-    visuallyHiddenTitle: "Secondary menu",
-    items: secondaryNavItems
-  }) }}
+  {% if clinic.status !== "scheduled" %}
+    {{ appSecondaryNavigation({
+      visuallyHiddenTitle: "Secondary menu",
+      items: secondaryNavItems
+    }) }}
+  {% endif %}
 
   {# This probably shouldn't occur #}
   {% if filteredEvents.length === 0 %}
