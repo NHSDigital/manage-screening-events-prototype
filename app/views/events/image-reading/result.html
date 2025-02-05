@@ -1,0 +1,91 @@
+{# app/views/events/image-reading/result.html #}
+
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "Read images for Jane Smith" %}
+
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
+{% set formAction = './reading-answer' %}
+
+{% set tabActive = "imageReading" %}
+
+{% block pageContent %}
+
+  {{ participant | log }}
+
+  {% set secondaryNavItems = [] %}
+
+  {% set tabItems = [
+    { id: 'imageReading', label: 'Image reading' },
+    { id: 'participantDetails', label: 'Participant details' },
+    { id: 'medicalInformation', label: 'Medical information' },
+    { id: 'screeningHistory', label: 'Screening history' }
+  ] %}
+
+  {% for tab in tabItems %}
+    {% set href -%}
+      #
+    {% endset %}
+    {% set secondaryNavItems = secondaryNavItems | push({
+      text: tab.label,
+      href: href | trim,
+      current: true if tabActive == tab.id
+    }) %}
+  {% endfor %}
+
+
+  {{ appSecondaryNavigation({
+    visuallyHiddenTitle: "Secondary menu",
+    items: secondaryNavItems
+  }) }}
+
+  <span class="nhsuk-caption-l">
+    {{ participant | getFullName }}
+  </span>
+  <h1 class="nhsuk-heading-l js-image-count">
+    {{ pageHeading }}
+  </h1>
+
+  <p>Screened on 3 February 2025, 10:12am</p>
+
+  {% set insetHtml %}
+    <p>
+      There are 5 images in this set
+    </p>
+  {% endset %}
+
+  {{ insetText({
+    html: insetHtml
+  }) }}
+
+  <h2>What is the outcome?</h2>
+
+  <div class="form-group">
+    {{ button({
+      text: "Normal result",
+      href: "./confirm-normal"
+    }) }}
+  </div>
+  <div class="form-group">
+    {{ button({
+      text: "Technical recall",
+      classes: "nhsuk-button--secondary",
+      href: "./recall-reason"
+    }) }}
+  </div>
+  <div class="form-group">
+    {{ button({
+      "text": "Abnormal result",
+      "classes": "nhsuk-button--warning",
+      href: "./awaiting-annotations"
+    }) }}
+  </div>
+
+  <p><a href="#">Skip to next participant</a></p>
+
+  <p><a href="#">End reading session</a></p>
+
+{% endblock %}
+
+

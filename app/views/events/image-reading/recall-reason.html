@@ -1,0 +1,110 @@
+{# app/views/events/image-reading/result.html #}
+
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "Reason for recall" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './reading-answer' %}
+
+{% block pageContent %}
+
+  {{ participant | log }}
+
+  <span class="nhsuk-caption-l">
+    {{ participant | getFullName }}
+  </span>
+
+  <h1 class="nhsuk-heading-l js-image-count">
+    {{ pageHeading }}
+  </h1>
+
+
+  {% set checkboxItems = [] %}
+
+  {% for view in [
+    {
+      value: "rmlo",
+      text: "RMLO (right mediolateral oblique)"
+    },
+    {
+      value: "lmlo",
+      text: "LMLO (left mediolateral oblique)"
+    },
+    {
+      value: "rcc",
+      text: "RCC (right craniocaudal)"
+    },
+    {
+      value: "lcc",
+      text: "LCC (left craniocaudal)"
+    }
+  ] %}
+    {% set selectHtml %}
+      {{ select({
+        id: "recallReason" + loop.index,
+        name: "recallReason" + loop.index,
+        label: {
+          text: "Reason for recall"
+        },
+        items: [
+          {
+            value: 1,
+            text: "Select a reason",
+            disabled: true,
+            selected: true
+          },
+          {
+            value: 1,
+            text: "Image blurry"
+          },
+          {
+            value: 2,
+            text: "Positioning issue"
+          }
+        ]
+      }) }}
+    {% endset %}
+    {% set checkboxItems = checkboxItems | push({
+      text: view.value,
+      text: view.text,
+      conditional: {
+        html: selectHtml
+      }
+    }) %}
+  {% endfor %}
+
+  {{ checkboxes({
+    idPrefix: "whichViews",
+    name: "whichViews",
+    fieldset: {
+      legend: {
+        text: "Which views need to be recalled?",
+        classes: "nhsuk-fieldset__legend--m",
+        isPageHeading: false
+      }
+    },
+    _hint: {
+      text: "Select all options that are relevant to you."
+    },
+    items: checkboxItems
+  }) }}
+
+  {{ textarea({
+    name: "additionalNotes",
+    id: "additionalNotes",
+    label: {
+      text: "Additional notes",
+      classes: "nhsuk-label--m"
+    }
+  }) }}
+
+  {{ button({
+    text: "Submit recall and move to next",
+    href: "./result"
+  }) }}
+
+{% endblock %}
+
+

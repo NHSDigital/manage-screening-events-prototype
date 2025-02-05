@@ -1,0 +1,38 @@
+{# app/views/events/image-reading/result.html #}
+
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "Awaiting annotations" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './reading-answer' %}
+
+{% block pageContent %}
+
+  {{ participant | log }}
+
+  <span class="nhsuk-caption-l">
+    {{ participant | getFullName }}
+  </span>
+
+  <h1 class="nhsuk-heading-l js-image-count">
+    {{ pageHeading }}
+  </h1>
+
+  {% set insetHtml %}
+    <p>Annotations will appear here once they have been transmitted by PACS</p>
+  {% endset %}
+  {{ insetText({
+    html: insetHtml
+  }) }}
+
+  {{ button({
+    text: "Check PACs for updates",
+    classes: "nhsuk-button--secondary",
+    href: "./summary"
+  }) }}
+
+{% endblock %}
+
+
