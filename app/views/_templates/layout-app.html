@@ -1,7 +1,7 @@
 
 {% extends "layout.html" %}
 
-
+{% set bodyClasses = "app-dark-mode" if data.darkMode == 'true' %}
 
 {% block beforeContent %}
 {% if not hideBackLink %}
@@ -47,6 +47,11 @@
         url: "/participants",
         label: "Participants",
         current: true if navActive == "participants"
+      },
+      {
+        url: "/events/image-reading/result",
+        label: "Image reading",
+        current: true if navActive == "imageReading"
       },
       {
         url: "#",

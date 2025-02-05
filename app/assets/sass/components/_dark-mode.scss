@@ -1,0 +1,225 @@
+$app-dark-mode-blue: #348de0;
+$app-dark-mode-background: #1C1C1C;
+$app-dark-mode-background-secondary: tint($app-dark-mode-background, 10%);
+$app-dark-mode-white: #E8E8E8;
+$app-dark-mode-text-colour: $app-dark-mode-white;
+$app-dark-mode-text-colour-secondary: shade($app-dark-mode-text-colour, 30%);
+
+// Links
+$app-dark-mode-link-color: $app-dark-mode-blue;
+$app-dark-mode-link-hover-color: tint($color_nhsuk-dark-pink, 50%);
+$app-dark-mode-link-active-color: shade($app-dark-mode-link-color, 20%);
+$app-dark-mode-link-visited-color: tint($color_nhsuk-purple, 50%);
+
+// Paul's colours
+$app-dark-mode-link-color: #348de0;
+$app-dark-mode-link-hover-color: #ffeb3b;
+$app-dark-mode-link-active-color: #000;
+$app-dark-mode-link-visited-color: #89b;
+
+
+@mixin app-dark-mode-focused-text {
+  background-color: $nhsuk-focus-color;
+  box-shadow:
+    0 -2px $nhsuk-focus-color,
+    0 $nhsuk-focus-width $nhsuk-focus-text-color;
+  color: $nhsuk-focus-text-color;
+  // When colours are overridden, for example when users have a dark mode,
+  // backgrounds and box-shadows disappear, so we need to ensure there's a
+  // transparent outline which will be set to a visible colour.
+  outline: $nhsuk-focus-width solid transparent;
+  // When link is focussed, hide the default underline since the
+  // box shadow adds the "underline"
+  text-decoration: none;
+}
+
+@mixin app-dark-mode-link-style-default {
+  color: $app-dark-mode-blue;
+
+  &:visited {
+    color: $app-dark-mode-link-visited-color;
+  }
+
+  &:hover {
+    color: $app-dark-mode-link-hover-color;
+    text-decoration: none;
+  }
+
+  &:focus {
+    @include nhsuk-focused-text();
+
+    &:hover {
+      text-decoration: none;
+    }
+
+    &:visited {
+      color: $nhsuk-focus-text-color;
+    }
+
+    .nhsuk-icon {
+      fill: $nhsuk-focus-text-color;
+    }
+  }
+
+  &:active {
+    color: $app-dark-mode-link-active-color;
+  }
+}
+
+.app-dark-mode {
+
+  background: $app-dark-mode-background;
+  color: $app-dark-mode-text-colour;
+
+  // Text colour
+  .nhsuk-fieldset__legend {
+    color: $app-dark-mode-text-colour;
+  }
+
+  // Secondary text colour
+  .nhsuk-hint,
+  .app-text-grey,
+  .nhsuk-caption-l,
+  .nhsuk-caption-m,
+  .nhsuk-caption-s,
+  .app-suppress-link-styles * {
+    color: $app-dark-mode-text-colour-secondary;
+  }
+
+  // Links and link type things
+  a, .app-secondary-navigation__link {
+    @include app-dark-mode-link-style-default;
+
+    &:focus {
+      @include app-dark-mode-focused-text;
+    }
+  }
+
+  .app-secondary-navigation__link:link {
+    color: $app-dark-mode-link-color;
+    &:focus {
+      @include app-dark-mode-focused-text;
+    }
+  }
+
+  .app-secondary-navigation__list-item--current {
+    border-color: $app-dark-mode-white;
+  }
+
+  .app-secondary-navigation__list-item--current .app-secondary-navigation__link:link,
+  .app-secondary-navigation__list-item--current .app-secondary-navigation__link:visited {
+    color: $app-dark-mode-text-colour;
+    &:focus {
+      @include app-dark-mode-focused-text;
+    }
+  }
+
+  .nhsuk-link--no-visited-state {
+    color: $app-dark-mode-link-color;
+    &:focus {
+      @include app-dark-mode-focused-text;
+    }
+  }
+
+
+
+  .nhsuk-back-link {
+    .nhsuk-icon__chevron-left {
+      fill: $app-dark-mode-link-color;
+    }
+  }
+  .nhsuk-back-link__link {
+
+    &:visited {
+      color: $app-dark-mode-link-color;
+    }
+
+    &:hover {
+      color: $app-dark-mode-link-hover-color;
+      text-decoration: underline;
+
+      .nhsuk-icon__chevron-left {
+        fill: $app-dark-mode-link-hover-color;
+      }
+    }
+
+    &:focus {
+      .nhsuk-icon__chevron-left {
+        fill: $nhsuk-focus-text-color;
+      }
+    }
+  }
+
+  .nhsuk-button {
+    &:link, &:visited, &:active, &:hover {
+      color: white;
+    }
+  }
+
+  .nhsuk-header {
+    a {
+      color: $app-dark-mode-text-colour;
+
+      &:visited {
+        color: $app-dark-mode-text-colour;
+      }
+      &:focus {
+        @include app-dark-mode-focused-text;
+      }
+
+    }
+    background: $app-dark-mode-background-secondary;
+    color: $app-dark-mode-text-colour;
+
+    .nhsuk-header__account, .nhsuk-header__account-item {
+      background: $app-dark-mode-background;
+      outline: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .app-count {
+    background: $app-dark-mode-background-secondary;
+    color: $app-dark-mode-text-colour;
+  }
+  // Component overrides
+  .nhsuk-card {
+    background: $app-dark-mode-background-secondary;
+    color: $app-dark-mode-text-colour;
+
+    .nhsuk-card__heading--feature {
+      // background: $app-dark-mode-blue;
+      color: $app-dark-mode-text-colour;
+    }
+  }
+
+  .nhsuk-footer, .nhsuk-footer-container {
+    background: $app-dark-mode-background-secondary;
+    color: $app-dark-mode-text-colour;
+
+    .nhsuk-footer__list-item-link, .nhsuk-footer__copyright {
+      color: $app-dark-mode-text-colour-secondary;
+    }
+  }
+
+  .nhsuk-radios {
+    .nhsuk-radios__input + .nhsuk-radios__label::before {
+      border-color: $app-dark-mode-white;
+      background-color: $app-dark-mode-background-secondary;
+    }
+    .nhsuk-radios__input + .nhsuk-radios__label::after {
+      background: $app-dark-mode-white;
+      border: 10px solid $app-dark-mode-white;
+    }
+  }
+
+  .app-notification-banner__content {
+    color: $app-dark-mode-text-colour;
+    background: $app-dark-mode-background-secondary;
+  }
+}
+
+html:has(.app-dark-mode) {
+  background-color: $app-dark-mode-background-secondary;
+  background: $app-dark-mode-background-secondary;
+  color: $app-dark-mode-text-colour;
+}
