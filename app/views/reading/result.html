@@ -1,33 +1,28 @@
 {# app/views/events/image-reading/result.html #}
 
-{% extends 'layout-app.html' %}
+{% extends 'layout-reading.html' %}
 
 {% set pageHeading = "Read images for " + participant | getFullName %}
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
 
+{% set mainClasses = "nhsuk-u-padding-top-3" %}
+
 {% set formAction = './reading-answer' %}
 
 {% set tabActive = "imageReading" %}
-
-{% block beforeContent %}
-{{ backLink({
-  href: "./",
-  text: "Back to clinic"
-}) }}
-{{ super() }}
-
-{% endblock %}
 
 {% block pageContent %}
 
   {{ participant | log("Participant") }}
   {{ event | log("Event") }}
+  {{ data.readingSession | log("Reading session")}}
+  {{ progress | log("Progress")}}
 
   {% set secondaryNavItems = [] %}
 
   {% set tabItems = [
-    { id: 'imageReading', label: 'Image reading' },
+    { id: 'imageReading', label: 'Reading assessment' },
     { id: 'participantDetails', label: 'Participant details' },
     { id: 'medicalInformation', label: 'Medical information' },
     { id: 'screeningHistory', label: 'Screening history' }
@@ -47,17 +42,18 @@
 
   {{ appSecondaryNavigation({
     visuallyHiddenTitle: "Secondary menu",
-    items: secondaryNavItems
+    items: secondaryNavItems,
+    classes: "nhsuk-u-margin-bottom-6"
   }) }}
 
-  <span class="nhsuk-caption-l">
+  {# <span class="nhsuk-caption-l">
     {{ participant | getFullName }}
-  </span>
+  </span> #}
   <h1 class="nhsuk-heading-l js-image-count">
     {{ pageHeading }}
   </h1>
 
-  <p>Screened on 3 February 2025, 10:12am</p>
+  {# <p>Screened on 3 February 2025, 10:12am</p> #}
 
   {% set imageCount = event.mammogramData.metadata.totalImages %}
 
@@ -74,11 +70,11 @@
   {% endif %}
 
 
-  <h2>What is the outcome?</h2>
+  <h2>What your assessment?</h2>
 
   <div class="form-group">
     {{ button({
-      text: "Normal result",
+      text: "Normal",
       href: eventId + "/confirm-normal"
     }) }}
   </div>
@@ -91,7 +87,7 @@
   </div>
   <div class="form-group">
     {{ button({
-      "text": "Abnormal result",
+      "text": "Abnormal",
       "classes": "nhsuk-button--warning",
       href: eventId + "/awaiting-annotations"
     }) }}
@@ -101,7 +97,7 @@
 
   {% if progress.hasNextUnread %}
     <p>
-      <a href="/clinics/{{clinicId}}/reading/{{progress.nextUnreadId}}" class="">Skip to next participant
+      <a href="/clinics/{{clinicId}}/reading/{{progress.nextUnreadId}}?skipped={{eventId}}" class="">Skip to next participant
       </a>
     </p>
   {% endif %}
@@ -113,8 +109,6 @@
     </p>
 
   {% endif %}
-
-  <p><a href="./">End reading session</a></p>
 
 {% endblock %}
 

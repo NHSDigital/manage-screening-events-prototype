@@ -24,6 +24,7 @@
 
 
 <p class="app-text-grey"><span>NHS Number: {{ participant.medicalInformation.nhsNumber | formatNhsNumber }}</span><span class="nhsuk-u-margin-left-4">SX Number: {{ participant.sxNumber }}</span></p>
+
 {{appointmentTimeHtml}}
 
 <p>{{ event.timing.startTime | formatTimeString }} ({{ event.timing.duration }} minutes) - {{ clinic.date | formatDate }} ({{ clinic.date | formatRelativeDate }})<span class="nhsuk-u-margin-left-3"><a href="#">Reschedule appointment</a></span></p>

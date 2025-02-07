@@ -1,5 +1,5 @@
 // app/lib/utils/readings.js
-const getReadingProgress = (clinic, events, currentEventId) => {
+const getReadingProgress = (clinic, events, currentEventId, skippedEvents = []) => {
   const readableEvents = events.filter(event =>
     event.clinicId === clinic.id &&
     ['event_complete', 'event_partially_screened'].includes(event.status)
@@ -68,7 +68,13 @@ const getReadingProgress = (clinic, events, currentEventId) => {
     hasNextUnread: !!nextUnreadId,
     hasPreviousUnread: !!previousUnreadId,
     nextUnreadId,
-    previousUnreadId
+    previousUnreadId,
+    skippedCount: skippedEvents.length,
+    skippedEvents,
+    // Could add these if we want to show in UI
+    isCurrentSkipped: skippedEvents.includes(currentEventId),
+    nextEventSkipped: nextEventId ? skippedEvents.includes(nextEventId) : false,
+    previousEventSkipped: previousEventId ? skippedEvents.includes(previousEventId) : false
   }
 }
 

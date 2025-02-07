@@ -1,6 +1,6 @@
 {# app/views/events/image-reading/result.html #}
 
-{% extends 'layout-app.html' %}
+{% extends 'layout-reading.html' %}
 
 {% set pageHeading = "Awaiting annotations" %}
 
@@ -10,7 +10,8 @@
 
 {% block pageContent %}
 
-  {{ participant | log }}
+  {{ participant | log("participant") }}
+  {{ progress.skippedEvents | log("progress") }}
 
   <span class="nhsuk-caption-l">
     {{ participant | getFullName }}
@@ -32,6 +33,8 @@
     classes: "nhsuk-button--secondary",
     href: "./confirm-abnormal"
   }) }}
+
+  <p><a href="./confirm-abnormal">Enter results manually</a></p>
 
 {% endblock %}
 

@@ -19,7 +19,45 @@ module.exports = router => {
       return res.redirect('/clinics/' + req.params.clinicId + '/reading')
     }
 
-    const progress = getReadingProgress(eventData.clinic, req.session.data.events, req.params.eventId)
+    const event = eventData.event
+
+    // Initialize reading session data if not exists
+    req.session.data.readingSession = req.session.data.readingSession || {
+      clinicId: req.params.clinicId,
+      skippedEvents: []
+    }
+
+    // Reset if we've switched clinics
+    if (req.session.data.readingSession.clinicId !== req.params.clinicId) {
+      req.session.data.readingSession = {
+        clinicId: req.params.clinicId,
+        skippedEvents: []
+      }
+    }
+
+    // Add to skipped list if an event was explicitly skipped
+    const skippedEventId = req.query.skipped
+    delete req.session.data.skipped
+    if (skippedEventId &&
+      !req.session.data.readingSession.skippedEvents.includes(skippedEventId) &&
+      !req.session.data.events.find(e => e.id === skippedEventId)?.reads?.length)
+      {
+        req.session.data.readingSession.skippedEvents.push(skippedEventId)
+      }
+
+    // Remove any events from skipped list that have now been read
+    req.session.data.readingSession.skippedEvents =
+    req.session.data.readingSession.skippedEvents.filter(skippedId => {
+      const event = req.session.data.events.find(e => e.id === skippedId)
+      return !event?.reads?.length
+    })
+
+    const progress = getReadingProgress(
+      eventData.clinic,
+      req.session.data.events,
+      req.params.eventId,
+      req.session.data.readingSession?.skippedEvents || []
+    )
 
     res.locals.eventData = eventData
     res.locals.clinic = eventData.clinic
@@ -114,8 +152,8 @@ module.exports = router => {
     if (!eventData) return res.redirect(`/clinics/${clinicId}/reading`)
 
     res.render(`reading/${step}`, {
-      ...eventData,
-      progress: getReadingProgress(eventData.clinic, req.session.data.events, eventId)
+      // ...eventData,
+      // progress: getReadingProgress(eventData.clinic, req.session.data.events, eventId)
     })
   })
 
@@ -233,6 +271,8 @@ module.exports = router => {
     req.session.data = data
 
     const progress = getReadingProgress(data.clinics.find(c => c.id === clinicId), data.events, eventId)
+
+    // req.flash('success', 'Session data cleared')
 
     // Redirect to next participant if available
     if (progress.hasNext) {
