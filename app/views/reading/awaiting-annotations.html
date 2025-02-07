@@ -2,7 +2,7 @@
 
 {% extends 'layout-app.html' %}
 
-{% set pageHeading = "Confirm normal result" %}
+{% set pageHeading = "Awaiting annotations" %}
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
@@ -20,9 +20,17 @@
     {{ pageHeading }}
   </h1>
 
+  {% set insetHtml %}
+    <p>Annotations will appear here once they have been transmitted by PACS</p>
+  {% endset %}
+  {{ insetText({
+    html: insetHtml
+  }) }}
+
   {{ button({
-    text: "Confirm",
-    href: "./result"
+    text: "Check PACs for updates",
+    classes: "nhsuk-button--secondary",
+    href: "./confirm-abnormal"
   }) }}
 
 {% endblock %}

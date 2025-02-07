@@ -1,0 +1,75 @@
+{# reading/list.html #}
+{% extends 'layout-app.html' %}
+
+{% block pageContent %}
+  <div class="app-header-with-status">
+    <h1 class="nhsuk-heading-l">
+      <span class="nhsuk-caption-l">{{ unit.name }}</span>
+      First reading - {{ clinic.date | formatDate }}
+    </h1>
+  </div>
+
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      {% set remainingCount = events.length - completedCount %}
+      <p>{{ remainingCount }} remaining to read out of {{ events.length }}{% if completedCount %}, {{ completedCount }} complete{% endif %}</p>
+      {% set firstUnreadEvent = events | find('readStatus', 'Not read') %}
+      {% if firstUnreadEvent %}
+        <a href="/clinics/{{ clinicId }}/reading/{{ firstUnreadEvent.id }}" class="nhsuk-button">
+          {{ "Resume reading" if completedCount else "Start reading" }}
+        </a>
+      {% endif %}
+    </div>
+
+   </div>
+
+  <table class="nhsuk-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Date of birth</th>
+        <th>Read status</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in events %}
+      {{ event | log }}
+        <tr>
+          <td><a href="/clinics/{{ clinicId }}/reading/{{ event.id }}">{{ event.participant | getFullName }}</a></td>
+          <td>{{ event.participant.demographicInformation.dateOfBirth | formatDate }}</td>
+          <td>
+            {{ tag({
+              text: event.readStatus,
+              classes: "nhsuk-tag--" + event.tagColor + " app-nowrap"
+            })}}
+          </td>
+          <td>
+            {% if event.reads and event.reads[0] %}
+
+              {% set colour %}
+                {% switch event.reads[0].result %}
+                  {% case 'recall' %}
+                    red
+                  {% case 'abnormal' %}
+                    blue
+                  {% default %}
+                    green
+                {% endswitch %}
+              {% endset %}
+
+              {% set resultClass = "nhsuk-tag--" + ( colour | trim ) %}
+
+              {{ tag({
+                text: event.reads[0].result | sentenceCase,
+                classes: resultClass
+              })}}
+            {% else %}
+              {{ "No result" | noWrap | asHint }}
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

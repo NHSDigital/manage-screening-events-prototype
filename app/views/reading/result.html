@@ -2,7 +2,7 @@
 
 {% extends 'layout-app.html' %}
 
-{% set pageHeading = "Read images for Jane Smith" %}
+{% set pageHeading = "Read images for " + participant | getFullName %}
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
 
@@ -10,9 +10,19 @@
 
 {% set tabActive = "imageReading" %}
 
+{% block beforeContent %}
+{{ backLink({
+  href: "./",
+  text: "Back to clinic"
+}) }}
+{{ super() }}
+
+{% endblock %}
+
 {% block pageContent %}
 
-  {{ participant | log }}
+  {{ participant | log("Participant") }}
+  {{ event | log("Event") }}
 
   {% set secondaryNavItems = [] %}
 
@@ -49,42 +59,62 @@
 
   <p>Screened on 3 February 2025, 10:12am</p>
 
+  {% set imageCount = event.mammogramData.metadata.totalImages %}
+
   {% set insetHtml %}
     <p>
-      There are 5 images in this set
+      There are {{ imageCount }} images in this set
     </p>
   {% endset %}
 
-  {{ insetText({
-    html: insetHtml
-  }) }}
+  {% if imageCount > 4 %}
+    {{ insetText({
+      html: insetHtml
+    }) }}
+  {% endif %}
+
 
   <h2>What is the outcome?</h2>
 
   <div class="form-group">
     {{ button({
       text: "Normal result",
-      href: "./confirm-normal"
+      href: eventId + "/confirm-normal"
     }) }}
   </div>
   <div class="form-group">
     {{ button({
       text: "Technical recall",
       classes: "nhsuk-button--secondary",
-      href: "./recall-reason"
+      href: eventId + "/recall-reason"
     }) }}
   </div>
   <div class="form-group">
     {{ button({
       "text": "Abnormal result",
       "classes": "nhsuk-button--warning",
-      href: "./awaiting-annotations"
+      href: eventId + "/awaiting-annotations"
     }) }}
   </div>
 
-  <p><a href="#">Skip to next participant</a></p>
+  {# <p><a href="#">Skip to next participant</a></p> #}
 
-  <p><a href="#">End reading session</a></p>
+  {% if progress.hasNextUnread %}
+    <p>
+      <a href="/clinics/{{clinicId}}/reading/{{progress.nextUnreadId}}" class="">Skip to next participant
+      </a>
+    </p>
+  {% endif %}
+
+  {% if progress.hasPrevious %}
+    <p>
+      <a href="/clinics/{{clinicId}}/reading/{{progress.previousEventId}}" class="">Previous participant
+      </a>
+    </p>
+
+  {% endif %}
+
+  <p><a href="./">End reading session</a></p>
 
 {% endblock %}
 

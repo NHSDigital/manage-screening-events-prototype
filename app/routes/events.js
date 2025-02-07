@@ -48,12 +48,6 @@ function updateEventStatus (event, newStatus) {
 
 module.exports = router => {
 
-  // Set correct nav
-  router.use('/events/image-reading', (req, res, next) => {
-    res.locals.navActive = 'imageReading'
-    next()
-  })
-
   // Set clinics to active in nav for all urls starting with /clinics
   router.use('/clinics/:clinicId/events/:eventId', (req, res, next) => {
     const eventData = getEventData(req.session.data, req.params.clinicId, req.params.eventId)

@@ -90,119 +90,119 @@ module.exports = router => {
     })
   })
 
-  const QUESTIONNAIRE_SECTIONS = ['health-status', 'medical-history', 'current-symptoms']
+  // const QUESTIONNAIRE_SECTIONS = ['health-status', 'medical-history', 'current-symptoms']
 
-  // Helper to get next section
-  const getNextSection = (currentSection) => {
-    const currentIndex = QUESTIONNAIRE_SECTIONS.indexOf(currentSection)
-    return QUESTIONNAIRE_SECTIONS[currentIndex + 1]
-  }
+  // // Helper to get next section
+  // const getNextSection = (currentSection) => {
+  //   const currentIndex = QUESTIONNAIRE_SECTIONS.indexOf(currentSection)
+  //   return QUESTIONNAIRE_SECTIONS[currentIndex + 1]
+  // }
 
-  // Check your answers - route needs to be before later wildcard route
-  router.get('/clinics/:clinicId/participants/:participantId/questionnaire/summary', (req, res) => {
-    const { clinicId, participantId } = req.params
+  // // Check your answers - route needs to be before later wildcard route
+  // router.get('/clinics/:clinicId/participants/:participantId/questionnaire/summary', (req, res) => {
+  //   const { clinicId, participantId } = req.params
 
-    const participant = req.session.data.participants.find(p => p.id === participantId)
-    const clinic = req.session.data.clinics.find(c => c.id === clinicId)
-    const event = req.session.data.events.find(e =>
-      e.clinicId === clinicId &&
-      e.participantId === participantId
-    )
+  //   const participant = req.session.data.participants.find(p => p.id === participantId)
+  //   const clinic = req.session.data.clinics.find(c => c.id === clinicId)
+  //   const event = req.session.data.events.find(e =>
+  //     e.clinicId === clinicId &&
+  //     e.participantId === participantId
+  //   )
 
-    if (!participant || !clinic || !event) {
-      res.redirect('/clinics/' + clinicId)
-      return
-    }
+  //   if (!participant || !clinic || !event) {
+  //     res.redirect('/clinics/' + clinicId)
+  //     return
+  //   }
 
-    // Collect all questionnaire data
-    const questionnaireData = QUESTIONNAIRE_SECTIONS.reduce((acc, section) => {
-      acc[section] = req.session.data[`questionnaire_${section}`] || {}
-      return acc
-    }, {})
+  //   // Collect all questionnaire data
+  //   const questionnaireData = QUESTIONNAIRE_SECTIONS.reduce((acc, section) => {
+  //     acc[section] = req.session.data[`questionnaire_${section}`] || {}
+  //     return acc
+  //   }, {})
 
-    res.render('participants/questionnaire/summary', {
-      participant,
-      clinic,
-      event,
-      clinicId,
-      participantId,
-      questionnaireData,
-    })
-  })
+  //   res.render('participants/questionnaire/summary', {
+  //     participant,
+  //     clinic,
+  //     event,
+  //     clinicId,
+  //     participantId,
+  //     questionnaireData,
+  //   })
+  // })
 
-  // Base questionnaire route
-  router.get('/clinics/:clinicId/participants/:participantId/questionnaire/:section', (req, res) => {
-    const { clinicId, participantId, section } = req.params
+  // // Base questionnaire route
+  // router.get('/clinics/:clinicId/participants/:participantId/questionnaire/:section', (req, res) => {
+  //   const { clinicId, participantId, section } = req.params
 
-    // Validate section name
-    if (!QUESTIONNAIRE_SECTIONS.includes(section)) {
-      res.redirect(`/clinics/${clinicId}/participants/${participantId}/questionnaire/health-status`)
-      return
-    }
+  //   // Validate section name
+  //   if (!QUESTIONNAIRE_SECTIONS.includes(section)) {
+  //     res.redirect(`/clinics/${clinicId}/participants/${participantId}/questionnaire/health-status`)
+  //     return
+  //   }
 
-    const participant = req.session.data.participants.find(p => p.id === participantId)
-    const clinic = req.session.data.clinics.find(c => c.id === clinicId)
-    const event = req.session.data.events.find(e =>
-      e.clinicId === clinicId &&
-      e.participantId === participantId
-    )
+  //   const participant = req.session.data.participants.find(p => p.id === participantId)
+  //   const clinic = req.session.data.clinics.find(c => c.id === clinicId)
+  //   const event = req.session.data.events.find(e =>
+  //     e.clinicId === clinicId &&
+  //     e.participantId === participantId
+  //   )
 
-    if (!participant || !clinic || !event) {
-      res.redirect('/clinics/' + clinicId)
-      return
-    }
+  //   if (!participant || !clinic || !event) {
+  //     res.redirect('/clinics/' + clinicId)
+  //     return
+  //   }
 
-    res.render(`participants/questionnaire/${section}`, {
-      participant,
-      clinic,
-      event,
-      clinicId,
-      participantId,
-      currentSection: section,
-      sections: QUESTIONNAIRE_SECTIONS,
-    })
-  })
+  //   res.render(`participants/questionnaire/${section}`, {
+  //     participant,
+  //     clinic,
+  //     event,
+  //     clinicId,
+  //     participantId,
+  //     currentSection: section,
+  //     sections: QUESTIONNAIRE_SECTIONS,
+  //   })
+  // })
 
-  // After summary confirmation, we could save back to participant record
-  router.post('/clinics/:clinicId/participants/:participantId/questionnaire/complete', (req, res) => {
-    const { clinicId, participantId } = req.params
+  // // After summary confirmation, we could save back to participant record
+  // router.post('/clinics/:clinicId/participants/:participantId/questionnaire/complete', (req, res) => {
+  //   const { clinicId, participantId } = req.params
 
-    // Find participant
-    const participantIndex = req.session.data.participants.findIndex(p => p.id === participantId)
+  //   // Find participant
+  //   const participantIndex = req.session.data.participants.findIndex(p => p.id === participantId)
 
-    if (participantIndex !== -1) {
-      // Update participant record with questionnaire data
-      req.session.data.participants[participantIndex] = {
-        ...req.session.data.participants[participantIndex],
-        questionnaire: req.session.data.questionnaire,
-      }
-    }
+  //   if (participantIndex !== -1) {
+  //     // Update participant record with questionnaire data
+  //     req.session.data.participants[participantIndex] = {
+  //       ...req.session.data.participants[participantIndex],
+  //       questionnaire: req.session.data.questionnaire,
+  //     }
+  //   }
 
-    // Clear questionnaire data from session
-    delete req.session.data.questionnaire
+  //   // Clear questionnaire data from session
+  //   delete req.session.data.questionnaire
 
-    res.redirect(`/clinics/${clinicId}/participants/${participantId}`)
-  })
+  //   res.redirect(`/clinics/${clinicId}/participants/${participantId}`)
+  // })
 
-  // Handle form submissions
-  router.post('/clinics/:clinicId/participants/:participantId/questionnaire/:section', (req, res) => {
-    const { clinicId, participantId, section } = req.params
+  // // Handle form submissions
+  // router.post('/clinics/:clinicId/participants/:participantId/questionnaire/:section', (req, res) => {
+  //   const { clinicId, participantId, section } = req.params
 
-    // Get next section
-    const nextSection = getNextSection(section)
+  //   // Get next section
+  //   const nextSection = getNextSection(section)
 
-    if (nextSection) {
-      res.redirect(`/clinics/${clinicId}/participants/${participantId}/questionnaire/${nextSection}`)
-    } else {
-      res.redirect(`/clinics/${clinicId}/participants/${participantId}/questionnaire/summary`)
-    }
-  })
+  //   if (nextSection) {
+  //     res.redirect(`/clinics/${clinicId}/participants/${participantId}/questionnaire/${nextSection}`)
+  //   } else {
+  //     res.redirect(`/clinics/${clinicId}/participants/${participantId}/questionnaire/summary`)
+  //   }
+  // })
 
-  // Add a convenience redirect from the base questionnaire URL to the first section
-  router.get('/clinics/:clinicId/participants/:participantId/questionnaire', (req, res) => {
-    const { clinicId, participantId } = req.params
-    res.redirect(`/clinics/${clinicId}/participants/${participantId}/questionnaire/health-status`)
-  })
+  // // Add a convenience redirect from the base questionnaire URL to the first section
+  // router.get('/clinics/:clinicId/participants/:participantId/questionnaire', (req, res) => {
+  //   const { clinicId, participantId } = req.params
+  //   res.redirect(`/clinics/${clinicId}/participants/${participantId}/questionnaire/health-status`)
+  // })
 
   // Handle check-in
   router.get('/clinics/:clinicId/check-in/:eventId', (req, res) => {
@@ -271,7 +271,7 @@ module.exports = router => {
   const VALID_FILTERS = ['remaining', 'scheduled', 'checked-in', 'complete', 'all']
 
   // Support both /clinics/:id and /clinics/:id/:filter
-  router.get(['/clinics/:id', '/clinics/:id/:filter'], (req, res) => {
+  router.get(['/clinics/:id', '/clinics/:id/:filter'], (req, res, next) => {
     const clinicData = getClinicData(req.session.data, req.params.id)
 
     if (!clinicData) {
@@ -288,14 +288,13 @@ module.exports = router => {
       defaultFilter = 'complete'
     }
 
-    console.log(clinicData)
-
     // Check filter from either URL param or query string
     const filter = req.params.filter || req.query.filter || defaultFilter
 
     // Validate filter
     if (!VALID_FILTERS.includes(filter)) {
-      return res.redirect(`/clinics/${req.params.id}`)
+      // return res.redirect(`/clinics/${req.params.id}`)
+      return next()
     }
 
     const filteredEvents = filterEventsByStatus(clinicData.events, filter)

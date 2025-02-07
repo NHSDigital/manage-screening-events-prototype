@@ -122,7 +122,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
     }
 
     // Add timing details for completed appointments
-    if (eventStatus === 'event_complete') {
+    if (eventStatus === 'event_complete' || eventStatus === 'event_partially_screened') {
       const actualStartOffset = faker.number.int({ min: -5, max: 5 })
       const durationOffset = isSpecialAppointment
         ? faker.number.int({ min: -3, max: 10 })
