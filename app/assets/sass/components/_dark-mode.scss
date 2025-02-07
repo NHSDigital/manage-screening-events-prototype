@@ -168,11 +168,11 @@ $app-dark-mode-link-visited-color: #89b;
       }
 
     }
-    background: $app-dark-mode-background-secondary;
+    // background: $app-dark-mode-background-secondary;
     color: $app-dark-mode-text-colour;
 
     .nhsuk-header__account, .nhsuk-header__account-item {
-      background: $app-dark-mode-background;
+      // background: $app-dark-mode-background;
       outline: 1px solid rgba(255, 255, 255, 0.2);
     }
   }

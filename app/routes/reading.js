@@ -11,6 +11,62 @@ module.exports = router => {
     next()
   })
 
+ // Route for showing all clinics available for reading
+  router.get('/clinics/reading', (req, res) => {
+    const data = req.session.data
+    const sevenDaysAgo = dayjs().subtract(7, 'days').startOf('day')
+
+    // Get closed clinics from last 7 days
+    const closedClinics = data.clinics
+      .filter(clinic =>
+        clinic.status === 'closed' &&
+        dayjs(clinic.date).isAfter(sevenDaysAgo)
+      )
+      .map(clinic => {
+        const unit = data.breastScreeningUnits.find(u => u.id === clinic.breastScreeningUnitId)
+        const location = unit.locations.find(l => l.id === clinic.locationId)
+
+        // Get events that need reading (completed screening)
+        const events = data.events.filter(e =>
+          e.clinicId === clinic.id &&
+          ['event_complete', 'event_partially_screened'].includes(e.status)
+        )
+
+        // Calculate reading stats
+        const readEvents = events.filter(e => e.reads?.length > 0)
+        const readingStatus = readEvents.length === events.length ? 'Complete' :
+          readEvents.length > 0 ? 'In progress' : 'Not started'
+        const statusColor = readingStatus === 'Complete' ? 'green' :
+          readingStatus === 'In progress' ? 'blue' : 'grey'
+
+        // Calculate days since screening
+        const daysSinceScreening = dayjs().diff(dayjs(clinic.date), 'days')
+
+        return {
+          ...clinic,
+          unit,
+          location,
+          events,
+          readingStats: {
+            total: events.length,
+            complete: readEvents.length,
+            remaining: events.length - readEvents.length,
+            status: readingStatus,
+            statusColor,
+            daysSinceScreening
+          }
+        }
+      })
+      // Sort by date ascending (oldest first)
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+
+    res.render('reading/index', {
+      clinics: closedClinics,
+      totalClinics: closedClinics.length,
+      totalToRead: closedClinics.reduce((sum, c) => sum + c.readingStats.remaining, 0)
+    })
+  })
+
   // Reading routes middleware
   router.use('/clinics/:clinicId/reading/:eventId', (req, res, next) => {
     const eventData = getEventData(req.session.data, req.params.clinicId, req.params.eventId)

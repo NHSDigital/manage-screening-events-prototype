@@ -56,21 +56,35 @@
   {# <p>Screened on 3 February 2025, 10:12am</p> #}
 
   {% set imageCount = event.mammogramData.metadata.totalImages %}
+  {% set standardViews = event.mammogramData.views | length %}
 
-  {% set insetHtml %}
-    <p>
-      There are {{ imageCount }} images in this set
-    </p>
-  {% endset %}
+  {# Only show if we have extra images #}
+  {% if imageCount > standardViews %}
+    {% set extraImagesHtml %}
+      <ul class="nhsuk-list">
+        {% for viewKey, viewData in event.mammogramData.views %}
+          {% if viewData.images.length > 1 %}
+            <li>
+              {% if viewData.isRepeat %}
+                {{ viewData.viewShortWithSide }} view was repeated because: {{ viewData.repeatReason }}
+              {% else %}
+                {{ viewData.viewShortWithSide }} view required additional images to capture the full breast
+              {% endif %}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% endset %}
 
-  {% if imageCount > 4 %}
-    {{ insetText({
-      html: insetHtml
+    {{ warningCallout({
+      heading: "Additional images",
+      HTML: extraImagesHtml
     }) }}
   {% endif %}
 
 
-  <h2>What your assessment?</h2>
+
+  <h2>What is your assessment?</h2>
 
   <div class="form-group">
     {{ button({

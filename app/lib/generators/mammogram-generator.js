@@ -13,18 +13,27 @@ const STANDARD_VIEWS = [
 ]
 
 const REPEAT_REASONS = [
-  'patient movement',
-  'positioning issue',
-  'exposure issue',
-  'blurred image',
-  'technical fault'
+  'patient moved during exposure',
+  'unable to maintain compression',
+  'inadequate compression achieved',
+  'incorrect positioning identified',
+  'image too light - exposure needs adjustment',
+  'image too dark - exposure needs adjustment',
+  'motion blur affecting image quality',
+  'equipment technical fault',
+  'folded skin needs smoothing',
+  'pectoral muscle not visualized correctly',
+  'nipple not in profile'
 ]
+
 
 // Default probability settings
 const DEFAULT_PROBABILITIES = {
   viewMissing: 0.05, // 5% chance of a view being missing
-  needsRepeat: 0.15 // 15% chance of one view needing a repeat
+  needsRepeat: 0.15, // 15% chance of needing a repeat
+  repeatsPerRound: [1, 2] // When repeating, how many views to repeat (min, max)
 }
+
 
 const generateViewKey = (side, view) => {
   const prefix = side === 'right' ? 'right' : 'left'
@@ -50,7 +59,15 @@ const generateImageUrl = (side, view, accessionNumber) => {
  * @param {boolean} [params.needsRepeat] - Force this view to be repeated
  * @returns {Object} View data with images
  */
-const generateViewImages = ({ side, view, accessionBase, startIndex, startTime, isSeedData, needsRepeat = false }) => {
+const generateViewImages = ({
+  side,
+  view,
+  accessionBase,
+  startIndex,
+  startTime,
+  isSeedData,
+  needsRepeat = false
+}) => {
   let currentIndex = startIndex
   let currentTime = dayjs(startTime)
   const images = []
@@ -85,13 +102,14 @@ const generateViewImages = ({ side, view, accessionBase, startIndex, startTime, 
   }
 }
 
+
 /**
  * Generate a complete set of mammogram images
  * @param {Object} options - Generation options
  * @param {Date|string} [options.startTime] - Starting timestamp (defaults to now)
  * @param {boolean} [options.isSeedData=false] - Whether generating seed data
  * @param {Object} [options.config] - Optional configuration for specific scenarios
- * @param {string} [options.config.repeatView] - Force a specific view to be repeated (e.g. 'RMLO')
+ * @param {string[]} [options.config.repeatViews] - Array of views to repeat (e.g. ['RMLO', 'LCC'])
  * @param {string[]} [options.config.missingViews] - Array of views to omit (e.g. ['RMLO'])
  * @param {Object} [options.probabilities] - Override default probabilities
  * @returns {Object} Complete mammogram data
@@ -107,12 +125,18 @@ const generateMammogramImages = ({
   let currentTime = dayjs(startTime)
   const views = {}
 
-  // Determine which view gets repeated (if any)
-  let viewToRepeat = null
-  if (config.repeatView) {
-    viewToRepeat = config.repeatView
-  } else if (Math.random() < probabilities.needsRepeat) {
-    viewToRepeat = faker.helpers.arrayElement(['RMLO', 'RCC', 'LCC', 'LMLO'])
+  // Determine which views get repeated
+  let viewsToRepeat = config.repeatViews || []
+  if (!config.repeatViews && Math.random() < probabilities.needsRepeat) {
+    // Randomly select 1-2 views to repeat
+    const repeatCount = faker.number.int({
+      min: probabilities.repeatsPerRound[0],
+      max: probabilities.repeatsPerRound[1]
+    })
+    viewsToRepeat = faker.helpers.arrayElements(
+      ['RMLO', 'RCC', 'LCC', 'LMLO'],
+      { min: repeatCount, max: repeatCount }
+    )
   }
 
   // Generate each standard view
@@ -133,7 +157,7 @@ const generateMammogramImages = ({
       startIndex: currentIndex,
       startTime: currentTime.toISOString(),
       isSeedData,
-      needsRepeat: viewToRepeat === viewShortWithSide
+      needsRepeat: viewsToRepeat.includes(viewShortWithSide)
     })
 
     views[viewKey] = viewData

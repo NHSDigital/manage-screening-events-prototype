@@ -1,13 +1,30 @@
 {# reading/list.html #}
 {% extends 'layout-app.html' %}
 
+{% set back = {
+  href: "/clinics/reading",
+  text: "Back to reading"
+} %}
+
+{% set clinicRiskType %}
+    {% if clinic.riskLevels | length == 1 %}
+      {{ clinic.riskLevels[0] }}
+    {% else %}
+      Mixed
+    {% endif %}
+  {% endset %}
+
 {% block pageContent %}
   <div class="app-header-with-status">
+    <span class="nhsuk-caption-l">Image reading</span>
     <h1 class="nhsuk-heading-l">
-      <span class="nhsuk-caption-l">{{ unit.name }}</span>
-      Image reading - {{ clinic.date | formatDate }}
+      {{ clinicRiskType | sentenceCase }} risk {{ clinic.clinicType | lower }} clinic
     </h1>
   </div>
+
+    {# Clinic time and date #}
+  {# 9am to midday - 31 December 2024 #}
+  <p>{{ clinic.sessionTimes | formatTimeRange }} - {{ clinic.date | formatDate }}</p>
 
   {{ data.readingSession.skippedEvents | log("Progress") }}
   <div class="nhsuk-grid-row">
@@ -40,9 +57,10 @@
           <td><a href="/clinics/{{ clinicId }}/reading/{{ event.id }}">{{ event.participant | getFullName }}</a></td>
           <td>{{ event.participant.demographicInformation.dateOfBirth | formatDate }}</td>
           <td>
+            {% set skipped = "Skipped" if data.readingSession.skippedEvents | includes(event.id) else false %}
             {{ tag({
-              text: event.readStatus,
-              classes: "nhsuk-tag--" + event.tagColor + " app-nowrap"
+              text: skipped or event.readStatus,
+              classes: "nhsuk-tag--" + ('yellow' if skipped else event.tagColor) + " app-nowrap"
             })}}
           </td>
           <td>
@@ -66,10 +84,8 @@
                 text: event.reads[0].result | sentenceCase,
                 classes: resultClass
               })}}
-            {% elseif data.readingSession.skippedEvents | includes(event.id) %}
-              {{ "Skipped" | asHint }}
-             {% else %}
 
+            {% else %}
               {{ "No result" | noWrap | asHint }}
             {% endif %}
           </td>
