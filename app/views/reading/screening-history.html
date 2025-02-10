@@ -1,0 +1,38 @@
+{# /app/views/events/reading/participant.html #}
+
+{% extends 'layout-reading.html' %}
+
+{% set pageHeading = "Screening history" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './result-normal' %}
+{% set tabActive = "screening-history" %}
+
+{% block pageContent %}
+
+
+
+
+  <span class="nhsuk-caption-l">
+    {{ participant | getFullName }}
+  </span>
+
+  <h1 class="nhsuk-heading-l js-image-count">
+    {{ pageHeading }}
+  </h1>
+
+  {% set clinicHistory = data | getParticipantClinicHistory(participant.id) %}
+
+  {% set screeningHistoryHtml %}
+    {% include "summary-lists/screening-history.njk" %}
+  {% endset %}
+
+  {{ card({
+    heading: "Screening history",
+    headingLevel: "2",
+    descriptionHtml: screeningHistoryHtml
+  }) }}
+{% endblock %}
+
+

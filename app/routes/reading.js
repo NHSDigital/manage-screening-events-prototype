@@ -13,6 +13,7 @@ module.exports = router => {
 
  // Route for showing all clinics available for reading
   router.get('/clinics/reading', (req, res) => {
+    res.locals.navActive = 'reading'
     const data = req.session.data
     const sevenDaysAgo = dayjs().subtract(7, 'days').startOf('day')
 
@@ -161,47 +162,48 @@ module.exports = router => {
   })
 
   // Route handlers can now be simpler
-  router.get('/clinics/:clinicId/reading/:eventId', (req, res) => {
-    res.render('reading/result')
-  })
+  // router.get('/clinics/:clinicId/reading/:eventId', (req, res) => {
+  //   res.render('reading/assessment')
+  // })
 
   // Record reading result
-  router.post('/clinics/:clinicId/reading/:eventId', (req, res) => {
-    const { clinicId, eventId } = req.params
-    const { result } = req.body
-    const data = req.session.data
+  // router.post('/clinics/:clinicId/reading/:eventId', (req, res) => {
+  //   const { clinicId, eventId } = req.params
+  //   const { result } = req.body
+  //   const data = req.session.data
 
-    const eventIndex = data.events.findIndex(e => e.id === eventId)
-    if (eventIndex === -1) return res.redirect(`/clinics/${clinicId}/reading`)
+  //   const eventIndex = data.events.findIndex(e => e.id === eventId)
+  //   if (eventIndex === -1) return res.redirect(`/clinics/${clinicId}/reading`)
 
-    // Add reading result
-    data.events[eventIndex].reads = data.events[eventIndex].reads || []
-    data.events[eventIndex].reads.push({
-      result,
-      readerId: data.currentUser.id,
-      readerType: data.currentUser.role,
-      timestamp: new Date().toISOString()
-    })
+  //   // Add reading result
+  //   data.events[eventIndex].reads = data.events[eventIndex].reads || []
+  //   data.events[eventIndex].reads.push({
+  //     result,
+  //     readerId: data.currentUser.id,
+  //     readerType: data.currentUser.role,
+  //     timestamp: new Date().toISOString()
+  //   })
 
-    req.session.data = data
+  //   req.session.data = data
 
-    const progress = getReadingProgress(data.clinics.find(c => c.id === clinicId), data.events, eventId)
+  //   const progress = getReadingProgress(data.clinics.find(c => c.id === clinicId), data.events, eventId)
 
-    // Redirect to next participant if available
-    if (progress.hasNext) {
-      res.redirect(`/clinics/${clinicId}/reading/${progress.nextEventId}`)
-    } else {
-      res.redirect(`/clinics/${clinicId}/reading`)
-    }
-  })
+  //   // Redirect to next participant if available
+  //   if (progress.hasNext) {
+  //     res.redirect(`/clinics/${clinicId}/reading/${progress.nextEventId}/assessment`)
+  //   } else {
+  //     res.redirect(`/clinics/${clinicId}/reading`)
+  //   }
+  // })
 
   // Additional route handlers for each step
-  router.get('/clinics/:clinicId/reading/:eventId/:step', (req, res) => {
+  router.get('/clinics/:clinicId/reading/:eventId/:step', (req, res, next) => {
     const { clinicId, eventId, step } = req.params
-    const validSteps = ['confirm-normal', 'recall-reason', 'awaiting-annotations', 'confirm-abnormal']
+    const validSteps = ['assessment', 'participant-details', 'medical-information', 'screening-history', 'confirm-normal', 'recall-reason', 'awaiting-annotations', 'confirm-abnormal']
 
     if (!validSteps.includes(step)) {
-      return res.redirect(`/clinics/${clinicId}/reading/${eventId}/result`)
+      return next()
+      // return res.redirect(`/clinics/${clinicId}/reading/${eventId}/result`)
     }
 
     const eventData = getEventData(req.session.data, clinicId, eventId)
@@ -213,91 +215,47 @@ module.exports = router => {
     })
   })
 
-  // router.post('/clinics/:clinicId/reading/:eventId/result-normal', (req, res) => {
-  //   const { clinicId, eventId } = req.params
-  //   const data = req.session.data
+  // Initial route for handling updates to assessments
+  router.post('/clinics/:clinicId/reading/:eventId/result-update', (req, res) => {
+    const { clinicId, eventId } = req.params
+    const { newResult } = req.body
 
-  //   const eventIndex = data.events.findIndex(e => e.id === eventId)
-  //   if (eventIndex === -1) return res.redirect(`/clinics/${clinicId}/reading`)
+    console.log("result update")
+    // Store the intent to update in the session
+    req.session.data.readingUpdate = {
+      eventId,
+      originalResult: req.session.data.events.find(e => e.id === eventId)?.reads[0],
+      newResult
+    }
 
-  //   data.events[eventIndex].reads = data.events[eventIndex].reads || []
-  //   data.events[eventIndex].reads.push({
-  //     result: 'normal',
-  //     readerId: data.currentUser.id,
-  //     readerType: data.currentUser.role,
-  //     timestamp: new Date().toISOString()
-  //   })
+    // Route to appropriate next step based on chosen result
+    switch(newResult) {
+      case 'normal':
+        if (req.session.data.confirmNormalResults == 'true') {
+          res.redirect(`/clinics/${clinicId}/reading/${eventId}/confirm-normal`)
+        }
+        else {
+          // #307 redirect to preserve POST.
+          res.redirect(307, `/clinics/${clinicId}/reading/${eventId}/result-normal`);
 
-  //   req.session.data = data
+        }
 
-  //   const progress = getReadingProgress(data.clinics.find(c => c.id === clinicId), data.events, eventId)
-
-  //   if (progress.hasNext) {
-  //     res.redirect(`/clinics/${clinicId}/reading/${progress.nextEventId}`)
-  //   } else {
-  //     res.redirect(`/clinics/${clinicId}/reading`)
-  //   }
-  // })
-
-  // router.post('/clinics/:clinicId/reading/:eventId/result-recall', (req, res) => {
-  //   const { clinicId, eventId } = req.params
-  //   const { reason } = req.body
-  //   const data = req.session.data
-
-  //   const eventIndex = data.events.findIndex(e => e.id === eventId)
-  //   if (eventIndex === -1) return res.redirect(`/clinics/${clinicId}/reading`)
-
-  //   data.events[eventIndex].reads = data.events[eventIndex].reads || []
-  //   data.events[eventIndex].reads.push({
-  //     result: 'recall',
-  //     reason,
-  //     readerId: data.currentUser.id,
-  //     readerType: data.currentUser.role,
-  //     timestamp: new Date().toISOString()
-  //   })
-
-  //   req.session.data = data
-
-  //   const progress = getReadingProgress(data.clinics.find(c => c.id === clinicId), data.events, eventId)
-
-  //   if (progress.hasNext) {
-  //     res.redirect(`/clinics/${clinicId}/reading/${progress.nextEventId}`)
-  //   } else {
-  //     res.redirect(`/clinics/${clinicId}/reading`)
-  //   }
-  // })
-
-  // router.post('/clinics/:clinicId/reading/:eventId/result-abnormal', (req, res) => {
-  //   const { clinicId, eventId } = req.params
-  //   const { annotations } = req.body
-  //   const data = req.session.data
-
-  //   const eventIndex = data.events.findIndex(e => e.id === eventId)
-  //   if (eventIndex === -1) return res.redirect(`/clinics/${clinicId}/reading`)
-
-  //   data.events[eventIndex].reads = data.events[eventIndex].reads || []
-  //   data.events[eventIndex].reads.push({
-  //     result: 'abnormal',
-  //     annotations,
-  //     readerId: data.currentUser.id,
-  //     readerType: data.currentUser.role,
-  //     timestamp: new Date().toISOString()
-  //   })
-
-  //   req.session.data = data
-
-  //   const progress = getReadingProgress(data.clinics.find(c => c.id === clinicId), data.events, eventId)
-
-  //   if (progress.hasNext) {
-  //     res.redirect(`/clinics/${clinicId}/reading/${progress.nextEventId}`)
-  //   } else {
-  //     res.redirect(`/clinics/${clinicId}/reading`)
-  //   }
-  // })
+        break
+      case 'recall':
+        res.redirect(`/clinics/${clinicId}/reading/${eventId}/recall-reason`)
+        break
+      case 'abnormal':
+        res.redirect(`/clinics/${clinicId}/reading/${eventId}/awaiting-annotations`)
+        break
+      default:
+        res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
+    }
+  })
 
   // Generic result recording route
   router.post('/clinics/:clinicId/reading/:eventId/result-:resultType', (req, res) => {
-    const { clinicId, eventId, resultType } = req.params
+    const { clinicId, eventId } = req.params
+    const resultType = req.params.resultType
     const { reason, annotations } = req.body
     const data = req.session.data
 
@@ -320,19 +278,29 @@ module.exports = router => {
       readResult.annotations = annotations
     }
 
-    // Add reading to event
-    data.events[eventIndex].reads = data.events[eventIndex].reads || []
-    data.events[eventIndex].reads.push(readResult)
+    // Check if this is an update to an existing read
+    if (data.readingUpdate && data.readingUpdate.eventId === eventId) {
+      // Replace the first read with the new one
+      data.events[eventIndex].reads[0] = readResult
+      delete data.readingUpdate
+    } else {
+      // Add as new read
+      data.events[eventIndex].reads = data.events[eventIndex].reads || []
+      data.events[eventIndex].reads.push(readResult)
+    }
 
     req.session.data = data
 
     const progress = getReadingProgress(data.clinics.find(c => c.id === clinicId), data.events, eventId)
 
-    // req.flash('success', 'Session data cleared')
+    // Add flash message for changed reading
+    if (data.readingUpdate) {
+      req.flash('success', { html: `Reading updated to ${resultType}` })
+    }
 
     // Redirect to next participant if available
-    if (progress.hasNext) {
-      res.redirect(`/clinics/${clinicId}/reading/${progress.nextEventId}`)
+    if (progress.hasNextUnread) {
+      res.redirect(`/clinics/${clinicId}/reading/${progress.nextUnreadId}/assessment`)
     } else {
       res.redirect(`/clinics/${clinicId}/reading`)
     }

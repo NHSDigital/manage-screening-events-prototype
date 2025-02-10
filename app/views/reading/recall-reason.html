@@ -1,4 +1,4 @@
-{# app/views/events/image-reading/result.html #}
+{# /app/views/events/reading/recall-reason.html #}
 
 {% extends 'layout-reading.html' %}
 
@@ -8,9 +8,14 @@
 
 {% set formAction = './result-recall' %}
 
+{% set hideSecondaryNavigation = true %}
+
+{% set back = '' %}
+
 {% block pageContent %}
 
-  {{ participant | log }}
+  {{ participant | log("Participant") }}
+  {{ event | log("Event") }}
 
   <span class="nhsuk-caption-l">
     {{ participant | getFullName }}
@@ -23,7 +28,22 @@
 
   {% set checkboxItems = [] %}
 
-  {% for view in [
+  {% set mammogramImages = [] %}
+
+  {# We want a checkbox per image. Mammogram data is stored in a nested array by view, so
+  loop through the views, then loop through the images, and create a new array of images #}
+  {% for viewName, viewData in event.mammogramData.views %}
+    {% for image in viewData.images %}
+      {% set mammogramImages = mammogramImages | push({
+        value: viewData.viewShortWithSide + "-" + image.accessionNumber,
+        text: viewData.viewShortWithSide + " (" + image.accessionNumber + ")"
+      }) %}
+    {% endfor %}
+  {% endfor %}
+
+  {{ mammogramImages | log("Mammograms") }}
+
+  {# [
     {
       value: "rmlo",
       text: "RMLO (right mediolateral oblique)"
@@ -40,7 +60,9 @@
       value: "lcc",
       text: "LCC (left craniocaudal)"
     }
-  ] %}
+  ] #}
+
+  {% for view in mammogramImages %}
     {% set selectHtml %}
       {{ select({
         id: "recallReason" + loop.index,

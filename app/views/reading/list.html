@@ -1,4 +1,5 @@
-{# reading/list.html #}
+{# /app/views/events/reading/list.html #}
+
 {% extends 'layout-app.html' %}
 
 {% set back = {
@@ -22,7 +23,7 @@
     </h1>
   </div>
 
-    {# Clinic time and date #}
+  {# Clinic time and date #}
   {# 9am to midday - 31 December 2024 #}
   <p>{{ clinic.sessionTimes | formatTimeRange }} - {{ clinic.date | formatDate }}</p>
 
@@ -33,7 +34,7 @@
       <p>{{ remainingCount }} remaining to read out of {{ events.length }}{% if completedCount %}, {{ completedCount }} complete{% endif %}</p>
       {% set firstUnreadEvent = events | find('readStatus', 'Not read') %}
       {% if firstUnreadEvent %}
-        <a href="/clinics/{{ clinicId }}/reading/{{ firstUnreadEvent.id }}" class="nhsuk-button">
+        <a href="/clinics/{{ clinicId }}/reading/{{ firstUnreadEvent.id }}/assessment" class="nhsuk-button">
           {{ "Resume reading" if completedCount else "Start reading" }}
         </a>
       {% endif %}
@@ -47,15 +48,19 @@
         <th>Name</th>
         <th>Date of birth</th>
         <th>Read status</th>
-        <th>Result</th>
+        <th>Your assessment</th>
       </tr>
     </thead>
     <tbody>
       {% for event in events %}
       {{ event | log }}
         <tr>
-          <td><a href="/clinics/{{ clinicId }}/reading/{{ event.id }}">{{ event.participant | getFullName }}</a></td>
-          <td>{{ event.participant.demographicInformation.dateOfBirth | formatDate }}</td>
+          <td>
+            <a href="/clinics/{{ clinicId }}/reading/{{ event.id }}/assessment">{{ event.participant | getFullName }}</a>
+          </td>
+          <td>
+            {{ event.participant.demographicInformation.dateOfBirth | formatDate }}
+          </td>
           <td>
             {% set skipped = "Skipped" if data.readingSession.skippedEvents | includes(event.id) else false %}
             {{ tag({

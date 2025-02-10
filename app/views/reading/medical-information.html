@@ -1,0 +1,362 @@
+{# /app/views/events/reading/participant.html #}
+
+{% extends 'layout-reading.html' %}
+
+{% set pageHeading = "Medical information" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './result-normal' %}
+
+{% set tabActive = "medical-information" %}
+
+{% block pageContent %}
+
+
+
+
+  <span class="nhsuk-caption-l">
+    {{ participant | getFullName }}
+  </span>
+
+  <h1 class="nhsuk-heading-l js-image-count">
+    {{ pageHeading }}
+  </h1>
+
+  {% set medicalInformationCardHtml %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Breast implants"
+          },
+          value: {
+            html: "None"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "images"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Breast cancer history"
+          },
+          value: {
+            html: "None"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "observations"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Other breast diagnosis"
+          },
+          value: {
+            html: "None"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "observations"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Hormone replacement therapy (HRT)"
+          },
+          value: {
+            html: "No"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "observations"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Pregnant or breastfeeding"
+          },
+          value: {
+            html: "No"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "observations"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Recent breast changes and symptoms"
+          },
+          value: {
+            html: "None"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "observations"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Other physical or mental health issues"
+          },
+          value: {
+            html: "None"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "observations"
+              }
+            ]
+          }
+        }
+      ]
+    }) }}
+  {% endset %}
+  {#
+  {{ card({
+    heading: "Medical information",
+    headingLevel: "2",
+    feature: true,
+    descriptionHtml: medicalInformationCardHtml
+  }) }} #}
+
+  {% set valueHtml = 'None' %}
+
+  {% set medicalInformationCardHtml %}
+    {# {{ taskList({
+      idPrefix: "your-health",
+      items: taskListSections
+    }) }} #}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Breast cancer history"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "breast cancer history"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Non-cancerous lump disagnoses"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "non-cancerous lump disagnoses"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Other breast or chest proceedures"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "other breast or chest proceedures"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Recent breast changes or symptoms"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "recent breast changes or symptoms"
+              }
+            ]
+          }
+        }
+      ]
+    } | showMissingInformationLink) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Medical information",
+    headingLevel: "2",
+    feature: false,
+    descriptionHtml: medicalInformationCardHtml
+  }) }}
+
+  {% set valueHtml = "No" %}
+
+  {% set otherInformationHtml %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Hormone replacement therapy (HRT)"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "hormone replacement therapy (HRT)"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Pregnancy and breastfeeding"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "pregnancy and breastfeeding"
+              }
+            ]
+          }
+        }
+      ]
+    } | showMissingInformationLink) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Other information",
+    headingLevel: "2",
+    feature: false,
+    descriptionHtml: otherInformationHtml
+  }) }}
+
+  {% set observationsCardHtml %}
+    {# <p>There were <a href="#">2 observations</a> made by the mammographer during screening.</p> #}
+    {# <p>This could include tattoos, lumps, moles or scars on the breasts.</p> #}
+
+    {% set tattooHtml %}
+      Tattoo<br>
+      {{ "(Manchester united badge)" | asHint }}
+    {% endset %}
+
+    {% set scarHtml %}
+      Surgical scar<br>
+      {{ "(2 inches long)" | asHint }}
+    {% endset %}
+
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Right upper outer (RUO)"
+          },
+          value: {
+            html: tattooHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "images"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Left lower inner (LLI)"
+          },
+          value: {
+            html: scarHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "observations"
+              }
+            ]
+          }
+        }
+      ]
+    }) }}
+
+    <p><a href="#">Add a feature</a></p>
+  {% endset %}
+
+  {{ card({
+    heading: "Breast features",
+    headingLevel: "2",
+    feature: false,
+    descriptionHtml: observationsCardHtml
+  }) }}
+
+{% endblock %}
+
+

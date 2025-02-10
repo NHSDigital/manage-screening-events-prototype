@@ -1,6 +1,11 @@
 
 {% extends "layout-app.html" %}
 
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
+
+
+{# Custom header with image reading stats and participant name #}
 {% block header %}
   {{ super()}}
 
@@ -59,8 +64,23 @@
   </div>
 {% endblock header %}
 
-{% set back = {
-    href: "../reading",
-    text: "Back to reading list"
-  }
-%}
+
+
+{% if not hideSecondaryNavigation %}
+  {% set mainClasses = "nhsuk-u-padding-top-3" %}
+
+  {% set backHref %}
+    /clinics/{{ clinicId }}/reading
+  {% endset %}
+  {% set back = {
+      href: backHref | trim,
+      text: "Back to reading list"
+    }
+  %}
+{% endif %}
+
+{% block pageNavigation %}
+  {% if not hideSecondaryNavigation %}
+    {% include "reading/secondary-navigation.njk" %}
+  {% endif %}
+{% endblock pageNavigation %}

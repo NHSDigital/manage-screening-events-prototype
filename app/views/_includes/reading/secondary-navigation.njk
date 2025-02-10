@@ -1,0 +1,31 @@
+{# /app/views/events/reading/_includes/reading-header.njk #}
+
+{% set secondaryNavItems = [] %}
+
+{% set tabItems = [
+  { id: 'reading-outcomes', label: 'Reading outcomes' } if event.reads | length > 5,
+  { id: 'assessment', label: 'Your assessment' },
+  { id: 'participant-details', label: 'Participant' },
+  { id: 'medical-information', label: 'Medical' },
+  { id: 'screening-history', label: 'Screening history' }
+] | removeEmpty %}
+
+
+{% for tab in tabItems %}
+  {% set href -%}
+    ./{{ tab.id }}
+  {% endset %}
+
+  {% set secondaryNavItems = secondaryNavItems | push({
+    text: tab.label,
+    href: href | trim,
+    current: true if tabActive == tab.id
+  }) %}
+{% endfor %}
+
+
+{{ appSecondaryNavigation({
+  visuallyHiddenTitle: "Secondary menu",
+  items: secondaryNavItems,
+  classes: "nhsuk-u-margin-bottom-6"
+}) }}
