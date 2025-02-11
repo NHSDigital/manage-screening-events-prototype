@@ -3,11 +3,11 @@
 {% set secondaryNavItems = [] %}
 
 {% set tabItems = [
-  { id: 'reading-outcomes', label: 'Reading outcomes' } if event.reads | length > 5,
+  { id: 'reading-outcomes', label: 'Reading outcomes' } if event.reads | length > 0,
   { id: 'assessment', label: 'Your assessment' },
   { id: 'participant-details', label: 'Participant' },
   { id: 'medical-information', label: 'Medical' },
-  { id: 'screening-history', label: 'Screening history' }
+  { id: 'screening-history', label: 'Images' }
 ] | removeEmpty %}
 
 

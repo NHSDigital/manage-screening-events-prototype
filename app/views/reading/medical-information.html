@@ -23,138 +23,20 @@
     {{ pageHeading }}
   </h1>
 
-  {% set medicalInformationCardHtml %}
-    {{ summaryList({
-      rows: [
-        {
-          key: {
-            text: "Breast implants"
-          },
-          value: {
-            html: "None"
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "images"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Breast cancer history"
-          },
-          value: {
-            html: "None"
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "observations"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Other breast diagnosis"
-          },
-          value: {
-            html: "None"
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "observations"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Hormone replacement therapy (HRT)"
-          },
-          value: {
-            html: "No"
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "observations"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Pregnant or breastfeeding"
-          },
-          value: {
-            html: "No"
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "observations"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Recent breast changes and symptoms"
-          },
-          value: {
-            html: "None"
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "observations"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Other physical or mental health issues"
-          },
-          value: {
-            html: "None"
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "observations"
-              }
-            ]
-          }
-        }
-      ]
-    }) }}
+
+
+
+  {% set symptomsHtml %}
+    {% set symptoms = event.currentSymptoms %}
+    {% include "summary-lists/symptoms.njk" %}
   {% endset %}
-  {#
+
   {{ card({
-    heading: "Medical information",
+    heading: "Symptoms",
     headingLevel: "2",
-    feature: true,
-    descriptionHtml: medicalInformationCardHtml
-  }) }} #}
+    feature: false,
+    descriptionHtml: symptomsHtml
+  }) }}
 
   {% set valueHtml = 'None' %}
 
@@ -171,15 +53,6 @@
           },
           value: {
             html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "breast cancer history"
-              }
-            ]
           }
         },
         {
@@ -188,15 +61,6 @@
           },
           value: {
             html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "non-cancerous lump disagnoses"
-              }
-            ]
           }
         },
         {
@@ -205,15 +69,6 @@
           },
           value: {
             html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "other breast or chest proceedures"
-              }
-            ]
           }
         },
         {
@@ -222,15 +77,6 @@
           },
           value: {
             html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "recent breast changes or symptoms"
-              }
-            ]
           }
         }
       ]
@@ -255,15 +101,6 @@
           },
           value: {
             html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "hormone replacement therapy (HRT)"
-              }
-            ]
           }
         },
         {
@@ -272,15 +109,6 @@
           },
           value: {
             html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "pregnancy and breastfeeding"
-              }
-            ]
           }
         }
       ]
@@ -316,15 +144,6 @@
           },
           value: {
             html: tattooHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "images"
-              }
-            ]
           }
         },
         {
@@ -333,21 +152,11 @@
           },
           value: {
             html: scarHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "observations"
-              }
-            ]
           }
         }
       ]
     }) }}
 
-    <p><a href="#">Add a feature</a></p>
   {% endset %}
 
   {{ card({

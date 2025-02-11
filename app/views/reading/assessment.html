@@ -57,7 +57,17 @@
 
       {% set symptoms = event.currentSymptoms %}
       {% include "summary-lists/symptoms.njk" %}
-      <p><a href="#">View details</a></p>
+      <p><a href="./medical-information">View details</a></p>
+      {{ checkboxes({
+      idPrefix: "acknowledgeSymptoms",
+        name: "acknowledgeSymptoms",
+        items: [
+          {
+            value: "email",
+            text: "Acknowledge these symptoms"
+          }
+        ]
+      }) }}
     {% endif %}
 
     {% if hasAdditionalImages %}
