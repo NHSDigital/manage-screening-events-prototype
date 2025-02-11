@@ -34,20 +34,36 @@
   {% set imageCount = event.mammogramData.metadata.totalImages %}
   {% set standardViews = event.mammogramData.views | length %}
 
+  {% set thingsToReview = [] %}
+
   {% set hasSymptoms = event.currentSymptoms | length %}
+  {% if hasSymptoms %}
+    {% set thingsToReview = thingsToReview | push('Symptoms') %}
+  {% endif %}
+
   {% set hasAdditionalImages = imageCount > standardViews %}
+  {% if hasAdditionalImages %}
+    {% set thingsToReview = thingsToReview | push('Images') %}
+  {% endif %}
+
+
 
   {% set itemsToReviewHtml %}
 
     {% if hasSymptoms %}
-      <h2>Symptoms</h2>
+      {% if thingsToReview | length > 1 %}
+        <h2>Symptoms</h2>
+      {% endif %}
+
       {% set symptoms = event.currentSymptoms %}
       {% include "summary-lists/symptoms.njk" %}
       <p><a href="#">View details</a></p>
     {% endif %}
 
     {% if hasAdditionalImages %}
-      <h2>Images</h2>
+      {% if thingsToReview | length > 1 %}
+        <h2>Images</h2>
+      {% endif %}
       <ul class="nhsuk-list">
         {% for viewKey, viewData in event.mammogramData.views %}
           {% if viewData.images.length > 1 %}
@@ -66,9 +82,16 @@
 
   {% endset %}
 
-  {% if hasSymptoms or hasAdditionalImages %}
+  {% if thingsToReview | length %}
+    {% set calloutHeading %}
+      {% if thingsToReview | length > 1 %}
+        Items to review
+      {% else %}
+        {{ thingsToReview[0]}}
+      {% endif %}
+    {% endset %}
     {{ warningCallout({
-      heading: "Items to review",
+      heading: calloutHeading,
       HTML: itemsToReviewHtml
     }) }}
   {% endif %}
@@ -102,7 +125,7 @@
           },
           {
             value: "abnormal",
-            text: "Abnormal",
+            text: "Recall for assessment",
             checked: existingResult == "abnormal"
           }
         ]
@@ -139,7 +162,7 @@
     </div>
     <div class="form-group">
       {{ button({
-        "text": "Abnormal",
+        "text": "Recall for assessment",
         "classes": "nhsuk-button--warning",
         href: "./awaiting-annotations"
       }) }}
