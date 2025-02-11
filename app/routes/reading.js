@@ -2,6 +2,7 @@
 const dayjs = require('dayjs')
 const { getEventData } = require('../lib/utils/event-data')
 const { getReadingProgress } = require('../lib/utils/readings')
+const { needsReading } = require('../lib/utils/status')
 const { getFullName } = require('../lib/utils/participants')
 
 module.exports = router => {
@@ -28,9 +29,8 @@ module.exports = router => {
         const location = unit.locations.find(l => l.id === clinic.locationId)
 
         // Get events that need reading (completed screening)
-        const events = data.events.filter(e =>
-          e.clinicId === clinic.id &&
-          ['event_complete', 'event_partially_screened'].includes(e.status)
+        const events = data.events.filter(event =>
+          event.clinicId === clinic.id && needsReading(event)
         )
 
         // Calculate reading stats
@@ -138,11 +138,9 @@ module.exports = router => {
 
     const unit = data.breastScreeningUnits.find(u => u.id === clinic.breastScreeningUnitId)
 
-    const completeStatuses = ['event_complete', 'event_partially_screened']
-
     // Get all complete events with read status
     const eventsWithStatus = data.events
-      .filter(event => event.clinicId === clinicId && completeStatuses.includes(event.status))
+      .filter(event => event.clinicId === clinicId && needsReading(event))
       .sort((a, b) => new Date(a.timing.startTime) - new Date(b.timing.startTime))
       .map(event => ({
         ...event,
