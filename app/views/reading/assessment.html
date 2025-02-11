@@ -31,48 +31,23 @@
   <h1 class="nhsuk-heading-l js-image-count">
     {{ pageHeading }}
   </h1>
-
-  {% set symptomsHtml %}
-    {{ summaryList({
-      rows: [
-        {
-          key: {
-            text: "Nipple discharge"
-          },
-          value: {
-            html: "Right breast<br>Under 3 months"
-          }
-        },
-        {
-          key: {
-            text: "Swelling"
-          },
-          value: {
-            html: "Both breasts<br>Over 3 months"
-          }
-        }
-      ]
-    }) }}
-
-    <p><a href="#">View details</a></p>
-  {% endset %}
-
-  {% set showSymptoms = [true, false, false] | random %}
-
-  {% if showSymptoms %}
-    {{ warningCallout({
-      heading: "Symptoms",
-      HTML: symptomsHtml
-    }) }}
-  {% endif %}
-
-
   {% set imageCount = event.mammogramData.metadata.totalImages %}
   {% set standardViews = event.mammogramData.views | length %}
 
-  {# Only show if we have extra images #}
-  {% if imageCount > standardViews %}
-    {% set extraImagesHtml %}
+  {% set hasSymptoms = event.currentSymptoms | length %}
+  {% set hasAdditionalImages = imageCount > standardViews %}
+
+  {% set itemsToReviewHtml %}
+
+    {% if hasSymptoms %}
+      <h2>Symptoms</h2>
+      {% set symptoms = event.currentSymptoms %}
+      {% include "summary-lists/symptoms.njk" %}
+      <p><a href="#">View details</a></p>
+    {% endif %}
+
+    {% if hasAdditionalImages %}
+      <h2>Images</h2>
       <ul class="nhsuk-list">
         {% for viewKey, viewData in event.mammogramData.views %}
           {% if viewData.images.length > 1 %}
@@ -86,15 +61,17 @@
           {% endif %}
         {% endfor %}
       </ul>
-    {% endset %}
+      {# <p><a href="#">View details</a></p> #}
+    {% endif %}
 
+  {% endset %}
+
+  {% if hasSymptoms or hasAdditionalImages %}
     {{ warningCallout({
-      heading: "Additional images",
-      HTML: extraImagesHtml
+      heading: "Items to review",
+      HTML: itemsToReviewHtml
     }) }}
   {% endif %}
-
-
 
   {% set questionText = "What is your assessment?" %}
 

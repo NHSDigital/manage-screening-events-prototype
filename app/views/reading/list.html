@@ -53,10 +53,16 @@
     </thead>
     <tbody>
       {% for event in events %}
-      {{ event | log }}
+      {{ event | log("Event") }}
         <tr>
           <td>
             <a href="/clinics/{{ clinicId }}/reading/{{ event.id }}/assessment">{{ event.participant | getFullName }}</a>
+            {% if event.currentSymptoms | length %}
+              {{ tag({
+                text: "Has symptoms",
+                classes: "nhsuk-tag--yellow"
+              })}}
+            {% endif %}
           </td>
           <td>
             {{ event.participant.demographicInformation.dateOfBirth | formatDate }}
