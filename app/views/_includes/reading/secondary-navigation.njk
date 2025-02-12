@@ -5,9 +5,9 @@
 {% set tabItems = [
   { id: 'reading-outcomes', label: 'Reading outcomes' } if event.reads | length > 0,
   { id: 'assessment', label: 'Your assessment' },
-  { id: 'participant-details', label: 'Participant' },
-  { id: 'medical-information', label: 'Medical' },
-  { id: 'screening-history', label: 'Images' }
+  { id: 'participant-details', label: 'Participant info' },
+  { id: 'medical-information', label: 'Medical info' },
+  { id: 'images', label: 'Images' }
 ] | removeEmpty %}
 
 

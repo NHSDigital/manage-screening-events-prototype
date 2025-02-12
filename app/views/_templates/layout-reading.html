@@ -8,7 +8,7 @@
 {# Custom header with image reading stats and participant name #}
 {% block header %}
   {{ super()}}
-
+  {{ participant | log("log") }}
   <div class="app-reading-status">
     <div class="nhsuk-width-container">
       <div class="app-reading-status__row">

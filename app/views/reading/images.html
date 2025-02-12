@@ -1,0 +1,96 @@
+{# /app/views/events/reading/participant.html #}
+
+{% extends 'layout-reading.html' %}
+
+{% set pageHeading %}
+  Image records for {{ participant | getFullName }}
+{% endset %}
+
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
+{% set formAction = './result-normal' %}
+{% set tabActive = "images" %}
+
+{% block pageContent %}
+
+  <h1 class="nhsuk-heading-l js-image-count">
+    {{ pageHeading }}
+  </h1>
+
+  {% set clinicHistory = data | getParticipantClinicHistory(participant.id) %}
+
+  {% set previousMammogramsHtml %}
+  {{ table({
+    responsive: false,
+    panel: false,
+    _caption: "Prescription prepayment certificate (PPC) charges",
+    firstCellIsHeader: false,
+    head: [
+      {
+        text: "Date and type"
+      },
+      {
+        text: "Location"
+      },
+      {
+        text: "Outcome"
+      },
+      {
+        text: "Image status"
+      }
+    ],
+    rows: [
+      [
+        {
+          html: "19 Feb 2022<br>Screening"
+        },
+        {
+          text: "West Sussex BSS"
+        },
+        {
+          html: "Normal" | toTag
+        },
+        {
+          html: "Available" | toTag
+        }
+      ],
+      [
+        {
+          html: "12 Mar 2019<br>Unknown"
+        },
+        {
+          text: "East Cheshire and Stockport BSS"
+        },
+        {
+          html: "Normal" | toTag
+        },
+        {
+          html: "Not in PACS" | toTag
+        }
+      ],
+      [
+        {
+          html: "16 Apr 2016<br>Screening"
+        },
+        {
+          text: "East Cheshire and Stockport BSS"
+        },
+        {
+          html: "Normal" | toTag
+        },
+        {
+          html: "Requested" | toTag
+        }
+      ]
+    ]
+  }) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Previous mammograms",
+    headingLevel: "2",
+    descriptionHtml: previousMammogramsHtml
+  }) }}
+{% endblock %}
+
+

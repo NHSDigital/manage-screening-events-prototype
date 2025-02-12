@@ -197,7 +197,7 @@ module.exports = router => {
   // Additional route handlers for each step
   router.get('/clinics/:clinicId/reading/:eventId/:step', (req, res, next) => {
     const { clinicId, eventId, step } = req.params
-    const validSteps = ['assessment', 'participant-details', 'medical-information', 'screening-history', 'confirm-normal', 'recall-reason', 'awaiting-annotations', 'confirm-abnormal']
+    const validSteps = ['assessment', 'participant-details', 'medical-information', 'images', 'confirm-normal', 'recall-reason', 'awaiting-annotations', 'confirm-abnormal', 'recommended-assessment']
 
     if (!validSteps.includes(step)) {
       return next()

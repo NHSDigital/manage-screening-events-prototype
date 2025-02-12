@@ -97,6 +97,17 @@ const getStatusTagColour = (status) => {
     event_did_not_attend: 'red',
     event_cancelled: 'red',
     event_attended_not_screened: 'orange',
+
+    // Image reading
+    normal: 'green',
+    abnormal: 'red',
+    recall: 'grey',
+
+    // Image status
+    available: 'green',
+    requested: 'orange',
+    not_in_pacs: 'grey',
+
   }
   return colourMap[status] || ''
 }
