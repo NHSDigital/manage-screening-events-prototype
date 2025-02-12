@@ -32,7 +32,6 @@
     {{ pageHeading }}
   </h1>
   {% set imageCount = event.mammogramData.metadata.totalImages %}
-  {% set standardViews = event.mammogramData.views | length %}
 
   {% set thingsToReview = [] %}
 
@@ -41,18 +40,52 @@
     {% set thingsToReview = thingsToReview | push('Symptoms') %}
   {% endif %}
 
-  {% set hasAdditionalImages = imageCount > standardViews %}
+  {% set hasAdditionalImages = imageCount > 4 %}
   {% if hasAdditionalImages %}
-    {% set thingsToReview = thingsToReview | push('Images') %}
+    {% set thingsToReview = thingsToReview | push('Repeated views') %}
   {% endif %}
 
-  {% set hasTooFewImages = imageCount < 4 %}
+  {# {% set hasTooFewImages = imageCount < 4 %} #}
+  {% set isPartialMammography = event.mammogramData.isPartialMammography %}
 
-  {% if hasTooFewImages %}
-    {% set thingsToReview = thingsToReview | push('Images') %}
+  {% if isPartialMammography %}
+    {% set thingsToReview = thingsToReview | push('Partial mammography') %}
   {% endif %}
 
   {% set itemsToReviewHtml %}
+
+
+
+    {% if hasAdditionalImages %}
+      {% if thingsToReview | length > 1 %}
+        <h2>Repeated views</h2>
+      {% endif %}
+      <ul class="nhsuk-list">
+        {% for viewKey, viewData in event.mammogramData.views %}
+          {% if viewData.images.length > 1 %}
+            <li>
+              {% if viewData.isRepeat %}
+                {{ viewData.viewShortWithSide }} view was repeated because: {{ viewData.repeatReason }}
+              {% else %}
+                {{ viewData.viewShortWithSide }} view required additional images to capture the full breast
+              {% endif %}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+      {# <p><a href="#">View details</a></p> #}
+    {% endif %}
+
+    {% if isPartialMammography %}
+      {% if thingsToReview | length > 1 %}
+        <h2>Partial mammography</h2>
+      {% endif %}
+
+      <p>
+        Partial mamography reason: Patient was uncomfortable and asked to stop
+      </p>
+      {# <p><a href="#">View details</a></p> #}
+    {% endif %}
 
     {% if hasSymptoms %}
       {% if thingsToReview | length > 1 %}
@@ -72,37 +105,6 @@
             }
           ]
       }) }}
-    {% endif %}
-
-    {% if hasAdditionalImages %}
-      {% if thingsToReview | length > 1 %}
-        <h2>Images</h2>
-      {% endif %}
-      <ul class="nhsuk-list">
-        {% for viewKey, viewData in event.mammogramData.views %}
-          {% if viewData.images.length > 1 %}
-            <li>
-              {% if viewData.isRepeat %}
-                {{ viewData.viewShortWithSide }} view was repeated because: {{ viewData.repeatReason }}
-              {% else %}
-                {{ viewData.viewShortWithSide }} view required additional images to capture the full breast
-              {% endif %}
-            </li>
-          {% endif %}
-        {% endfor %}
-      </ul>
-      {# <p><a href="#">View details</a></p> #}
-    {% endif %}
-
-    {% if hasTooFewImages %}
-      {% if thingsToReview | length > 1 %}
-        <h2>Images</h2>
-      {% endif %}
-
-      <p>
-        Partial mamography reason: Patient was uncomfortable and asked to stop
-      </p>
-      {# <p><a href="#">View details</a></p> #}
     {% endif %}
 
   {% endset %}

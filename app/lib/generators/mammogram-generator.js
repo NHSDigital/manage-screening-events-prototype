@@ -173,9 +173,13 @@ const generateMammogramImages = ({
     .flatMap(view => view.images.map(img => img.timestamp))
     .sort()
 
+  // Check if any views are missing
+  const hasMissingViews = Object.keys(views).length < 4
+
   return {
     accessionBase,
     views,
+    isPartialMammography: isSeedData ? hasMissingViews : null,
     metadata: {
       totalImages,
       standardViewsCompleted: Object.keys(views).length === 4,
