@@ -2,9 +2,11 @@
 
 {% extends 'layout-reading.html' %}
 
-{% set pageHeading = "Confirm abnormal result" %}
+{% set pageHeading -%}
+  Confirm your assessment for {{ participant | getFullName }}
+{%- endset %}
 
-{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+{% set gridColumn = "nhsuk-grid-column-full" %}
 
 {% set formAction = './result-abnormal' %}
 
@@ -13,36 +15,173 @@
 
 {% block pageContent %}
 
-  {{ participant | log }}
+  {{ participant | log("log") }}
 
-  <span class="nhsuk-caption-l">
-    {{ participant | getFullName }}
-  </span>
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      <h1 class="nhsuk-heading-l js-image-count">
+        {{ pageHeading }}
+      </h1>
 
-  <h1 class="nhsuk-heading-l js-image-count">
-    {{ pageHeading }}
-  </h1>
+      {# {% set insetHtml %}
+        <p>
+          M1 and M4 abnormalities have been recorded in the right breast. The left breast is normal.
+        </p>
+      {% endset %}
 
-  {% set insetHtml %}
-    <p>[Annotations]</p>
+      {{ insetText({
+        html: insetHtml
+      }) }} #}
+    </div>
+  </div>
+
+  {% set rightBreastHtml %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Assessment"
+          },
+          value: {
+            html: "Abnormal"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "assessment"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Comment"
+          },
+          value: {
+            html: ""
+          },
+          actions: {
+            items: []
+          }
+        }
+      ]
+    } | showMissingInformationLink) }}
+
+    <h3>PACS annotations</h3>
+
+    {{ table({
+      responsive: false,
+      panel: false,
+      firstCellIsHeader: true,
+      head: [
+        {
+          text: "View"
+        },
+        {
+          text: "Feature"
+        },
+        {
+          text: "Concern level"
+        }
+      ],
+      rows: [
+        [
+          {
+            text: "RCC"
+          },
+          {
+            text: "Mass ill-defined"
+          },
+          {
+            text: "M1"
+          }
+        ],
+        [
+          {
+            text: "RCC"
+          },
+          {
+            text: "Asymetry"
+          },
+          {
+            text: "M4"
+          }
+        ]
+      ]
+    }) }}
   {% endset %}
 
-  {{ insetText({
-    html: insetHtml
+
+  {{ card({
+    heading: "Right breast",
+    headingLevel: "2",
+    feature: true,
+    descriptionHtml: rightBreastHtml
   }) }}
 
-  {{ textarea({
-    name: "additionalNotes",
-    id: "additionalNotes",
-    label: {
-      text: "Additional notes",
-      classes: "nhsuk-label--m"
-    }
+  {% set leftBreastHtml %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Assessment"
+          },
+          value: {
+            html: "Normal"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "assessment"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Comment"
+          },
+          value: {
+            html: ""
+          },
+          actions: {
+            items: []
+          }
+        }
+      ]
+    } | showMissingInformationLink) }}
+  {% endset %}
+
+
+  {{ card({
+    heading: "Left breast",
+    headingLevel: "2",
+    feature: true,
+    descriptionHtml: leftBreastHtml
   }) }}
 
-  {{ button({
-    text: "Confirm abnormal result and move to next"
-  }) }}
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+
+      {{ textarea({
+        name: "additionalNotes",
+        id: "additionalNotes",
+        label: {
+          text: "Additional notes",
+          classes: "nhsuk-label--m"
+        }
+      }) }}
+
+      {{ button({
+        text: "Continue"
+      }) }}
+
+    </div>
+  </div>
 
 {% endblock %}
 

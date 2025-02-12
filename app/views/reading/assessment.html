@@ -46,7 +46,11 @@
     {% set thingsToReview = thingsToReview | push('Images') %}
   {% endif %}
 
+  {% set hasTooFewImages = imageCount < 4 %}
 
+  {% if hasTooFewImages %}
+    {% set thingsToReview = thingsToReview | push('Images') %}
+  {% endif %}
 
   {% set itemsToReviewHtml %}
 
@@ -59,14 +63,14 @@
       {% include "summary-lists/symptoms.njk" %}
       <p><a href="./medical-information">View details</a></p>
       {{ checkboxes({
-      idPrefix: "acknowledgeSymptoms",
-        name: "acknowledgeSymptoms",
-        items: [
-          {
-            value: "email",
-            text: "Acknowledge these symptoms"
-          }
-        ]
+        idPrefix: "acknowledgeSymptoms",
+          name: "acknowledgeSymptoms",
+          items: [
+            {
+              value: "email",
+              text: "Acknowledge these symptoms"
+            }
+          ]
       }) }}
     {% endif %}
 
@@ -87,6 +91,17 @@
           {% endif %}
         {% endfor %}
       </ul>
+      {# <p><a href="#">View details</a></p> #}
+    {% endif %}
+
+    {% if hasTooFewImages %}
+      {% if thingsToReview | length > 1 %}
+        <h2>Images</h2>
+      {% endif %}
+
+      <p>
+        Partial mamography reason: Patient was uncomfortable and asked to stop
+      </p>
       {# <p><a href="#">View details</a></p> #}
     {% endif %}
 
