@@ -19,6 +19,11 @@
 
   {% set clinicHistory = data | getParticipantClinicHistory(participant.id) %}
 
+  {% set requestedWithDateHtml %}
+    {{"Requested" | toTag | safe}}<br>
+    Requested 10 Feb 2025
+  {% endset %}
+
   {% set previousMammogramsHtml %}
   {{ table({
     responsive: false,
@@ -79,7 +84,7 @@
           html: "Normal" | toTag
         },
         {
-          html: "Requested" | toTag
+          html: requestedWithDateHtml
         }
       ]
     ]

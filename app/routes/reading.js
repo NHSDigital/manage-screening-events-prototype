@@ -213,42 +213,85 @@ module.exports = router => {
     })
   })
 
-  // Initial route for handling updates to assessments
-  router.post('/clinics/:clinicId/reading/:eventId/result-update', (req, res) => {
+  // Change in reading.js
+  router.post('/clinics/:clinicId/reading/:eventId/assessment-answer', (req, res) => {
     const { clinicId, eventId } = req.params
-    const { newResult } = req.body
+    const { result } = req.body
+    const data = req.session.data
 
-    console.log("result update")
-    // Store the intent to update in the session
-    req.session.data.readingUpdate = {
-      eventId,
-      originalResult: req.session.data.events.find(e => e.id === eventId)?.reads[0],
-      newResult
+    const event = data.events.find(e => e.id === eventId)
+    if (!event) return res.redirect(`/clinics/${clinicId}/reading`)
+
+    // Check if current event has symptoms that need acknowledging
+    const hasSymptoms = event?.currentSymptoms?.length > 0
+    const hasAcknowledgedSymptoms = data?.acknowledgeSymptoms?.includes('true')
+
+    console.log(data.acknowledgeSymptoms)
+    console.log({hasAcknowledgedSymptoms})
+
+    if (hasSymptoms && !hasAcknowledgedSymptoms) {
+      console.log('still with the errors')
+      req.flash('error', {
+        text: 'You must acknowledge symptoms before continuing',
+        href: '#acknowledgeSymptoms',
+        name: 'acknowledgeSymptoms'
+      })
+      return res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
     }
 
-    // Route to appropriate next step based on chosen result
-    switch(newResult) {
+    // Handle different result types
+    switch (result) {
       case 'normal':
-        if (req.session.data.confirmNormalResults == 'true') {
-          res.redirect(`/clinics/${clinicId}/reading/${eventId}/confirm-normal`)
+        if (data.confirmNormalResults === 'true') {
+          return res.redirect(`/clinics/${clinicId}/reading/${eventId}/confirm-normal`)
+        } else {
+          return res.redirect(307, `/clinics/${clinicId}/reading/${eventId}/result-normal`)
         }
-        else {
-          // #307 redirect to preserve POST.
-          res.redirect(307, `/clinics/${clinicId}/reading/${eventId}/result-normal`);
-
-        }
-
-        break
       case 'recall':
-        res.redirect(`/clinics/${clinicId}/reading/${eventId}/recall-reason`)
-        break
+        return res.redirect(`/clinics/${clinicId}/reading/${eventId}/recall-reason`)
       case 'abnormal':
-        res.redirect(`/clinics/${clinicId}/reading/${eventId}/awaiting-annotations`)
-        break
+        return res.redirect(`/clinics/${clinicId}/reading/${eventId}/awaiting-annotations`)
       default:
-        res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
+        return res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
     }
   })
+
+  // Initial route for handling updates to assessments
+  // router.post('/clinics/:clinicId/reading/:eventId/result-update', (req, res) => {
+  //   const { clinicId, eventId } = req.params
+  //   const { newResult } = req.body
+
+  //   console.log("result update")
+  //   // Store the intent to update in the session
+  //   req.session.data.readingUpdate = {
+  //     eventId,
+  //     originalResult: req.session.data.events.find(e => e.id === eventId)?.reads[0],
+  //     newResult
+  //   }
+
+  //   // Route to appropriate next step based on chosen result
+  //   switch(newResult) {
+  //     case 'normal':
+  //       if (req.session.data.confirmNormalResults == 'true') {
+  //         res.redirect(`/clinics/${clinicId}/reading/${eventId}/confirm-normal`)
+  //       }
+  //       else {
+  //         // #307 redirect to preserve POST.
+  //         res.redirect(307, `/clinics/${clinicId}/reading/${eventId}/result-normal`);
+
+  //       }
+
+  //       break
+  //     case 'recall':
+  //       res.redirect(`/clinics/${clinicId}/reading/${eventId}/recall-reason`)
+  //       break
+  //     case 'abnormal':
+  //       res.redirect(`/clinics/${clinicId}/reading/${eventId}/awaiting-annotations`)
+  //       break
+  //     default:
+  //       res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
+  //   }
+  // })
 
   // Generic result recording route
   router.post('/clinics/:clinicId/reading/:eventId/result-:resultType', (req, res) => {
@@ -267,6 +310,8 @@ module.exports = router => {
       readerType: data.currentUser.role,
       timestamp: new Date().toISOString()
     }
+
+    delete data.acknowledgeSymptoms
 
     // Add additional data based on result type
     if (resultType === 'recall' && reason) {
