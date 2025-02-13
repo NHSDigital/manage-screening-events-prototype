@@ -1,0 +1,87 @@
+{# /app/views/events/reading/confirm-abnormal.html #}
+
+{% extends 'layout-reading.html' %}
+
+{% set pageHeading -%}
+  Recommended assessment for {{ participant | getFullName }}
+{%- endset %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './result-abnormal' %}
+
+{% set hideSecondaryNavigation = true %}
+
+
+{% block pageContent %}
+
+  <h1 class="nhsuk-heading-l js-image-count">
+    {{ pageHeading }}
+  </h1>
+
+  {% macro makeCheckboxConditionalItem(params) %}
+    {{ input({
+      label: {
+        text: "Provide details"
+      },
+      id: params.value + "Details",
+      name: params.value + "Details"
+    }) }}
+  {% endmacro %}
+
+  {% set checkboxItems = [] %}
+
+  {% for assessment in [
+    "Clinical examination",
+    "Magnification view",
+    "Coned view",
+    "Tomosynthesis",
+    "Breast ultrasound",
+    "Axilla ultrasound",
+    "Contrast enhanced",
+    "Biopsy"
+  ] %}
+    {% set checkboxItems = checkboxItems | push({
+      text: assessment,
+      value: assessment | camelCase,
+      conditional: {
+        html: makeCheckboxConditionalItem({
+          value:assessment | camelCase
+        })
+      }
+    }) %}
+  {% endfor %}
+
+  {{ checkboxes({
+    idPrefix: "recommendedAssessment",
+    name: "recommendedAssessment",
+    fieldset: {
+      legend: {
+        text: "What type of assessment is required for further diagnosis?",
+        classes: "nhsuk-fieldset__legend--m",
+        isPageHeading: false
+      }
+    },
+    _hint: {
+      text: "Select all that apply"
+    },
+    items: checkboxItems
+  }) }}
+
+  {{ textarea({
+    name: "additionalNotes",
+    id: "additionalNotes",
+    label: {
+      text: "Additional comments for radiographer",
+      classes: "nhsuk-label--m"
+    }
+  }) }}
+
+  {{ button({
+    text: "Confirm assessment and move to next"
+  }) }}
+
+
+{% endblock %}
+
+

@@ -1,0 +1,217 @@
+{# /app/views/events/reading/assessment.html #}
+
+{% extends 'layout-reading.html' %}
+
+{% set existingResult = event.reads[0].result %}
+
+{% set pageHeading = "Your assessment for " + participant | getFullName %}
+{% if existingResult %}
+  {% set pageHeading = "Update assessment for " + participant | getFullName %}
+{% endif %}
+
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
+{% set mainClasses = "nhsuk-u-padding-top-3" %}
+{% set tabActive = "assessment" %}
+
+{% set formAction = './assessment-answer' %}
+
+{% block pageContent %}
+
+  {{ participant | log("Participant") }}
+  {{ event | log("Event") }}
+  {# {{ data.readingSession | log("Reading session")}}
+  {{ progress | log("Progress")}} #}
+
+
+  {# {% include "./_includes/reading-header.njk" %} #}
+
+  {# <span class="nhsuk-caption-l">
+    {{ participant | getFullName }}
+  </span> #}
+  <h1 class="nhsuk-heading-l js-image-count">
+    {{ pageHeading }}
+  </h1>
+  {% set imageCount = event.mammogramData.metadata.totalImages %}
+
+  {% set thingsToReview = [] %}
+
+  {% set hasSymptoms = event.currentSymptoms | length %}
+  {% if hasSymptoms %}
+    {% set thingsToReview = thingsToReview | push('Symptoms') %}
+  {% endif %}
+
+  {% set hasAdditionalImages = imageCount > 4 %}
+  {% if hasAdditionalImages %}
+    {% set thingsToReview = thingsToReview | push('Repeated views') %}
+  {% endif %}
+
+  {# {% set hasTooFewImages = imageCount < 4 %} #}
+  {% set isPartialMammography = event.mammogramData.isPartialMammography %}
+
+  {% if isPartialMammography %}
+    {% set thingsToReview = thingsToReview | push('Partial mammography') %}
+  {% endif %}
+
+  {% set itemsToReviewHtml %}
+
+
+
+    {% if hasAdditionalImages %}
+      {% if thingsToReview | length > 1 %}
+        <h2>Repeated views</h2>
+      {% endif %}
+      <ul class="nhsuk-list">
+        {% for viewKey, viewData in event.mammogramData.views %}
+          {% if viewData.images.length > 1 %}
+            <li>
+              {% if viewData.isRepeat %}
+                {{ viewData.viewShortWithSide }} view was repeated because: {{ viewData.repeatReason }}
+              {% else %}
+                {{ viewData.viewShortWithSide }} view required additional images to capture the full breast
+              {% endif %}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+      {# <p><a href="#">View details</a></p> #}
+    {% endif %}
+
+    {% if isPartialMammography %}
+      {% if thingsToReview | length > 1 %}
+        <h2>Partial mammography</h2>
+      {% endif %}
+
+      <p>
+        Partial mamography reason: Patient was uncomfortable and asked to stop
+      </p>
+      {# <p><a href="#">View details</a></p> #}
+    {% endif %}
+
+    {% if hasSymptoms %}
+      {% if thingsToReview | length > 1 %}
+        <h2>Symptoms</h2>
+      {% endif %}
+
+      {% set symptoms = event.currentSymptoms %}
+      {% include "summary-lists/symptoms.njk" %}
+      <p><a href="./medical-information">View details</a></p>
+
+      {{ checkboxes({
+        idPrefix: "acknowledgeSymptoms",
+        name: "acknowledgeSymptoms",
+        items: [
+          {
+            value: "true",
+            text: "Acknowledge these symptoms",
+            checked: true if data.acknowledgeSymptoms == "true" else false
+          }
+        ]
+      } | populateErrors) }}
+    {% endif %}
+
+  {% endset %}
+
+  {% if thingsToReview | length %}
+    {% set calloutHeading %}
+      {% if thingsToReview | length > 1 %}
+        Items to review
+      {% else %}
+        {{ thingsToReview[0]}}
+      {% endif %}
+    {% endset %}
+    {{ warningCallout({
+      heading: calloutHeading,
+      HTML: itemsToReviewHtml
+    }) }}
+  {% endif %}
+
+  {% set questionText = "What is your assessment?" %}
+
+
+  {# Temporary ui to support changing an answer #}
+  {% if existingResult %}
+      {# Show radios when updating an existing result #}
+      {{ radios({
+        idPrefix: "result",
+        name: "result",
+        fieldset: {
+          legend: {
+            text: questionText,
+            classes: "nhsuk-fieldset__legend--m",
+            isPageHeading: false
+          }
+        },
+        items: [
+          {
+            value: "normal",
+            text: "Normal",
+            checked: existingResult == "normal"
+          },
+          {
+            value: "recall",
+            text: "Technical recall",
+            checked: existingResult == "recall"
+          },
+          {
+            value: "abnormal",
+            text: "Recall for assessment",
+            checked: existingResult == "abnormal"
+          }
+        ],
+        value: data.result or existingResult
+      }) }}
+
+      {{ button({
+        text: "Update assessment"
+      }) }}
+  {% else %}
+
+    {# Show buttons for initial assessment #}
+    <h2>{{ questionText }}</h2>
+
+    <div class="form-group">
+      {{ button({
+        text: "Normal",
+        value: "normal",
+        name: "result"
+      }) }}
+    </div>
+    <div class="form-group">
+      {{ button({
+        text: "Technical recall",
+        classes: "nhsuk-button--secondary",
+        value: "recall",
+        name: "result"
+      }) }}
+    </div>
+    <div class="form-group">
+      {{ button({
+        "text": "Recall for assessment",
+        "classes": "nhsuk-button--warning",
+        "value": "abnormal",
+        name: "result"
+      }) }}
+    </div>
+  {% endif %}
+
+  {# <p><a href="#">Skip to next participant</a></p> #}
+
+  {% if progress.hasNextUnread %}
+    <p>
+      <a href="/clinics/{{clinicId}}/reading/{{progress.nextUnreadId}}/assessment?skipped={{eventId}}" class="">Skip to next participant
+      </a>
+    </p>
+  {% endif %}
+
+  {% if progress.hasPrevious %}
+    <p>
+      <a href="/clinics/{{clinicId}}/reading/{{progress.previousEventId}}/assessment" class="">Previous participant
+      </a>
+    </p>
+
+  {% endif %}
+
+{% endblock %}
+
+

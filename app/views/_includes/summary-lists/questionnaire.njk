@@ -1,4 +1,5 @@
-{{ questionnaire | log }}
+{# /app/views/_includes/summary-lists/questionnaire.njk #}
+
 
 {% set headingLevel = headingLevel or 'h2' %}
 {% set allowEdits = allowEdits | default(true) %}
@@ -279,9 +280,9 @@
         text: "Lumps"
       },
       value: {
-        text: questionnaire.lumpsNoticed | formatAnswer({ 
+        text: questionnaire.lumpsNoticed | formatAnswer({
           yesValue: questionnaire.lumpDetails,
-          noText: "No lumps reported" 
+          noText: "No lumps reported"
         })
       },
       actions: {
@@ -299,9 +300,9 @@
         text: "Breast shape changes"
       },
       value: {
-        text: questionnaire.shapeChanges | formatAnswer({ 
+        text: questionnaire.shapeChanges | formatAnswer({
           yesValue: questionnaire.shapeChangeDetails,
-          noText: "No changes reported" 
+          noText: "No changes reported"
         })
       },
       actions: {

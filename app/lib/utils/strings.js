@@ -53,6 +53,29 @@ const kebabCase = (input) => {
 }
 
 /**
+ * Convert string to snake_case
+ * Handles spaces, camelCase, and other separators
+ * @param {string} input - String to convert
+ * @returns {string} Snake case (underscore-separated lowercase) string
+ * @example
+ * snakeCase('Hello World') // returns 'hello_world'
+ * snakeCase('myVariable') // returns 'my_variable'
+ * snakeCase('some-kebab-text') // returns 'some_kebab_text'
+ */
+const snakeCase = (input) => {
+  if (!input) return ''
+  if (typeof input !== 'string') return input
+
+  return input
+    // Handle camelCase
+    .replace(/([a-z])([A-Z])/g, '$1_$2')
+    // Replace spaces and other separators with underscores
+    .replace(/[\s-]+/g, '_')
+    // Convert to lowercase
+    .toLowerCase()
+}
+
+/**
  * Create URL-friendly slug from string
  * @param {string} input - String to convert
  * @returns {string} URL-safe slug
@@ -159,8 +182,11 @@ const isString = (input) => {
 }
 
 /**
- * Format separated words as a sentence
+ * Format separated words as a sentence, preserving acronyms
  * Example: 'in_progress' becomes 'In progress'
+ * Example: 'not_in_PACS' becomes 'Not in PACS'
+ * Example: 'IBMs_server' becomes 'IBMs server'
+ * Example: 'IBM's_mainframe' becomes 'IBM's mainframe'
  * @param {string} input - String to format
  * @param {string} [separator='_'] - Character that separates words
  * @returns {string} Formatted string as words
@@ -171,7 +197,18 @@ const formatWords = (input, separator = '_') => {
 
   return input
     .split(separator)
-    .map(word => word.toLowerCase())
+    .map(word => {
+      // Check if word is an acronym:
+      // - all uppercase, OR
+      // - 2+ chars where any character after first is uppercase (handles IBMs, IBM's etc)
+      if (
+        word === word.toUpperCase() ||
+        (word.length >= 2 && word.slice(1).split('').some(char => char === char.toUpperCase() && char.match(/[A-Z]/)))
+      ) {
+        return word
+      }
+      return word.toLowerCase()
+    })
     .join(' ')
 }
 
@@ -274,6 +311,7 @@ module.exports = {
   isString,
   camelCase,
   kebabCase,
+  snakeCase,
   noWrap,
   asHint,
   padDigits,

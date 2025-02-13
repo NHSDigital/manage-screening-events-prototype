@@ -1,0 +1,107 @@
+{# /app/views/events/reading/list.html #}
+
+{% extends 'layout-app.html' %}
+
+{% set back = {
+  href: "/clinics/reading",
+  text: "Back to reading"
+} %}
+
+{% set clinicRiskType %}
+    {% if clinic.riskLevels | length == 1 %}
+      {{ clinic.riskLevels[0] }}
+    {% else %}
+      Mixed
+    {% endif %}
+  {% endset %}
+
+{% block pageContent %}
+  <div class="app-header-with-status">
+    <span class="nhsuk-caption-l">Image reading</span>
+    <h1 class="nhsuk-heading-l">
+      {{ clinicRiskType | sentenceCase }} risk {{ clinic.clinicType | lower }} clinic
+    </h1>
+  </div>
+
+  {# Clinic time and date #}
+  {# 9am to midday - 31 December 2024 #}
+  <p>{{ clinic.sessionTimes | formatTimeRange }} - {{ clinic.date | formatDate }}</p>
+
+  {{ data.readingSession.skippedEvents | log("Progress") }}
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      {% set remainingCount = events.length - completedCount %}
+      <p>{{ remainingCount }} remaining to read out of {{ events.length }}{% if completedCount %}, {{ completedCount }} complete{% endif %}</p>
+      {% set firstUnreadEvent = events | find('readStatus', 'Not read') %}
+      {% if firstUnreadEvent %}
+        <a href="/clinics/{{ clinicId }}/reading/{{ firstUnreadEvent.id }}/assessment" class="nhsuk-button">
+          {{ "Resume reading" if completedCount else "Start reading" }}
+        </a>
+      {% endif %}
+    </div>
+
+   </div>
+
+  <table class="nhsuk-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Date of birth</th>
+        <th>Read status</th>
+        <th>Your assessment</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in events %}
+      {{ event | log("Event") }}
+        <tr>
+          <td>
+            <a href="/clinics/{{ clinicId }}/reading/{{ event.id }}/assessment">{{ event.participant | getFullName }}</a>
+            {% if event.currentSymptoms | length %}
+              {{ tag({
+                text: "Has symptoms",
+                classes: "nhsuk-tag--yellow"
+              })}}
+            {% endif %}
+          </td>
+          <td>
+            {{ event.participant.demographicInformation.dateOfBirth | formatDate }}
+          </td>
+          <td>
+            {% set skipped = "Skipped" if data.readingSession.skippedEvents | includes(event.id) else false %}
+            {{ tag({
+              text: skipped or event.readStatus,
+              classes: "nhsuk-tag--" + ('yellow' if skipped else event.tagColor) + " app-nowrap"
+            })}}
+          </td>
+          <td>
+
+            {% if event.reads and event.reads[0] %}
+
+              {% set colour %}
+                {% switch event.reads[0].result %}
+                  {% case 'recall' %}
+                    blue
+                  {% case 'abnormal' %}
+                    red
+                  {% default %}
+                    green
+                {% endswitch %}
+              {% endset %}
+
+              {% set resultClass = "nhsuk-tag--" + ( colour | trim ) %}
+
+              {{ tag({
+                text: event.reads[0].result | sentenceCase,
+                classes: resultClass
+              })}}
+
+            {% else %}
+              {{ "No result" | noWrap | asHint }}
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

@@ -52,6 +52,8 @@ try {
 }
 
 module.exports = {
+  darkMode: 'false',
+  confirmNormalResults: 'false',
   users,
   currentUser: users[0],
   breastScreeningUnits,

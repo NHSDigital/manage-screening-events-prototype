@@ -1,0 +1,30 @@
+{# /app/views/events/reading/confirm-normal.html #}
+
+{% extends 'layout-reading.html' %}
+
+{% set pageHeading = "Confirm normal result" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './result-normal' %}
+{% set hideSecondaryNavigation = true %}
+
+{% block pageContent %}
+
+  {{ participant | log }}
+
+  <span class="nhsuk-caption-l">
+    {{ participant | getFullName }}
+  </span>
+
+  <h1 class="nhsuk-heading-l js-image-count">
+    {{ pageHeading }}
+  </h1>
+
+  {{ button({
+    text: "Confirm"
+  }) }}
+
+{% endblock %}
+
+

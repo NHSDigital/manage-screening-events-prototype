@@ -22,7 +22,7 @@ module.exports = [
       extraNeeds: ['Wheelchair user'],
       config: {
         defaultRiskLevel: 'routine',
-        repeatView: 'RMLO',
+        repeatViews: ['RMLO'],
         scheduling: {
           whenRelativeToToday: 0,
           status: 'event_scheduled',

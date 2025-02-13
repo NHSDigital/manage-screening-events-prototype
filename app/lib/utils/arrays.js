@@ -31,6 +31,21 @@ const includes = (array, value) => {
 }
 
 /**
+* Find first array item where the specified key matches the value
+* @param {Array} array - Array to search
+* @param {string} key - Object key to match against
+* @param {any} value - Value to find
+* @returns {any} First matching item or undefined
+* @example
+* const users = [{id: 1, name: 'Alice'}, {id: 2, name: 'Bob'}]
+* find(users, 'name', 'Bob') // Returns {id: 2, name: 'Bob'}
+*/
+const find = (array, key, value) => {
+  if (!array || !Array.isArray(array)) return undefined
+  return array.find(item => item[key] === value)
+ }
+
+/**
  * Remove empty items from arrays or strings
  * @param {Array|string} items - Items to filter
  * @returns {Array|string|undefined} Filtered items or undefined if empty
@@ -51,6 +66,7 @@ const removeEmpty = (items) => {
 module.exports = {
   push,
   includes,
+  find,
   removeEmpty,
   findById,
 }

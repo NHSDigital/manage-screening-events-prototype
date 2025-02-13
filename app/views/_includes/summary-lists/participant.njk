@@ -1,3 +1,5 @@
+{# /app/views/_includes/summary-lists/participant.njk #}
+
 {% set dob %}
   {{ participant.demographicInformation.dateOfBirth | formatDate }}<br>
   <span class="nhsuk-hint">({{ participant.demographicInformation.dateOfBirth | formatRelativeDate(true) }} old)</span>
