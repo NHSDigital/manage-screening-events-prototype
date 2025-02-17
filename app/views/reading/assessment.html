@@ -9,7 +9,7 @@
   {% set pageHeading = "Update assessment for " + participant | getFullName %}
 {% endif %}
 
-{% set gridColumn = "nhsuk-grid-column-full" %}
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
 {% set mainClasses = "nhsuk-u-padding-top-3" %}
 {% set tabActive = "assessment" %}
@@ -20,47 +20,44 @@
 
   {{ participant | log("Participant") }}
   {{ event | log("Event") }}
-  {# {{ data.readingSession | log("Reading session")}}
-  {{ progress | log("Progress")}} #}
 
-
-  {# {% include "./_includes/reading-header.njk" %} #}
-
-  {# <span class="nhsuk-caption-l">
-    {{ participant | getFullName }}
-  </span> #}
   <h1 class="nhsuk-heading-l js-image-count">
     {{ pageHeading }}
   </h1>
-  {% set imageCount = event.mammogramData.metadata.totalImages %}
-
-  {% set thingsToReview = [] %}
 
   {% set hasSymptoms = event.currentSymptoms | length %}
   {% if hasSymptoms %}
-    {% set thingsToReview = thingsToReview | push('Symptoms') %}
+    {% set calloutHeading %}
+      Symptoms
+    {% endset %}
+    {% set symptomsCardHtml %}
+      {% set symptoms = event.currentSymptoms %}
+      {% include "summary-lists/symptoms.njk" %}
+      {{ checkboxes({
+        idPrefix: "acknowledgeSymptoms",
+        name: "acknowledgeSymptoms",
+        items: [
+          {
+            value: "true",
+            text: "Acknowledge these symptoms",
+            checked: true if data.acknowledgeSymptoms == "true" else false
+          }
+        ]
+      } | populateErrors) }}
+    {% endset %}
+
+    {{ warningCallout({
+      heading: calloutHeading | trim,
+      HTML: symptomsCardHtml
+    }) }}
   {% endif %}
 
+  {% set imageCount = event.mammogramData.metadata.totalImages %}
   {% set hasAdditionalImages = imageCount > 4 %}
+
   {% if hasAdditionalImages %}
-    {% set thingsToReview = thingsToReview | push('Repeated views') %}
-  {% endif %}
-
-  {# {% set hasTooFewImages = imageCount < 4 %} #}
-  {% set isPartialMammography = event.mammogramData.isPartialMammography %}
-
-  {% if isPartialMammography %}
-    {% set thingsToReview = thingsToReview | push('Partial mammography') %}
-  {% endif %}
-
-  {% set itemsToReviewHtml %}
-
-
-
-    {% if hasAdditionalImages %}
-      {% if thingsToReview | length > 1 %}
-        <h2>Repeated views</h2>
-      {% endif %}
+    {% set additionalImagesHtml %}
+      <h3>Repeated views</h3>
       <ul class="nhsuk-list">
         {% for viewKey, viewData in event.mammogramData.views %}
           {% if viewData.images.length > 1 %}
@@ -74,60 +71,27 @@
           {% endif %}
         {% endfor %}
       </ul>
-      {# <p><a href="#">View details</a></p> #}
-    {% endif %}
+    {% endset %}
+    {{ insetText({
+      html: additionalImagesHtml
+    }) }}
+  {% endif %}
 
-    {% if isPartialMammography %}
-      {% if thingsToReview | length > 1 %}
-        <h2>Partial mammography</h2>
-      {% endif %}
+  {% set isPartialMammography = event.mammogramData.isPartialMammography %}
 
+  {% if isPartialMammography %}
+    {% set partialMammographyHtml %}
+      <h3>Partial mammography</h3>
       <p>
         Partial mamography reason: Patient was uncomfortable and asked to stop
       </p>
-      {# <p><a href="#">View details</a></p> #}
-    {% endif %}
-
-    {% if hasSymptoms %}
-      {% if thingsToReview | length > 1 %}
-        <h2>Symptoms</h2>
-      {% endif %}
-
-      {% set symptoms = event.currentSymptoms %}
-      {% include "summary-lists/symptoms.njk" %}
-      <p><a href="./medical-information">View details</a></p>
-
-      {{ checkboxes({
-        idPrefix: "acknowledgeSymptoms",
-        name: "acknowledgeSymptoms",
-        items: [
-          {
-            value: "true",
-            text: "Acknowledge these symptoms",
-            checked: true if data.acknowledgeSymptoms == "true" else false
-          }
-        ]
-      } | populateErrors) }}
-    {% endif %}
-
-  {% endset %}
-
-  {% if thingsToReview | length %}
-    {% set calloutHeading %}
-      {% if thingsToReview | length > 1 %}
-        Items to review
-      {% else %}
-        {{ thingsToReview[0]}}
-      {% endif %}
     {% endset %}
-    {{ warningCallout({
-      heading: calloutHeading,
-      HTML: itemsToReviewHtml
+    {{ insetText({
+      html: partialMammographyHtml
     }) }}
   {% endif %}
 
   {% set questionText = "What is your assessment?" %}
-
 
   {# Temporary ui to support changing an answer #}
   {% if existingResult %}

@@ -233,7 +233,7 @@ module.exports = router => {
       console.log('still with the errors')
       req.flash('error', {
         text: 'You must acknowledge symptoms before continuing',
-        href: '#acknowledgeSymptoms',
+        href: '#acknowledgeSymptoms-1', // link to checkbox specifically rather than fieldset
         name: 'acknowledgeSymptoms'
       })
       return res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
