@@ -41,7 +41,7 @@
     {% endfor %}
   {% endfor %}
 
-  {{ mammogramImages | log("Mammograms") }}
+  {# {{ mammogramImages | log("Mammograms") }} #}
 
   {# [
     {
@@ -89,13 +89,20 @@
       }) }}
     {% endset %}
     {% set checkboxItems = checkboxItems | push({
-      text: view.value,
+      value: view.value,
       text: view.text,
       conditional: {
         html: selectHtml
       }
     }) %}
   {% endfor %}
+
+  {% set checkboxItems = checkboxItems | push({divider: "or"}) %}
+
+  {% set checkboxItems = checkboxItems | push({
+    value: "other",
+    text: "Other reason"
+  }) %}
 
   {{ checkboxes({
     idPrefix: "whichViews",
