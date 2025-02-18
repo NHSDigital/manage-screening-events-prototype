@@ -42,6 +42,11 @@
             </div>
 
             <div class="app-reading-status__detail">
+              <strong>DOB:</strong>
+              <span>{{ participant.demographicInformation.dateOfBirth | formatDate }}</span>
+            </div>
+
+            <div class="app-reading-status__detail">
               <strong>NHS:</strong>
               <span>{{ participant.medicalInformation.nhsNumber | formatNhsNumber }}</span>
             </div>

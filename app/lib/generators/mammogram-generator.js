@@ -175,6 +175,7 @@ const generateMammogramImages = ({
 
   // Check if any views are missing
   const hasMissingViews = Object.keys(views).length < 4
+  const hasRepeat = Object.values(views).some(view => view.isRepeat)
 
   return {
     accessionBase,
@@ -184,7 +185,8 @@ const generateMammogramImages = ({
       totalImages,
       standardViewsCompleted: Object.keys(views).length === 4,
       startTime: allTimestamps[0],
-      endTime: allTimestamps[allTimestamps.length - 1]
+      endTime: allTimestamps[allTimestamps.length - 1],
+      hasRepeat
     }
   }
 }

@@ -224,17 +224,15 @@ module.exports = router => {
 
     // Check if current event has symptoms that need acknowledging
     const hasSymptoms = event?.currentSymptoms?.length > 0
-    const hasAcknowledgedSymptoms = data?.acknowledgeSymptoms?.includes('true')
+    const hasRepeatImages = event?.mammogramData?.metadata?.hasRepeat
+    const hasAcknowledgedItems = data?.acknowledgedItems?.includes('true')
 
-    console.log(data.acknowledgeSymptoms)
-    console.log({hasAcknowledgedSymptoms})
-
-    if (hasSymptoms && !hasAcknowledgedSymptoms) {
+    if ((hasSymptoms || hasRepeatImages) && !hasAcknowledgedItems) {
       console.log('still with the errors')
       req.flash('error', {
-        text: 'You must acknowledge symptoms before continuing',
-        href: '#acknowledgeSymptoms-1', // link to checkbox specifically rather than fieldset
-        name: 'acknowledgeSymptoms'
+        text: 'You must acknowledge before continuing',
+        href: '#acknowledgeItems-1', // link to checkbox specifically rather than fieldset
+        name: 'acknowledgeItems'
       })
       return res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
     }

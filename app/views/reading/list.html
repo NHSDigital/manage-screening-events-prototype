@@ -56,10 +56,16 @@
       {{ event | log("Event") }}
         <tr>
           <td>
-            <a href="/clinics/{{ clinicId }}/reading/{{ event.id }}/assessment">{{ event.participant | getFullName }}</a>
+            <a href="/clinics/{{ clinicId }}/reading/{{ event.id }}/assessment">{{ event.participant | getFullName }}</a><br>
             {% if event.currentSymptoms | length %}
               {{ tag({
                 text: "Has symptoms",
+                classes: "nhsuk-tag--yellow"
+              })}}
+            {% endif %}
+            {% if event.mammogramData.metadata.hasRepeat %}
+              {{ tag({
+                text: "Has repeat",
                 classes: "nhsuk-tag--yellow"
               })}}
             {% endif %}

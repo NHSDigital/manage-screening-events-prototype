@@ -137,8 +137,11 @@
     {% endblock pageNavigation %}
   </div>
 </div>
+{% if gridColumn != "none" %}
 <div class="nhsuk-grid-row">
   <div class="{{ gridColumn or 'nhsuk-grid-column-two-thirds' }}">
+{% endif %}
+
     {% if formAction or isForm %}
       <form action="{{formAction or './'}}" method="{{ formMethod or 'POST'}}">
     {% endif %}
@@ -146,6 +149,10 @@
     {% if formAction or isForm %}
       </form>
     {% endif %}
+
+{% if gridColumn != "none" %}
   </div>
 </div>
+{% endif %}
+
 {% endblock %}

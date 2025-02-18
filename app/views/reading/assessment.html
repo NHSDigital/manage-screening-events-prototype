@@ -9,7 +9,7 @@
   {% set pageHeading = "Update assessment for " + participant | getFullName %}
 {% endif %}
 
-{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+{% set gridColumn = "none" %}
 
 {% set mainClasses = "nhsuk-u-padding-top-3" %}
 {% set tabActive = "assessment" %}
@@ -21,62 +21,115 @@
   {{ participant | log("Participant") }}
   {{ event | log("Event") }}
 
-  <h1 class="nhsuk-heading-l js-image-count">
-    {{ pageHeading }}
-  </h1>
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
 
-  {% set hasSymptoms = event.currentSymptoms | length %}
-  {% if hasSymptoms %}
-    {% set calloutHeading %}
-      Symptoms
-    {% endset %}
-    {% set symptomsCardHtml %}
-      {% set symptoms = event.currentSymptoms %}
-      {% include "summary-lists/symptoms.njk" %}
-      {{ checkboxes({
-        idPrefix: "acknowledgeSymptoms",
-        name: "acknowledgeSymptoms",
-        items: [
-          {
-            value: "true",
-            text: "Acknowledge these symptoms",
-            checked: true if data.acknowledgeSymptoms == "true" else false
-          }
-        ]
-      } | populateErrors) }}
-    {% endset %}
+      <h1 class="nhsuk-heading-l js-image-count">
+        {{ pageHeading }}
+      </h1>
+    </div>
+  </div>
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-full">
+      {% set thingsToReview = [] %}
+      {% set hasSymptoms = event.currentSymptoms | length %}
+      {% if hasSymptoms %}
+        {% set thingsToReview = thingsToReview | push("Symptoms") %}
+      {% endif %}
 
-    {{ warningCallout({
-      heading: calloutHeading | trim,
-      HTML: symptomsCardHtml
-    }) }}
-  {% endif %}
+      {% set imageCount = event.mammogramData.metadata.totalImages %}
+      {% set hasAdditionalImages = imageCount > 4 %}
 
-  {% set imageCount = event.mammogramData.metadata.totalImages %}
-  {% set hasAdditionalImages = imageCount > 4 %}
+      {% if hasAdditionalImages %}
+        {% set thingsToReview = thingsToReview | push("Images") %}
+      {% endif %}
 
-  {% if hasAdditionalImages %}
-    {% set additionalImagesHtml %}
-      <h3>Repeated views</h3>
-      <ul class="nhsuk-list">
-        {% for viewKey, viewData in event.mammogramData.views %}
-          {% if viewData.images.length > 1 %}
-            <li>
-              {% if viewData.isRepeat %}
-                {{ viewData.viewShortWithSide }} view was repeated because: {{ viewData.repeatReason }}
-              {% else %}
-                {{ viewData.viewShortWithSide }} view required additional images to capture the full breast
-              {% endif %}
-            </li>
+      {% if thingsToReview | length %}
+        {% set warningCalloutHtml %}
+
+          {% if hasSymptoms %}
+            {% if thingsToReview | length > 1 %}
+              <h3>Symptoms</h3>
+            {% endif %}
+            {% set symptoms = event.currentSymptoms %}
+            {% include "summary-lists/symptoms.njk" %}
+
           {% endif %}
-        {% endfor %}
-      </ul>
-    {% endset %}
-    {{ insetText({
-      html: additionalImagesHtml
-    }) }}
-  {% endif %}
 
+          {% if hasAdditionalImages %}
+
+            {% if thingsToReview | length > 1 %}
+              <h3>Repeated views</h3>
+            {% endif %}
+
+            <ul class="nhsuk-list">
+              {% for viewKey, viewData in event.mammogramData.views %}
+                {% if viewData.images.length > 1 %}
+                  <li>
+                    {% if viewData.isRepeat %}
+                      {{ viewData.viewShortWithSide }} view was repeated because: {{ viewData.repeatReason }}
+                    {% else %}
+                      {{ viewData.viewShortWithSide }} view required additional images to capture the full breast
+                    {% endif %}
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+
+          {% endif %}
+
+          <hr class="nhsuk-section-break nhsuk-section-break--m nhsuk-section-break--visible">
+
+          {% set symptomsCheckboxQuestionText %}
+            Acknowledge these
+              {% if thingsToReview | length > 1 %}
+                items
+              {% else %}
+                {{ thingsToReview[0] | lower }}
+              {% endif %}
+            {% endset %}
+
+            {{ checkboxes({
+              idPrefix: "acknowledgeItems",
+              name: "acknowledgeItems",
+              items: [
+                {
+                  value: "true",
+                  text: symptomsCheckboxQuestionText,
+                  checked: true if data.acknowledgeItems == "true" else false
+                }
+              ]
+            } | populateErrors) }}
+        {% endset %}
+
+        {% set calloutHeading %}
+          {% if thingsToReview | length > 1 %}
+            To review
+          {% else %}
+            {{ thingsToReview[0] }}
+          {% endif %}
+        {% endset %}
+        {{ warningCallout({
+          heading: calloutHeading | trim,
+          HTML: warningCalloutHtml
+        }) }}
+
+
+      {% endif %}
+
+
+
+
+
+
+
+    </div>
+  </div>
+
+
+
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-two-thirds">
   {% set isPartialMammography = event.mammogramData.isPartialMammography %}
 
   {% if isPartialMammography %}
@@ -133,44 +186,66 @@
 
     {# Show buttons for initial assessment #}
     <h2>{{ questionText }}</h2>
+  </div>
+</div>
+    <div class="nhsuk-grid-row">
+      <div class="nhsuk-grid-column-one-third">
+        <div class="form-group">
+          {{ button({
+            text: "Normal",
+            value: "normal",
+            name: "result",
+            classes: "app-button-full-width nhsuk-u-margin-bottom-3"
+          }) }}
 
-    <div class="form-group">
-      {{ button({
-        text: "Normal",
-        value: "normal",
-        name: "result"
-      }) }}
+          <p class="nhsuk-u-margin-bottom-0">
+            <a href="#" class="nhsuk-link--no-visited-state">
+              Normal, but add futher details
+            </a>
+          </p>
+        </div>
+      </div>
+      <div class="nhsuk-grid-column-one-third">
+        <div class="form-group">
+          {{ button({
+            text: "Technical recall",
+            classes: "nhsuk-button--secondary app-button-full-width",
+            value: "recall",
+            name: "result"
+          }) }}
+        </div>
+      </div>
+      <div class="nhsuk-grid-column-one-third">
+        <div class="form-group">
+          {{ button({
+            "text": "Recall for assessment",
+            "classes": "nhsuk-button--warning app-button-full-width",
+            "value": "abnormal",
+            name: "result"
+          }) }}
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      {{ button({
-        text: "Technical recall",
-        classes: "nhsuk-button--secondary",
-        value: "recall",
-        name: "result"
-      }) }}
-    </div>
-    <div class="form-group">
-      {{ button({
-        "text": "Recall for assessment",
-        "classes": "nhsuk-button--warning",
-        "value": "abnormal",
-        name: "result"
-      }) }}
-    </div>
+
+
+
+
   {% endif %}
+
+  <hr class="nhsuk-section-break nhsuk-section-break--m nhsuk-section-break--visible">
 
   {# <p><a href="#">Skip to next participant</a></p> #}
 
   {% if progress.hasNextUnread %}
     <p>
-      <a href="/clinics/{{clinicId}}/reading/{{progress.nextUnreadId}}/assessment?skipped={{eventId}}" class="">Skip to next participant
+      <a href="/clinics/{{clinicId}}/reading/{{progress.nextUnreadId}}/assessment?skipped={{eventId}}" class="nhsuk-link--no-visited-state">Skip to next participant
       </a>
     </p>
   {% endif %}
 
   {% if progress.hasPrevious %}
     <p>
-      <a href="/clinics/{{clinicId}}/reading/{{progress.previousEventId}}/assessment" class="">Previous participant
+      <a href="/clinics/{{clinicId}}/reading/{{progress.previousEventId}}/assessment" class="nhsuk-link--no-visited-state">Previous participant
       </a>
     </p>
 
