@@ -1,0 +1,172 @@
+{# /app/views/events/reading/awaiting-annotations.html #}
+
+{% extends 'layout-reading.html' %}
+
+{% set pageHeading = "Recall for assessment" %}
+
+{% set gridColumn = "none" %}
+
+{% set formAction = './result-abnormal' %}
+
+{% set hideSecondaryNavigation = true %}
+
+{% macro breastDetails(params) %}
+
+{% set breastDetailsHtml %}
+  {% set normalDetailsHtml %}
+    {{ input({
+      label: {
+        text: "Comment (optional)"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      id: "normalDetails-" + params.side,
+      name: "normalDetails-" + params.side
+    }) }}
+  {% endset %}
+
+  {% set abnormalDetailsHtml %}
+    {{ input({
+      label: {
+        text: "Comment"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      id: "abnormalDetails-" + params.side,
+      name: "abnormalDetails-" + params.side
+    }) }}
+  {% endset %}
+
+  {% set symptomaticDetailsHtml %}
+    {{ input({
+      label: {
+        text: "Comment"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      id: "symptomaticDetails-" + params.side,
+      name: "symptomaticDetails-" + params.side
+    }) }}
+  {% endset %}
+
+
+  {{ radios({
+  idPrefix: "breast-assessment-" + params.side,
+  name: "breast-assessment-" + params.side,
+  fieldset: {
+    legend: {
+      text: "What is your opinion of the " + params.side + " breast?",
+      classes: "nhsuk-fieldset__legend--s",
+      isPageHeading: false
+    }
+  },
+  items: [
+    {
+      value: "normal",
+      text: "Normal",
+      _conditional: {
+        html: normalDetailsHtml
+      }
+    },
+    {
+      value: "abnormal",
+      text: "Abnormal",
+      _conditional: {
+        html: abnormalDetailsHtml
+      }
+    },
+    {
+      value: "clinical",
+      text: "Clinical",
+      _conditional: {
+        html: symptomaticDetailsHtml
+      }
+    } if event.currentSymptoms | length > 0
+  ] | removeEmpty
+  }) }}
+
+  {{ input({
+    label: {
+      text: (params.side + " breast comment (optional)") | sentenceCase,
+      classes: "nhsuk-label--s"
+    },
+    classes: "nhsuk-u-width-two-thirds",
+    id: "comment-" + params.side,
+    name: "comment-" + params.side
+  }) }}
+
+  <h3 class="nhsuk-heading-s">Image annotations</h3>
+
+  {% set insetHtml %}
+    <p>No image annotations have been added.</p>
+  {% endset %}
+
+  {{ insetText({
+    html: insetHtml
+  }) }}
+
+  <p><a href="#">Add an annotation</a></p>
+
+{% endset %}
+
+  {{ card({
+    heading: (params.side + " breast") | sentenceCase,
+    headingLevel: "2",
+    feature: true,
+    descriptionHtml: breastDetailsHtml
+  }) }}
+{% endmacro %}
+
+
+{% block pageContent %}
+
+  {{ participant | log("participant") }}
+  {{ progress.skippedEvents | log("progress") }}
+
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      <span class="nhsuk-caption-l">
+        {{ participant | getFullName }}
+      </span>
+
+      <h1 class="nhsuk-heading-l js-image-count">
+        {{ pageHeading }}
+      </h1>
+    </div>
+  </div>
+
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-full">
+
+      {% for breastSide in ["right", "left"] %}
+
+        {{ breastDetails({
+          side: breastSide
+        }) }}
+
+      {% endfor %}
+
+    </div>
+  </div>
+
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      {{ textarea({
+        name: "example",
+        id: "example",
+        label: {
+          text: "General assessment comments (optional)",
+          classes: "nhsuk-label--s"
+        },
+        _hint: {
+          text: "Any other details that may be relevant"
+        }
+      }) }}
+
+      {{ button({
+        text: "Confirm assessment and move to next"
+      }) }}
+
+    </div>
+  </div>
+
+{% endblock %}
+
+

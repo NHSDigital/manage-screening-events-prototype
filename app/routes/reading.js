@@ -197,7 +197,7 @@ module.exports = router => {
   // Additional route handlers for each step
   router.get('/clinics/:clinicId/reading/:eventId/:step', (req, res, next) => {
     const { clinicId, eventId, step } = req.params
-    const validSteps = ['assessment', 'participant-details', 'medical-information', 'images', 'confirm-normal', 'recall-reason', 'awaiting-annotations', 'confirm-abnormal', 'recommended-assessment']
+    const validSteps = ['assessment', 'participant-details', 'medical-information', 'images', 'confirm-normal', 'recall-reason', 'recall-for-assessment-details', 'awaiting-annotations', 'confirm-abnormal', 'recommended-assessment']
 
     if (!validSteps.includes(step)) {
       return next()
@@ -223,19 +223,19 @@ module.exports = router => {
     if (!event) return res.redirect(`/clinics/${clinicId}/reading`)
 
     // Check if current event has symptoms that need acknowledging
-    const hasSymptoms = event?.currentSymptoms?.length > 0
-    const hasRepeatImages = event?.mammogramData?.metadata?.hasRepeat
-    const hasAcknowledgedItems = data?.acknowledgeItems?.includes('true')
+    // const hasSymptoms = event?.currentSymptoms?.length > 0
+    // const hasRepeatImages = event?.mammogramData?.metadata?.hasRepeat
+    // const hasAcknowledgedItems = data?.acknowledgeItems?.includes('true')
 
-    if ((hasSymptoms || hasRepeatImages) && !hasAcknowledgedItems) {
-      console.log('still with the errors')
-      req.flash('error', {
-        text: 'You must acknowledge before continuing',
-        href: '#acknowledgeItems-1', // link to checkbox specifically rather than fieldset
-        name: 'acknowledgeItems'
-      })
-      return res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
-    }
+    // if ((hasSymptoms || hasRepeatImages) && !hasAcknowledgedItems) {
+    //   console.log('still with the errors')
+    //   req.flash('error', {
+    //     text: 'You must acknowledge before continuing',
+    //     href: '#acknowledgeItems-1', // link to checkbox specifically rather than fieldset
+    //     name: 'acknowledgeItems'
+    //   })
+    //   return res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
+    // }
 
     // Handle different result types
     switch (result) {
@@ -247,8 +247,8 @@ module.exports = router => {
         }
       case 'recall':
         return res.redirect(`/clinics/${clinicId}/reading/${eventId}/recall-reason`)
-      case 'abnormal':
-        return res.redirect(`/clinics/${clinicId}/reading/${eventId}/awaiting-annotations`)
+      case 'recallForAssessment':
+        return res.redirect(`/clinics/${clinicId}/reading/${eventId}/recall-for-assessment-details`)
       default:
         return res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
     }

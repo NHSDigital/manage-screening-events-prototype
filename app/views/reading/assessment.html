@@ -32,7 +32,7 @@
   <div class="nhsuk-grid-row">
     <div class="nhsuk-grid-column-full">
       {% set thingsToReview = [] %}
-      {% set hasSymptoms = event.currentSymptoms | length %}
+      {% set hasSymptoms = event.currentSymptoms | length > 0 %}
       {% if hasSymptoms %}
         {% set thingsToReview = thingsToReview | push("Symptoms") %}
       {% endif %}
@@ -41,16 +41,16 @@
       {% set hasAdditionalImages = imageCount > 4 %}
 
       {% if hasAdditionalImages %}
-        {% set thingsToReview = thingsToReview | push("Images") %}
+        {% set thingsToReview = thingsToReview | push("Additional images") %}
       {% endif %}
 
       {% if thingsToReview | length %}
         {% set warningCalloutHtml %}
 
           {% if hasSymptoms %}
-            {% if thingsToReview | length > 1 %}
-              <h3>Symptoms</h3>
-            {% endif %}
+            {# {% if thingsToReview | length > 1 %} #}
+              <h3>{{ event.currentSymptoms | length }} {{ "symptom" | pluralise(event.currentSymptoms | length )}} reported</h3>
+            {# {% endif %} #}
             {% set symptoms = event.currentSymptoms %}
             {% include "summary-lists/symptoms.njk" %}
 
@@ -58,11 +58,40 @@
 
           {% if hasAdditionalImages %}
 
-            {% if thingsToReview | length > 1 %}
-              <h3>Repeated views</h3>
-            {% endif %}
+            {# {% if thingsToReview | length > 1 %} #}
+              <h3>Record includes {{ imageCount }} images</h3>
+            {# {% endif %} #}
 
-            <ul class="nhsuk-list">
+            {% set repeatImagesRows = [] %}
+
+            {% for viewKey, viewData in event.mammogramData.views %}
+              {% if viewData.images.length > 1 %}
+                {% set valueText %}
+                  {% if viewData.isRepeat %}
+                    {{ viewData.repeatReason | sentenceCase }}
+                  {% else %}
+                    View required additional images to capture the full breast
+                  {% endif %}
+                {% endset %}
+                {% set repeatImagesRows = repeatImagesRows | push({
+                  key: {
+                    text: viewData.viewShortWithSide + " repeated"
+                  },
+                  value: {
+                    text: valueText
+                  }
+                }) %}
+
+              {% endif %}
+
+
+            {% endfor %}
+
+            {{ summaryList({
+              rows: repeatImagesRows
+            }) }}
+
+            {# <ul class="nhsuk-list">
               {% for viewKey, viewData in event.mammogramData.views %}
                 {% if viewData.images.length > 1 %}
                   <li>
@@ -74,11 +103,11 @@
                   </li>
                 {% endif %}
               {% endfor %}
-            </ul>
+            </ul> #}
 
           {% endif %}
 
-          <hr class="nhsuk-section-break nhsuk-section-break--m nhsuk-section-break--visible">
+          {# <hr class="nhsuk-section-break nhsuk-section-break--m nhsuk-section-break--visible">
 
           {% set symptomsCheckboxQuestionText %}
             Acknowledge these
@@ -99,7 +128,7 @@
                   checked: true if (data.acknowledgeItems == "true" or existingResult) else false
                 }
               ]
-            } | populateErrors) }}
+            } | populateErrors) }} #}
         {% endset %}
 
         {% set calloutHeading %}
@@ -110,7 +139,7 @@
           {% endif %}
         {% endset %}
         {{ warningCallout({
-          heading: calloutHeading | trim,
+          heading: "Important" or calloutHeading | trim,
           HTML: warningCalloutHtml
         }) }}
       {% endif %}
@@ -121,7 +150,7 @@
 
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-two-thirds">
-  {% set isPartialMammography = event.mammogramData.isPartialMammography %}
+  {# {% set isPartialMammography = event.mammogramData.isPartialMammography %}
 
   {% if isPartialMammography %}
     {% set partialMammographyHtml %}
@@ -133,7 +162,7 @@
     {{ insetText({
       html: partialMammographyHtml
     }) }}
-  {% endif %}
+  {% endif %} #}
 
   {% set questionText = "What is your assessment?" %}
 
@@ -183,18 +212,21 @@
       <div class="nhsuk-grid-column-one-third">
         <div class="form-group">
           {{ button({
-            text: "Normal",
+            text: "Normal" if not hasSymptoms else "Normal, and add details",
             value: "normal",
             name: "result",
             classes: "app-button-full-width nhsuk-u-margin-bottom-3"
           }) }}
 
           {# Go to page to collect a comment and mark features #}
-          <p class="nhsuk-u-margin-bottom-0">
-            <a href="#" class="nhsuk-link--no-visited-state">
-              Normal, but add futher details
-            </a>
-          </p>
+          {% if not hasSymptoms %}
+            <p class="nhsuk-u-margin-bottom-0">
+              <a href="#" class="nhsuk-link--no-visited-state">
+                Normal, but add further details
+              </a>
+            </p>
+          {% endif %}
+
         </div>
       </div>
       <div class="nhsuk-grid-column-one-third">
@@ -212,7 +244,7 @@
           {{ button({
             "text": "Recall for assessment",
             "classes": "nhsuk-button--warning app-button-full-width",
-            "value": "abnormal",
+            "value": "recallForAssessment",
             name: "result"
           }) }}
         </div>
