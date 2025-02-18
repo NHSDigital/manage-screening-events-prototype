@@ -96,7 +96,7 @@
                 {
                   value: "true",
                   text: symptomsCheckboxQuestionText,
-                  checked: true if data.acknowledgeItems == "true" else false
+                  checked: true if (data.acknowledgeItems == "true" or existingResult) else false
                 }
               ]
             } | populateErrors) }}
@@ -113,16 +113,7 @@
           heading: calloutHeading | trim,
           HTML: warningCalloutHtml
         }) }}
-
-
       {% endif %}
-
-
-
-
-
-
-
     </div>
   </div>
 
@@ -198,6 +189,7 @@
             classes: "app-button-full-width nhsuk-u-margin-bottom-3"
           }) }}
 
+          {# Go to page to collect a comment and mark features #}
           <p class="nhsuk-u-margin-bottom-0">
             <a href="#" class="nhsuk-link--no-visited-state">
               Normal, but add futher details

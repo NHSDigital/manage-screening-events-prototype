@@ -225,7 +225,7 @@ module.exports = router => {
     // Check if current event has symptoms that need acknowledging
     const hasSymptoms = event?.currentSymptoms?.length > 0
     const hasRepeatImages = event?.mammogramData?.metadata?.hasRepeat
-    const hasAcknowledgedItems = data?.acknowledgedItems?.includes('true')
+    const hasAcknowledgedItems = data?.acknowledgeItems?.includes('true')
 
     if ((hasSymptoms || hasRepeatImages) && !hasAcknowledgedItems) {
       console.log('still with the errors')
@@ -309,7 +309,7 @@ module.exports = router => {
       timestamp: new Date().toISOString()
     }
 
-    delete data.acknowledgeSymptoms
+    delete data.acknowledgeItems
 
     // Add additional data based on result type
     if (resultType === 'recall' && reason) {
