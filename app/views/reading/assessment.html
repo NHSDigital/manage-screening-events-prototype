@@ -53,7 +53,7 @@
             {# {% endif %} #}
             {% set symptoms = event.currentSymptoms %}
             {% include "summary-lists/symptoms.njk" %}
-
+            <p><a href="./medical-information">See participant’s medical information</a></p>
           {% endif %}
 
           {% if hasAdditionalImages %}
@@ -186,14 +186,14 @@
             checked: existingResult == "normal"
           },
           {
-            value: "recall",
+            value: "technical_recall",
             text: "Technical recall",
-            checked: existingResult == "recall"
+            checked: existingResult == "technical_recall"
           },
           {
-            value: "abnormal",
+            value: "recall_for_assessment",
             text: "Recall for assessment",
-            checked: existingResult == "abnormal"
+            checked: existingResult == "recall_for_assessment"
           }
         ],
         value: data.result or existingResult
@@ -222,7 +222,7 @@
           {% if not hasSymptoms %}
             <p class="nhsuk-u-margin-bottom-0">
               <a href="#" class="nhsuk-link--no-visited-state">
-                Normal, but add further details
+                Normal, but add details
               </a>
             </p>
           {% endif %}
@@ -234,7 +234,7 @@
           {{ button({
             text: "Technical recall",
             classes: "nhsuk-button--secondary app-button-full-width",
-            value: "recall",
+            value: "technical_recall",
             name: "result"
           }) }}
         </div>
@@ -244,7 +244,7 @@
           {{ button({
             "text": "Recall for assessment",
             "classes": "nhsuk-button--warning app-button-full-width",
-            "value": "recallForAssessment",
+            "value": "recall_for_assessment",
             name: "result"
           }) }}
         </div>

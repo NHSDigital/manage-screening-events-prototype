@@ -84,7 +84,7 @@
           html: "Normal" | toTag
         },
         {
-          html: requestedWithDateHtml
+          html: requestedWithDateHtml if event.hasRequestedImages | falsify else 'Available' | toTag
         }
       ]
     ]
@@ -95,6 +95,53 @@
     heading: "Previous mammograms",
     headingLevel: "2",
     descriptionHtml: previousMammogramsHtml
+  }) }}
+
+  {% set recordSharingHtml %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Available in PERFORMS"
+          },
+          value: {
+            text: "No"
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "name"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Suitable for training"
+          },
+          value: {
+            html: "Not provided" | asHint
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "date of birth"
+              }
+            ]
+          }
+        }
+      ]
+    }) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Record sharing",
+    headingLevel: "2",
+    descriptionHtml: recordSharingHtml
   }) }}
 {% endblock %}
 

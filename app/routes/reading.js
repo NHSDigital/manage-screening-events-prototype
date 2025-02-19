@@ -4,6 +4,7 @@ const { getEventData } = require('../lib/utils/event-data')
 const { getReadingProgress } = require('../lib/utils/readings')
 const { needsReading } = require('../lib/utils/status')
 const { getFullName } = require('../lib/utils/participants')
+const { snakeCase } = require('../lib/utils/strings')
 
 module.exports = router => {
   // Set nav state
@@ -197,7 +198,7 @@ module.exports = router => {
   // Additional route handlers for each step
   router.get('/clinics/:clinicId/reading/:eventId/:step', (req, res, next) => {
     const { clinicId, eventId, step } = req.params
-    const validSteps = ['assessment', 'participant-details', 'medical-information', 'images', 'confirm-normal', 'recall-reason', 'recall-for-assessment-details', 'awaiting-annotations', 'confirm-abnormal', 'recommended-assessment']
+    const validSteps = ['assessment', 'participant-details', 'medical-information', 'images', 'confirm-normal', 'recall-reason', 'recall-for-assessment-details', 'annotation', 'awaiting-annotations', 'confirm-abnormal', 'recommended-assessment']
 
     if (!validSteps.includes(step)) {
       return next()
@@ -245,51 +246,15 @@ module.exports = router => {
         } else {
           return res.redirect(307, `/clinics/${clinicId}/reading/${eventId}/result-normal`)
         }
-      case 'recall':
+      case 'technical_recall':
         return res.redirect(`/clinics/${clinicId}/reading/${eventId}/recall-reason`)
-      case 'recallForAssessment':
+      case 'recall_for_assessment':
         return res.redirect(`/clinics/${clinicId}/reading/${eventId}/recall-for-assessment-details`)
       default:
         return res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
     }
   })
 
-  // Initial route for handling updates to assessments
-  // router.post('/clinics/:clinicId/reading/:eventId/result-update', (req, res) => {
-  //   const { clinicId, eventId } = req.params
-  //   const { newResult } = req.body
-
-  //   console.log("result update")
-  //   // Store the intent to update in the session
-  //   req.session.data.readingUpdate = {
-  //     eventId,
-  //     originalResult: req.session.data.events.find(e => e.id === eventId)?.reads[0],
-  //     newResult
-  //   }
-
-  //   // Route to appropriate next step based on chosen result
-  //   switch(newResult) {
-  //     case 'normal':
-  //       if (req.session.data.confirmNormalResults == 'true') {
-  //         res.redirect(`/clinics/${clinicId}/reading/${eventId}/confirm-normal`)
-  //       }
-  //       else {
-  //         // #307 redirect to preserve POST.
-  //         res.redirect(307, `/clinics/${clinicId}/reading/${eventId}/result-normal`);
-
-  //       }
-
-  //       break
-  //     case 'recall':
-  //       res.redirect(`/clinics/${clinicId}/reading/${eventId}/recall-reason`)
-  //       break
-  //     case 'abnormal':
-  //       res.redirect(`/clinics/${clinicId}/reading/${eventId}/awaiting-annotations`)
-  //       break
-  //     default:
-  //       res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
-  //   }
-  // })
 
   // Generic result recording route
   router.post('/clinics/:clinicId/reading/:eventId/result-:resultType', (req, res) => {
@@ -303,7 +268,7 @@ module.exports = router => {
 
     // Create base reading result
     const readResult = {
-      result: resultType,
+      result: snakeCase(resultType),
       readerId: data.currentUser.id,
       readerType: data.currentUser.role,
       timestamp: new Date().toISOString()
@@ -312,10 +277,10 @@ module.exports = router => {
     delete data.acknowledgeItems
 
     // Add additional data based on result type
-    if (resultType === 'recall' && reason) {
+    if (resultType === 'technical-recall' && reason) {
       readResult.reason = reason
     }
-    if (resultType === 'abnormal' && annotations) {
+    if (resultType === 'recall-for-assessment' && annotations) {
       readResult.annotations = annotations
     }
 

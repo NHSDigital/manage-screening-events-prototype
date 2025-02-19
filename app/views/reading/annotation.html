@@ -1,0 +1,128 @@
+{# /app/views/events/reading/awaiting-annotations.html #}
+
+{% extends 'layout-reading.html' %}
+
+{% set pageHeading = "Add annotation for " + query.side + " breast" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './result-abnormal' %}
+
+{% set hideSecondaryNavigation = true %}
+
+
+{% block pageContent %}
+
+  {{ participant | log("participant") }}
+  {{ progress.skippedEvents | log("progress") }}
+
+  <span class="nhsuk-caption-l">
+    {{ participant | getFullName }}
+  </span>
+
+  <h1 class="nhsuk-heading-l js-image-count">
+    {{ pageHeading }}
+  </h1>
+
+  {% set checkboxItems = [] %}
+
+  {% set abnormalityList = [
+    "Mass well-defined",
+    "Mass ill-defined",
+    "Architectural distortion",
+    "Asymetric density",
+    "Microcalcification outside a mass",
+    "Clinical abnormality",
+    "Lymph node abnormality"
+    ] %}
+
+  {% for abnormality in abnormalityList %}
+    {% set checkboxItems = checkboxItems | push({
+      value: abnormality | camelCase,
+      text: abnormality
+    }) %}
+  {% endfor %}
+
+  {{ checkboxes({
+    idPrefix: "example",
+    name: "example",
+    fieldset: {
+      legend: {
+        text: "What have you observed?",
+        classes: "nhsuk-fieldset__legend--s",
+        isPageHeading: true
+      }
+    },
+    items: checkboxItems
+  }) }}
+
+  {{ select({
+    id: "select-1",
+    name: "select-1",
+    label: {
+      text: "Level of concern"
+    },
+    items: [
+      {
+        value: 1,
+        text: "Please select",
+        disabled: true,
+        selected: true
+      },
+      {
+        value: 1,
+        text: "1 - Normal"
+      },
+      {
+        value: 2,
+        text: "2 - Benign"
+      },
+      {
+        value: 3,
+        text: "3 - Probably benign"
+      },
+      {
+        value: 4,
+        text: "4 - Probably cancerous"
+      },
+      {
+        value: 5,
+        text: "5 - Likely cancerous"
+      }
+    ]
+  }) }}
+
+  {{ input({
+    label: {
+      text: "Location on " + query.side + " breast"
+    },
+    id: "location",
+    name: "location"
+  }) }}
+
+  <div class="nhsuk-form-group nhsuk-u-margin-bottom-0">
+    {{ button({
+      text: "Mark location on mammogram",
+      classes: "nhsuk-button--secondary",
+      href: "#"
+    }) }}
+  </div>
+
+  {{ input({
+    label: {
+      text: "General comment"
+    },
+    id: "comment",
+    name: "comment"
+  }) }}
+
+  <div class="nhsuk-form-group nhsuk-u-margin-top-7">
+    {{ button({
+      text: "Add annotation",
+      href: "./recall-for-assessment-details?annotatedSide" + query.side + "=true"
+    }) }}
+  </div>
+
+{% endblock %}
+
+

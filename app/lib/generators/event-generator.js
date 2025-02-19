@@ -148,6 +148,9 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
         config: participant.config
       })
 
+      // Pretend some events have previous images requested
+      event.hasRequestedImages = weighted.select({ true: 0.3, false: 0.7 })
+
       // Higher chance of symptoms in assessment clinics
       const symptomProbability = clinic.clinicType === 'assessment' ? 0.4 : 0.15
       event.currentSymptoms = generateSymptoms({

@@ -99,9 +99,13 @@ const getStatusTagColour = (status) => {
     event_attended_not_screened: 'orange',
 
     // Image reading
+    unread: 'grey',
+    skipped: 'white',
+
+    // Image reading results
     normal: 'green',
-    abnormal: 'red',
-    recall: 'grey',
+    recall_for_assessment: 'red',
+    technical_recall: 'orange',
 
     // Image status
     available: 'green',
@@ -109,7 +113,7 @@ const getStatusTagColour = (status) => {
     not_in_pacs: 'grey',
 
   }
-  return colourMap[status] || ''
+  return colourMap[status.toLowerCase()] || ''
 }
 
 /**
@@ -128,6 +132,9 @@ const getStatusText = (status) => {
     event_did_not_attend: 'Did not attend',
     event_attended_not_screened: 'Attended not screened',
     event_cancelled: 'Cancelled',
+
+    // "technical-recall": 'Technical recall',
+    // "recall-for-assesment": 'Recall for assessment',
   }
   return statusMap[status] || ''
 }

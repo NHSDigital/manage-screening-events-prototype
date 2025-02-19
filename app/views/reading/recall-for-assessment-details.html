@@ -1,4 +1,4 @@
-{# /app/views/events/reading/awaiting-annotations.html #}
+{# /app/views/events/reading/recall-for-assessment-reasons.html #}
 
 {% extends 'layout-reading.html' %}
 
@@ -6,7 +6,7 @@
 
 {% set gridColumn = "none" %}
 
-{% set formAction = './result-abnormal' %}
+{% set formAction = './result-recall-for-assessment' %}
 
 {% set hideSecondaryNavigation = true %}
 
@@ -66,19 +66,19 @@
       }
     },
     {
-      value: "abnormal",
-      text: "Abnormal",
-      _conditional: {
-        html: abnormalDetailsHtml
-      }
-    },
-    {
       value: "clinical",
-      text: "Clinical",
+      text: "Normal, but symptoms need clinical assessment",
       _conditional: {
         html: symptomaticDetailsHtml
       }
-    } if event.currentSymptoms | length > 0
+    } if event.currentSymptoms | length > 0,
+    {
+      value: "abnormal",
+      text: "Abnormal, recall for assessment",
+      _conditional: {
+        html: abnormalDetailsHtml
+      }
+    }
   ] | removeEmpty
   }) }}
 
@@ -94,15 +94,48 @@
 
   <h3 class="nhsuk-heading-s">Image annotations</h3>
 
-  {% set insetHtml %}
-    <p>No image annotations have been added.</p>
-  {% endset %}
+  {% if data['annotatedSide' + params.side] == 'true' %}
 
-  {{ insetText({
-    html: insetHtml
-  }) }}
+    {% set annotationValueHtml -%}
+      Level of concern: 4 - Probably cancerous
+      Location: Upper right quadrant
+      General comment: biopsy required
+    {%- endset %}
 
-  <p><a href="#">Add an annotation</a></p>
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Mass ill-defined"
+          },
+          value: {
+            html: annotationValueHtml | trim | nl2br
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "name"
+              }
+            ]
+          }
+        }
+      ]
+    }) }}
+  {% else %}
+    {% set insetHtml %}
+      <p>No image annotations have been added.</p>
+    {% endset %}
+
+    {{ insetText({
+      html: insetHtml
+    }) }}
+  {% endif %}
+
+
+
+  <p><a href="./annotation?side={{ params.side }}">Add an annotation</a></p>
 
 {% endset %}
 

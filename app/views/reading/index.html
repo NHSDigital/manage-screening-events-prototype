@@ -15,6 +15,53 @@
     <p class="nhsuk-body">All images from recent clinics have been read</p>
   {% endif %} #}
 
+  <ul class="nhsuk-grid-row nhsuk-card-group">
+    <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+
+      {% set clinic = clinics[0] %}
+      {{ clinic | log("First clinic") }}
+
+      {% set clinicCardDescriptionHtml %}
+        <p>Clinic from {{ clinic.date | formatDate |  noWrap }}</p>
+      {% endset %}
+
+      {% set clinicHref %}
+        /clinics/{{ clinic.id }}/reading
+      {% endset %}
+      {{ card({
+        clickable: true,
+        heading: "Start reading",
+        headingClasses: "nhsuk-heading-m",
+        href: clinicHref,
+        descriptionHtml: clinicCardDescriptionHtml
+      }) }}
+    </li>
+    <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+
+      {# {% set participantCardDescriptionHtml %}
+        <p>72k participants registered</p>
+      {% endset %} #}
+      {{ card({
+        clickable: true,
+        heading: "Reading statistics",
+        headingClasses: "nhsuk-heading-m",
+        href: "#",
+        descriptionHtml: participantCardDescriptionHtml
+      }) }}
+    </li>
+    <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+      {{ card({
+        clickable: true,
+        heading: "Arbitration",
+        headingClasses: "nhsuk-heading-m",
+        href: "#",
+        descriptionHtml: false
+      }) }}
+    </li>
+  </ul>
+
+  <h2>All available clinics to read</h2>
+
   {% if clinics | length === 0 %}
     <p>No clinics from the last 7 days available for reading.</p>
   {% else %}
