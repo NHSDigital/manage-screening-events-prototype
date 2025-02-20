@@ -101,7 +101,7 @@
 
   {% set checkboxItems = checkboxItems | push({
     value: "other",
-    text: "Other reason"
+    text: "Another reason"
   }) %}
 
   {{ checkboxes({
@@ -109,13 +109,10 @@
     name: "whichViews",
     fieldset: {
       legend: {
-        text: "Which views need to be recalled?",
+        text: "Which images are causing a technical recall?",
         classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }
-    },
-    _hint: {
-      text: "Select all options that are relevant to you."
     },
     items: checkboxItems
   }) }}

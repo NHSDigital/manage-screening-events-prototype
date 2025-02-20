@@ -4,9 +4,9 @@
 
 {% set existingResult = event.reads[0].result %}
 
-{% set pageHeading = "Your assessment for " + participant | getFullName %}
+{% set pageHeading = "Review images for " + participant | getFullName %}
 {% if existingResult %}
-  {% set pageHeading = "Update assessment for " + participant | getFullName %}
+  {% set pageHeading = "Update review for " + participant | getFullName %}
 {% endif %}
 
 {% set gridColumn = "none" %}
@@ -164,7 +164,7 @@
     }) }}
   {% endif %} #}
 
-  {% set questionText = "What is your assessment?" %}
+  {% set questionText = "What is your opinion of these images?" %}
 
   {# Temporary ui to support changing an answer #}
   {% if existingResult %}

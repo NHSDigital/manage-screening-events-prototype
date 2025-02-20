@@ -26,6 +26,12 @@
     <h1 class="nhsuk-heading-l">
       {{ pageHeading }}
     </h1>
+    <div class="app-header-with-status__status-tag">
+      {{ tag({
+        text: stats.status,
+        classes: "nhsuk-tag--" + stats.statusColor
+      })}}
+    </div>
   </div>
 
   {# Clinic time and date #}
