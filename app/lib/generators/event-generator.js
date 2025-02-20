@@ -152,7 +152,8 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
       event.hasRequestedImages = weighted.select({ true: 0.3, false: 0.7 })
 
       // Higher chance of symptoms in assessment clinics
-      const symptomProbability = clinic.clinicType === 'assessment' ? 0.4 : 0.15
+      // const symptomProbability = clinic.clinicType === 'assessment' ? 0.4 : 0.15
+      const symptomProbability = clinic.clinicType === 25
       event.currentSymptoms = generateSymptoms({
         probabilityOfSymptoms: symptomProbability
       })

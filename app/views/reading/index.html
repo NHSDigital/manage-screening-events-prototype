@@ -25,14 +25,17 @@
         <p>Clinic from {{ clinic.date | formatDate |  noWrap }}</p>
       {% endset %}
 
+      {% set firstUnreadEvent = data | getFirstUnreadEventOverall %}
+      {{ firstUnreadEvent | log("First unread event") }}
+
       {% set clinicHref %}
-        /clinics/{{ clinic.id }}/reading
+        /reading/clinics/{{ clinic.id }}/events/{{ firstUnreadEvent.id }}/assessment
       {% endset %}
       {{ card({
         clickable: true,
         heading: "Start reading",
-        headingClasses: "nhsuk-heading-m",
-        href: clinicHref,
+        headingClasses: "nhsuk-heading-m nhsuk-link--no-visited-state",
+        href: clinicHref | trim,
         descriptionHtml: clinicCardDescriptionHtml
       }) }}
     </li>
@@ -78,11 +81,11 @@
       <tbody class="nhsuk-table__body">
         {% for clinic in clinics %}
           {% set location = clinic.location %}
-          {% set stats = clinic.readingStats %}
+          {% set stats = clinic.readingStatus %}
 
           <tr>
             <td>
-              <a href="/clinics/{{ clinic.id }}/reading" class="nhsuk-link">
+              <a href="/reading/clinics/{{ clinic.id }}" class="nhsuk-link">
                 {% if location.type === 'mobile_unit' %}
                   {{ location.name }} at {{ clinic.siteName }}
                 {% else %}
@@ -97,15 +100,17 @@
             </td>
             <td class="nhsuk-table__cell--numeric">
               {{ stats.total }}
+              {% if stats.status != "Not started" %}
+                <br>
+                {{ (stats.remaining + " remaining") | noWrap | asHint }}
+              {% endif %}
             </td>
             <td class="nhsuk-table__cell--numeric">
               {{ stats.daysSinceScreening }}
             </td>
+            {# Reading status #}
             <td>
-              {{ tag({
-                text: stats.status,
-                classes: "nhsuk-tag--" + stats.statusColor
-              })}}
+              {{ stats.status | toTag }}
             </td>
           </tr>
         {% endfor %}

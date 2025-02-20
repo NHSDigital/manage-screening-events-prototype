@@ -9,8 +9,9 @@ const getEventData = (data, clinicId, eventId) => {
 
   const participant = data.participants.find(p => p.id === event.participantId)
   const unit = data.breastScreeningUnits.find(u => u.id === clinic.breastScreeningUnitId)
+  const location = unit.locations.find(l => l.id === clinic.locationId)
 
-  return { clinic, event, participant, unit }
+  return { clinic, event, participant,location, unit }
 }
 
 

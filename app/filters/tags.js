@@ -24,6 +24,7 @@ const toTag = (status, options = {}) => {
   // Build classes string
   const classes = [
     'nhsuk-tag',
+    'app-nowrap',
     colourClass ? `nhsuk-tag--${colourClass}` : '',
     options.classes || '',
   ].filter(Boolean).join(' ')

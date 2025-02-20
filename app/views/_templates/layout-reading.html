@@ -4,38 +4,56 @@
 {% set gridColumn = gridColumn or "nhsuk-grid-column-full" %}
 
 
+{# {% for clinic in clinics %}
+          {% set location = clinic.location %}
+          {% set stats = clinic.readingStatus %}
+
+          <tr>
+            <td>
+              <a href="/reading/clinics/{{ clinic.id }}" class="nhsuk-link">
+                {% if location.type === 'mobile_unit' %}
+                  {{ location.name }} at {{ clinic.siteName }}
+                {% else %}
+                  {{ location.name }}
+                {% endif %} #}
+
 
 {# Custom header with image reading stats and participant name #}
 {% block header %}
   {{ super()}}
-  {{ participant | log("log") }}
+  {{ participant | log("Participant") }}
   <div class="app-reading-status">
     <div class="nhsuk-width-container">
       <div class="app-reading-status__row">
         <div class="app-reading-status__col">
-          <strong>Reading progress:</strong>
-          <span>{{ progress.current }} of {{ progress.total }} participants</span>
+          <strong>Clinic:</strong>{{clinic | log("Clinic")}}
+          {% set locationName %}
+            {% if location.type === 'mobile_unit' %}
+              {{ location.name }} at {{ clinic.siteName }}
+            {% else %}
+              {{ location.name }}
+            {% endif %}
+          {% endset %}
+          <span>{{ locationName }} - {{ clinic.date | formatDate |  noWrap }}</span>
         </div>
-
         <div class="app-reading-status__col">
-          <strong>Status:</strong>
-          <span>
-            {{ progress.completed }} read,
+          <strong>Progress:</strong>
+          <span>{{ progress.current }} of {{ progress.total }} ({{ progress.completed }} read,
             {{ progress.total - progress.completed }} remaining
             {%- if progress.skippedEvents | length > 0 -%}
               , {{ progress.skippedEvents | length }} skipped
                {# <a href="#">(go to first unread)</a> #}
-            {% endif %}
-          </span>
+            {% endif %})</span>
         </div>
+
       </div>
 
       {% if participant %}
         <div class="app-reading-status__row">
           <div class="app-reading-status__participant">
             <div class="app-reading-status__detail">
-              <strong>Participant:</strong>
-              <span>{{ participant | getFullName }}</span>
+              {# <strong>Participant:</strong> #}
+              <strong>{{ participant | getFullName }}</strong>
               {% if participant | getAge %}
                 <span>({{ participant | getAge }} years)</span>
               {% endif %}
@@ -75,7 +93,7 @@
   {% set mainClasses = "nhsuk-u-padding-top-3" %}
 
   {% set backHref %}
-    /clinics/{{ clinicId }}/reading
+    /reading/clinics/{{ clinicId }}
   {% endset %}
   {% set back = {
       href: backHref | trim,
