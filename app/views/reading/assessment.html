@@ -21,12 +21,19 @@
   {{ participant | log("Participant") }}
   {{ event | log("Event") }}
 
-  <div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-row app-header-with-status">
     <div class="nhsuk-grid-column-two-thirds">
 
       <h1 class="nhsuk-heading-l js-image-count">
         {{ pageHeading }}
       </h1>
+    </div>
+    <div class="nhsuk-grid-column-one-third app-header-with-status__status-tag">
+      {% set requestedWithDateHtml %}
+        {{ "Images requested" | toTag | safe }}<br>
+        Requested 10 Feb 2025
+      {% endset %}
+      {{ (requestedWithDateHtml | safe) if event.hasRequestedImages | falsify }}
     </div>
   </div>
   <div class="nhsuk-grid-row">

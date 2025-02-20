@@ -111,6 +111,7 @@ const getStatusTagColour = (status) => {
     // Image status
     available: 'green',
     requested: 'orange',
+    images_requested: 'orange',
     not_in_pacs: 'grey',
 
   }
