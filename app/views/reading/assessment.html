@@ -269,14 +269,14 @@
 
   {% if progress.hasNextUnread %}
     <p>
-      <a href="/reading/clinics/{{clinicId}}/events/{{progress.nextUnreadId}}/assessment?skipped={{eventId}}" class="nhsuk-link--no-visited-state">Skip to next participant
+      <a href="/reading/clinics/{{clinicId}}/events/{{progress.nextUnreadId}}?skipped={{eventId}}" class="nhsuk-link--no-visited-state">Skip to next participant
       </a>
     </p>
   {% endif %}
 
   {% if progress.hasPrevious %}
     <p>
-      <a href="/reading/clinics/{{clinicId}}/events/{{progress.previousEventId}}/assessment" class="nhsuk-link--no-visited-state">Previous participant
+      <a href="/reading/clinics/{{clinicId}}/events/{{progress.previousEventId}}" class="nhsuk-link--no-visited-state">Previous participant
       </a>
     </p>
 

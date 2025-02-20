@@ -29,7 +29,7 @@
       {{ firstUnreadEvent | log("First unread event") }}
 
       {% set clinicHref %}
-        /reading/clinics/{{ clinic.id }}/events/{{ firstUnreadEvent.id }}/assessment
+        /reading/clinics/{{ firstUnreadEvent.clinicId }}/events/{{ firstUnreadEvent.id }}/assessment
       {% endset %}
       {{ card({
         clickable: true,

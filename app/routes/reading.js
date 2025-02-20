@@ -103,10 +103,15 @@ module.exports = router => {
     })
   })
 
+  // Redirect event to assessment tab
+  router.get('/reading/clinics/:clinicId/events/:eventId', (req, res) => {
+    res.redirect(`/reading/clinics/${req.params.clinicId}/events/${req.params.eventId}/assessment`)
+  })
+
   // Additional route handlers for each step
   router.get('/reading/clinics/:clinicId/events/:eventId/:step', (req, res, next) => {
     const { clinicId, eventId, step } = req.params
-    const validSteps = ['assessment', 'participant-details', 'medical-information', 'images', 'confirm-normal', 'recall-reason', 'recall-for-assessment-details', 'annotation', 'awaiting-annotations', 'confirm-abnormal', 'recommended-assessment']
+    const validSteps = ['assessment', 'normal-details', 'participant-details', 'medical-information', 'images', 'confirm-normal', 'recall-reason', 'recall-for-assessment-details', 'annotation', 'awaiting-annotations', 'confirm-abnormal', 'recommended-assessment']
 
     if (!validSteps.includes(step)) {
       return next()
@@ -159,7 +164,7 @@ module.exports = router => {
       case 'recall_for_assessment':
         return res.redirect(`/reading/clinics/${clinicId}/events/${eventId}/recall-for-assessment-details`)
       default:
-        return res.redirect(`/reading/clinics/${clinicId}/events/${eventId}/assessment`)
+        return res.redirect(`/reading/clinics/${clinicId}/events/${eventId}`)
     }
   })
 
@@ -209,7 +214,7 @@ module.exports = router => {
 
     // Redirect to next participant if available
     if (progress.hasNextUnread) {
-      res.redirect(`/reading/clinics/${clinicId}/events/${progress.nextUnreadId}/assessment`)
+      res.redirect(`/reading/clinics/${clinicId}/events/${progress.nextUnreadId}`)
     } else {
       res.redirect(`/reading/clinics/${clinicId}`)
     }

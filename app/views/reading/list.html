@@ -46,29 +46,48 @@
     {{readingStatus | log("Reading status")}}
     {{ events | log("Events") }}
 
-    {# Reading progress #}
-    {% set insetTextHtml %}
-      <p>Status:
+    {# Reading still do do #}
+    {% if readingStatus.remaining > 0 %}
+      {# Reading progress #}
+      {% set insetTextHtml %}
+        <p>Status:
 
-        {{ completedCount }} read, {{ readingStatus.remaining }} remaining
-        {%- if data.readingSession.skippedEvents | length > 0 -%}
-          , {{ data.readingSession.skippedEvents | length }} skipped
-        {% endif %}
-      </p>
+          {{ completedCount }} read, {{ readingStatus.remaining }} remaining
+          {%- if data.readingSession.skippedEvents | length > 0 -%}
+            , {{ data.readingSession.skippedEvents | length }} skipped
+          {% endif %}
+        </p>
+      {% endset %}
 
+      {{ insetText({
+        html: insetTextHtml
+      }) }}
 
-    {% endset %}
+      {% set firstUnreadEvent = events | find('readStatus', 'Not read') %}
+      {% if firstUnreadEvent %}
+        <a href="/reading/clinics/{{ clinicId }}/events/{{ firstUnreadEvent.id }}" class="nhsuk-button">
+          {{ "Resume reading" if completedCount else "Start reading" }}
+        </a>
+      {% endif %}
 
-    {{ insetText({
-      html: insetTextHtml
-    }) }}
+    {# Reading complete #}
+    {% else %}
 
-    {% set firstUnreadEvent = events | find('readStatus', 'Not read') %}
-    {% if firstUnreadEvent %}
-      <a href="/reading/clinics/{{ clinicId }}/events/{{ firstUnreadEvent.id }}/assessment" class="nhsuk-button">
-        {{ "Resume reading" if completedCount else "Start reading" }}
-      </a>
+      {% set notificationBannerHtml %}
+        <h3 class="nhsuk-notification-banner__heading">
+          All records in this list have been reviewed
+        </h3>
+        <p class="nhsuk-body">You can revisit each record of the summary below or return to the <a href="/reading">reading task list</a></p>
+      {% endset %}
+
+      {{ appNotificationBanner({
+        html: notificationBannerHtml,
+        type: "success"
+      }) }}
+
     {% endif %}
+
+
 
 
     <table class="nhsuk-table">
