@@ -1,0 +1,159 @@
+{# /app/views/events/reading/list.html #}
+
+{% extends 'layout-app.html' %}
+
+{% set back = {
+  href: "/reading",
+  text: "Back to reading"
+} %}
+
+{% set clinicRiskType %}
+  {% if clinic.riskLevels | length == 1 %}
+    {{ clinic.riskLevels[0] }}
+  {% else %}
+    Mixed
+  {% endif %}
+{% endset %}
+
+{% set pageHeading %}
+  {{ clinicRiskType | sentenceCase }} risk {{ clinic.clinicType | lower }} clinic
+{% endset %}
+
+{% set gridColumn = "none" %}
+
+
+{% block pageContent %}
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-full">
+    <div class="app-header-with-status">
+      <span class="nhsuk-caption-l">Image reading</span>
+      <h1 class="nhsuk-heading-l">
+        {{ pageHeading }}
+      </h1>
+      <div class="app-header-with-status__status-tag">
+        {{ readingStatus.status | toTag}}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-two-thirds">
+    {# Clinic time and date #}
+    {# 9am to midday - 31 December 2024 #}
+    <p>{{ clinic.sessionTimes | formatTimeRange }} - {{ clinic.date | formatDate }}</p>
+
+    {{ data.readingSession.skippedEvents | log("Progress") }}
+    {{readingStatus | log("Reading status")}}
+    {{ events | log("Events") }}
+
+    {# Reading still do do #}
+    {% if readingStatus.remaining > 0 %}
+      {# Reading progress #}
+      {% set insetTextHtml %}
+        <p>Status:
+
+          {{ completedCount }} read, {{ readingStatus.remaining }} remaining
+          {%- if data.readingSession.skippedEvents | length > 0 -%}
+            , {{ data.readingSession.skippedEvents | length }} skipped
+          {% endif %}
+        </p>
+      {% endset %}
+
+      {{ insetText({
+        html: insetTextHtml
+      }) }}
+
+      {% set firstUnreadEvent = events | find('readStatus', 'Not read') %}
+      {% if firstUnreadEvent %}
+        <a href="/reading/clinics/{{ clinicId }}/events/{{ firstUnreadEvent.id }}" class="nhsuk-button">
+          {{ "Resume reading" if completedCount else "Start reading" }}
+        </a>
+      {% endif %}
+
+    {# Reading complete #}
+    {% else %}
+
+      {% set notificationBannerHtml %}
+        <h3 class="nhsuk-notification-banner__heading">
+          All records in this list have been reviewed
+        </h3>
+        <p class="nhsuk-body">You can revisit each record of the summary below or return to the <a href="/reading">reading task list</a></p>
+      {% endset %}
+
+      {{ appNotificationBanner({
+        html: notificationBannerHtml,
+        type: "success"
+      }) }}
+
+    {% endif %}
+
+
+
+
+    <table class="nhsuk-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date of birth</th>
+          <th>Your opinion</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for event in events %}
+        {# {{ event | log("Event") }} #}
+          <tr>
+            <td>
+              <a href="/reading/clinics/{{ clinicId }}/events/{{ event.id }}/assessment">{{ event.participant | getFullName }}</a>
+              <br>
+              {% if event.currentSymptoms | length %}
+                {{ tag({
+                  text: "Has symptoms",
+                  classes: "nhsuk-tag--yellow"
+                })}}
+              {% endif %}
+              {# Only for testing showing where repeats are: #}
+              {# {% if event.mammogramData.metadata.hasRepeat %}
+                {{ tag({
+                  text: "Has repeat",
+                  classes: "nhsuk-tag--yellow"
+                })}}
+              {% endif %} #}
+            </td>
+            <td>
+              {{ event.participant.demographicInformation.dateOfBirth | formatDate }}
+            </td>
+            {# <td>
+
+              {{ tag({
+                text: skipped or event.readStatus,
+                classes: "nhsuk-tag--" + ('yellow' if skipped else event.tagColor) + " app-nowrap"
+              })}}
+            </td> #}
+            <td>
+
+              {% set metaStatus = "Unread" %}
+              {% set skipped = "Skipped" if data.readingSession.skippedEvents | includes(event.id) else false %}
+              {% if event.reads and event.reads[0] %}
+                {% set metaStatus = event.reads[0].result %}
+              {% elseif skipped %}
+                {% set metaStatus = "Skipped" %}
+              {% endif %}
+              {{ metaStatus | toTag }}
+                {# {% set resultClass = "nhsuk-tag--" + ( colour | trim ) %} #}
+
+                {# {{ tag({
+                  text: event.reads[0].result | sentenceCase,
+                  classes: resultClass
+                })}}
+
+
+                {{ "No result" | noWrap | asHint }} #}
+
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

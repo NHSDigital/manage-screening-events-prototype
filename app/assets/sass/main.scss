@@ -2,6 +2,7 @@
 @import 'node_modules/nhsuk-frontend/packages/nhsuk';
 
 // Components that are not in the NHS.UK frontend library
+@import 'components/dark-mode';
 @import 'components/list-border';
 @import 'components/related-nav';
 @import 'components/header';
@@ -10,6 +11,7 @@
 @import 'components/count';
 @import 'components/notification-banner';
 @import 'components/status';
+@import 'components/reading';
 
 @import 'components/overrides';
 

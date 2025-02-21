@@ -1,0 +1,109 @@
+
+{% extends "layout-app.html" %}
+
+{% set gridColumn = gridColumn or "nhsuk-grid-column-full" %}
+
+
+{# {% for clinic in clinics %}
+          {% set location = clinic.location %}
+          {% set stats = clinic.readingStatus %}
+
+          <tr>
+            <td>
+              <a href="/reading/clinics/{{ clinic.id }}" class="nhsuk-link">
+                {% if location.type === 'mobile_unit' %}
+                  {{ location.name }} at {{ clinic.siteName }}
+                {% else %}
+                  {{ location.name }}
+                {% endif %} #}
+
+
+{# Custom header with image reading stats and participant name #}
+{% block header %}
+  {{ super()}}
+  {{ participant | log("Participant") }}
+  <div class="app-reading-status">
+    <div class="nhsuk-width-container">
+      <div class="app-reading-status__row">
+        <div class="app-reading-status__col">
+          <strong>Clinic:</strong>{{clinic | log("Clinic")}}
+          {% set locationName %}
+            {% if location.type === 'mobile_unit' %}
+              {{ location.name }} at {{ clinic.siteName }}
+            {% else %}
+              {{ location.name }}
+            {% endif %}
+          {% endset %}
+          <span>{{ locationName }} - {{ clinic.date | formatDate |  noWrap }}</span>
+        </div>
+        <div class="app-reading-status__col">
+          <strong>Progress:</strong>
+          <span>{{ progress.current }} of {{ progress.total }} ({{ progress.completed }} read,
+            {{ progress.total - progress.completed }} remaining
+            {%- if progress.skippedEvents | length > 0 -%}
+              , {{ progress.skippedEvents | length }} skipped
+               {# <a href="#">(go to first unread)</a> #}
+            {% endif %})</span>
+        </div>
+
+      </div>
+
+      {% if participant %}
+        <div class="app-reading-status__row">
+          <div class="app-reading-status__participant">
+            <div class="app-reading-status__detail">
+              {# <strong>Participant:</strong> #}
+              <strong>{{ participant | getFullName }}</strong>
+              {% if participant | getAge %}
+                <span>({{ participant | getAge }} years)</span>
+              {% endif %}
+            </div>
+
+            <div class="app-reading-status__detail">
+              <strong>DOB:</strong>
+              <span>{{ participant.demographicInformation.dateOfBirth | formatDate }}</span>
+            </div>
+
+            <div class="app-reading-status__detail">
+              <strong>NHS:</strong>
+              <span>{{ participant.medicalInformation.nhsNumber | formatNhsNumber }}</span>
+            </div>
+
+            <div class="app-reading-status__detail">
+              <strong>SX:</strong>
+              <span>{{ participant.sxNumber }}</span>
+            </div>
+
+            {% if currentEvent %}
+              <div class="app-reading-status__detail">
+                <strong>Screened:</strong>
+                <span>{{ currentEvent.timing.startTime | formatDate }}</span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock header %}
+
+
+
+{% if not hideSecondaryNavigation %}
+  {% set mainClasses = "nhsuk-u-padding-top-3" %}
+
+  {% set backHref %}
+    /reading/clinics/{{ clinicId }}
+  {% endset %}
+  {% set back = {
+      href: backHref | trim,
+      text: "Back to reading list"
+    }
+  %}
+{% endif %}
+
+{% block pageNavigation %}
+  {% if not hideSecondaryNavigation %}
+    {% include "reading/secondary-navigation.njk" %}
+  {% endif %}
+{% endblock pageNavigation %}

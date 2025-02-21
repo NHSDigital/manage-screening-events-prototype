@@ -5,7 +5,9 @@ const { faker } = require('@faker-js/faker')
 const weighted = require('weighted')
 const dayjs = require('dayjs')
 const config = require('../../config')
+const { STATUS_GROUPS, isCompleted, isFinal } = require('../utils/status')
 const { generateMammogramImages } = require('./mammogram-generator')
+const { generateSymptoms } = require('./symptoms-generator')
 
 const NOT_SCREENED_REASONS = [
   'Recent mammogram at different facility',
@@ -32,8 +34,7 @@ const determineEventStatus = (slotDateTime, currentDateTime, attendanceWeights) 
   }
 
   if (slotDate.isBefore(currentDate)) {
-    const finalStatuses = ['event_complete', 'event_partially_screened', 'event_did_not_attend', 'event_attended_not_screened']
-    return weighted.select(finalStatuses, attendanceWeights)
+    return weighted.select(STATUS_GROUPS.final, attendanceWeights)
   }
 
   // For past slots, generate a status based on how long ago the slot was
@@ -73,8 +74,8 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
   const endDateTime = dayjs(slot.dateTime).add(duration, 'minute')
 
   const attendanceWeights = clinic.clinicType === 'assessment'
-    ? [0.8, 0.1, 0.015, 0]
-    : [0.70, 0.1, 0.15, 0.05]
+    ? [0.85, 0.05, 0.05, 0, 0.05]
+    : [0.70, 0.1, 0.10, 0.05, 0.05]
 
   // We'll use forceStatus if provided, otherwise calculate based on timing
   const eventStatus = forceStatus || determineEventStatus(slotDateTime, simulatedDateTime, attendanceWeights)
@@ -122,7 +123,9 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
     }
 
     // Add timing details for completed appointments
-    if (eventStatus === 'event_complete') {
+    if (isCompleted(eventStatus)) {
+
+      // if (eventStatus === 'event_complete' || eventStatus === 'event_partially_screened') {
       const actualStartOffset = faker.number.int({ min: -5, max: 5 })
       const durationOffset = isSpecialAppointment
         ? faker.number.int({ min: -3, max: 10 })
@@ -144,6 +147,16 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
         isSeedData: true,
         config: participant.config
       })
+
+      // Pretend some events have previous images requested
+      event.hasRequestedImages = weighted.select({ true: 0.3, false: 0.7 })
+
+      // Higher chance of symptoms in assessment clinics
+      // const symptomProbability = clinic.clinicType === 'assessment' ? 0.4 : 0.15
+      const symptomProbability = 0.25
+      event.currentSymptoms = generateSymptoms({
+        probabilityOfSymptoms: symptomProbability
+      })
     }
 
     return event
@@ -163,7 +176,7 @@ const generateStatusHistory = (finalStatus, dateTime) => {
   })
 
   // Add intermediate statuses based on final status
-  if (finalStatus === 'event_complete') {
+  if (isCompleted(finalStatus)) {
     history.push(
       {
         status: 'checked_in',

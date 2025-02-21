@@ -1,7 +1,7 @@
 
 {% extends "layout.html" %}
 
-
+{% set bodyClasses = "app-dark-mode" if data.darkMode == 'true' %}
 
 {% block beforeContent %}
 {% if not hideBackLink %}
@@ -44,6 +44,11 @@
         current: true if navActive == "clinics"
       },
       {
+        url: "/reading",
+        label: "Image reading",
+        current: true if navActive == "reading"
+      },
+      {
         url: "/participants",
         label: "Participants",
         current: true if navActive == "participants"
@@ -76,7 +81,7 @@
 {% block content %}
 
 <div class="nhsuk-grid-row">
-  <div class="{{ gridColumn or 'nhsuk-grid-column-two-thirds' }}">
+  <div class="nhsuk-grid-column-two-thirds">
 
     {% if flash.error %}
       {{ errorSummary({
@@ -108,7 +113,6 @@
           type: "success"
         }) }}
       {% endif %}
-
     {% endif %}
 
     {% if flash.info %}
@@ -124,6 +128,19 @@
         type: "warning"
       }) }}
     {% endif %}
+  </div>
+</div>
+
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-full">
+    {% block pageNavigation %}
+    {% endblock pageNavigation %}
+  </div>
+</div>
+{% if gridColumn != "none" %}
+<div class="nhsuk-grid-row">
+  <div class="{{ gridColumn or 'nhsuk-grid-column-two-thirds' }}">
+{% endif %}
 
     {% if formAction or isForm %}
       <form action="{{formAction or './'}}" method="{{ formMethod or 'POST'}}">
@@ -132,6 +149,10 @@
     {% if formAction or isForm %}
       </form>
     {% endif %}
+
+{% if gridColumn != "none" %}
   </div>
 </div>
+{% endif %}
+
 {% endblock %}

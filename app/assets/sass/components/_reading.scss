@@ -1,0 +1,54 @@
+// app/assets/sass/components/_reading.scss
+
+.app-reading-status {
+  background-color:  shade($color_nhsuk-blue, 40%);
+  color: $color_nhsuk-white;
+  a {
+    color: $color_nhsuk-white;
+  }
+  padding: 10px;
+}
+
+.app-reading-status {
+  background-color: shade($color_nhsuk-blue, 40%);
+  color: $color_nhsuk-white;
+  padding: 8px 0;
+  border-bottom: 1px solid #d8dde0;
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: center;
+
+    & + & {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  &__col {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  &__participant {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    width: 100%;
+  }
+
+  &__detail {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+    strong {
+      font-weight: 600;
+      opacity: 0.9;
+    }
+  }
+}

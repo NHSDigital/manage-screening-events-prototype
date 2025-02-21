@@ -3,6 +3,8 @@
   width: 75px;
   height:100px;
 
+  outline: 1px solid rgba(255, 255, 255, 0.2);
+
   p {
     color: white;
     margin-left: 5px;
@@ -17,4 +19,8 @@
 .app-image-flip-horizontal {
   -webkit-transform: scaleX(-1);
   transform: scaleX(-1);
+}
+
+.app-button-full-width {
+  width: 100%;
 }

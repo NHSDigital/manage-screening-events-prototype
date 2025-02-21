@@ -39,26 +39,36 @@
 
 <div class="nhsuk-card">
   <div class="nhsuk-card__content">
+    <h2>General</h2>
+    <p>
+      <a href="./settings?darkMode={{'true' if data.darkMode !== 'true' else 'false'}}">{{ 'Enable' if data.darkMode=='false' else 'Disable'}} dark mode</a>
+    </p>
+
+    <h2>Image reading</h2>
+    <p>
+      <a href="./settings?confirmNormalResults={{'true' if data.confirmNormalResults !== 'true' else 'false'}}">{{ 'Require confirmation for normal results' if data.confirmNormalResults=='false' else 'Do not confirm normal results'}}</a>
+    </p>
+
     <h2>Generated data</h2>
-    
+
     <dl class="nhsuk-summary-list">
       <div class="nhsuk-summary-list__row">
         <dt class="nhsuk-summary-list__key">Last generated</dt>
-        <dd class="nhsuk-summary-list__value">{{ data.generationInfo.generatedAt | formatDateTime 
+        <dd class="nhsuk-summary-list__value">{{ data.generationInfo.generatedAt | formatDateTime
         }}<br><span class="nhsuk-hint">({{ data.generationInfo.generatedAt | formatRelativeDate }})</span>
         </dd>
       </div>
-      
+
       <div class="nhsuk-summary-list__row">
         <dt class="nhsuk-summary-list__key">Participants</dt>
         <dd class="nhsuk-summary-list__value">{{ data.generationInfo.stats.participants }}</dd>
       </div>
-      
+
       <div class="nhsuk-summary-list__row">
         <dt class="nhsuk-summary-list__key">Clinics</dt>
         <dd class="nhsuk-summary-list__value">{{ data.generationInfo.stats.clinics }}</dd>
       </div>
-      
+
       <div class="nhsuk-summary-list__row">
         <dt class="nhsuk-summary-list__key">Events</dt>
         <dd class="nhsuk-summary-list__value">{{ data.generationInfo.stats.events }}</dd>

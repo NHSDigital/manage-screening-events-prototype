@@ -1,141 +1,6 @@
-{% set images = [
-  {
-    view: "CC (craniocaudal)",
-    side: "Right"
-  },
-  {
-    view: "MLO (mediolateral oblique)",
-    side: "Right"
-  },
-  {
-    view: "CC (craniocaudal)",
-    side: "Left"
-  },
-  {
-    view: "MLO (mediolateral oblique)",
-    side: "Left",
-    _comment: "Blurry"
-  },
-  {
-    view: "MLO (mediolateral oblique)",
-    side: "Left",
-    _repeat: "Yes",
-    _comment: "Needed clearer image"
-  }
-] %}
+{# /app/views/_includes/fake-images.njk #}
 
-{# {% set back = {
-  href: "/clinics/" + clinicId,
-  text: "Back to clinic"
-} %}
- #}
-{# Loading state macro #}
-{% macro loadingSpinner() %}
-<div id="loading-spinner" class="">
-  <div class="nhsuk-loader">
-    <span class="nhsuk-u-visually-hidden">Loading images...</span>
-  </div>
-  <p class="nhsuk-u-margin-top-3 nhsuk-u-secondary-text-color">Waiting for mammogram images...</p>
-</div>
-{% endmacro %}
-
-
-{% macro makeImage(params) %}
-<div class="nhsuk-grid-row">
-  <div class="nhsuk-grid-column-one-quarter">
-
-    <div class="app-mammogram-image--placeholder">
-      <img class="nhsuk-image__img {{ 'app-image-flip-horizontal' if params.side == 'Right' }}" src="/images/mammograms/nci-vol-9405-72.jpg" alt="Close-up of a person’s tummy showing a number of creases in the skin under their belly button. Shown on light brown skin.">
-      <p>[IMAGE HERE]</p>
-    </div>
-  </div>
-  <div class="nhsuk-grid-column-three-quarters">
-
-
-    {{ summaryList({
-      classes: "nhsuk-u-margin-bottom-0",
-      rows: [
-        {
-          key: {
-            text: "Captured"
-          },
-          value: {
-            text: params.view
-          }
-        },
-        {
-          key: {
-            text: "Accession"
-          },
-          value: {
-            html: params.repeat or "No"
-          }
-        }
-      ]
-    }) }}
-  </div>
-</div>
-{% endmacro %}
-
-{# Show loading spinner initially #}
-{# {% if animateImages %}
-  {{ loadingSpinner() }}
-{% endif %}
- #}
 <div class="nhsuk-u-margin-bottom-4">
-
-  {% set timeNow = dayjs().subtract(1, 'minute')  %}
-
-  {% set imageSides = images | groupby("side") %}
-
-  {% for imageSide, sideImages in imageSides %}
-
-    {% set heading %}
-      {{ sideImages | length }} {{ imageSide | lower }} breast images
-    {% endset %}
-
-    {% set imageSideHtml %}
-      {% for image in sideImages %}
-
-        {# {% if not loop.first %} #}
-          {% set randomSeconds = [24,49,52] | random %}
-          {% set timeNow = dayjs(timeNow).add(randomSeconds, 'seconds')  %}
-        {# {% endif %} #}
-
-        {% set detailsHtml -%}
-        Captured:
-        {{ timeNow | formatDate("D MMMM YYYY HH:mm:ss")}}
-        Accession:
-        9583011-14/{{loop.index}}
-        {%- endset %}
-
-
-        {% set params = {
-          view: image.view,
-          side: image.side,
-          repeat: image.repeat or "No",
-          comment: image.comment,
-          index: loop.index,
-          timeNow: timeNow,
-          details: detailsHtml | trim | nl2br
-        } %}
-
-        {{ makeImage(params) }}
-        {% if not loop.last %}
-          <hr class="nhsuk-section-break nhsuk-section-break--m nhsuk-section-break--visible">
-        {% endif %}
-
-      {% endfor %}
-    {% endset %}
-
-    {# {{ card({
-      heading: heading,
-      headingLevel: "2",
-      feature: true,
-      descriptionHtml: imageSideHtml
-    }) }} #}
-
-  {% endfor %}
 
   {# Convert object to an array of views #}
   {% set mammogramViews = event.mammogramData.views | getObjectValues %}
@@ -156,9 +21,10 @@
     {# Capture html for entire view #}
     {% set viewCardHtml %}
 
-      {# Left then right #}
+      {# Right then left #}
       {% for side in view %}
         <div class="{{ 'nhsuk-u-margin-bottom-3' if not loop.last }}">
+          {# 1 RCC image | 2 LMLO images, etc #}
           <h2>
             {{ side.images | length }} {{ side.viewShortWithSide }} {{ "images" | pluralise(side.images | length) }}
           </h2>
@@ -175,7 +41,7 @@
                         text: "Captured"
                       },
                       value: {
-                        text: image.timestamp | formatDateTime
+                        text: image.timestamp | formatDateTime("D MMMM YYYY, H:mm:ss a")
                       }
                     },
                     {
@@ -192,8 +58,8 @@
               {# Small graphic of mammogram #}
               <div class="nhsuk-grid-column-one-quarter">
                 <div class="app-mammogram-image--placeholder">
-                  <img class="nhsuk-image__img {{ 'app-image-flip-horizontal' if side.side == 'right' }}" src="/images/mammograms/nci-vol-9405-72.jpg" alt="Mammogram image">
-                  <p>[IMAGE HERE]</p>
+                  {# <img class="nhsuk-image__img {{ 'app-image-flip-horizontal' if side.side == 'right' }}" src="/images/mammograms/nci-vol-9405-72.jpg" alt="Mammogram image"> #}
+                  <img class="nhsuk-image__img" src="/images/mammogram-diagrams/{{ side.viewShortWithSide }}.png" alt="">
                 </div>
               </div>
             </div>
@@ -208,7 +74,8 @@
             }) }}
           {% endfor %}
 
-          {# If there are repeats, show repeat ui #}
+          {# If there are multiple images for a side, show UI for repeats #}
+          {# Todo: during capture this should be a radio, later it should  #}
           {% if side.images | length > 1 %}
 
             <div class="nhsuk-grid-row">
@@ -238,10 +105,10 @@
                     {
                       value: "isRepeat",
                       text: "A repeat was needed",
-                      checked: true,
                       conditional: {
                         html: repeatReasonHtml
-                      }
+                      },
+                      checked: true if side.isRepeat
                     },
                     {
                       value: "extraImages",

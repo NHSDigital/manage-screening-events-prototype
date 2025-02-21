@@ -1,0 +1,120 @@
+{# app/views/events/image-reading/index.html #}
+
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "Image reading" %}
+{% set hideBackLink = true %}
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
+{% block pageContent %}
+  <h1>{{ pageHeading }}</h1>
+
+  {# {% if totalToRead > 0 %}
+    <p class="nhsuk-body">{{ totalToRead }} participants' images remaining to be read from clinics in the last 7 days</p>
+  {% else %}
+    <p class="nhsuk-body">All images from recent clinics have been read</p>
+  {% endif %} #}
+
+  <ul class="nhsuk-grid-row nhsuk-card-group">
+    <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+
+      {% set clinic = clinics[0] %}
+      {{ clinic | log("First clinic") }}
+
+      {% set clinicCardDescriptionHtml %}
+        <p>Clinic from {{ clinic.date | formatDate |  noWrap }}</p>
+      {% endset %}
+
+      {% set firstUnreadEvent = data | getFirstUnreadEventOverall %}
+      {{ firstUnreadEvent | log("First unread event") }}
+
+      {% set clinicHref %}
+        /reading/clinics/{{ firstUnreadEvent.clinicId }}/events/{{ firstUnreadEvent.id }}/assessment
+      {% endset %}
+      {{ card({
+        clickable: true,
+        heading: "Start reading",
+        headingClasses: "nhsuk-heading-m nhsuk-link--no-visited-state",
+        href: clinicHref | trim,
+        descriptionHtml: clinicCardDescriptionHtml
+      }) }}
+    </li>
+    <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+
+      {# {% set participantCardDescriptionHtml %}
+        <p>72k participants registered</p>
+      {% endset %} #}
+      {{ card({
+        clickable: true,
+        heading: "Reading statistics",
+        headingClasses: "nhsuk-heading-m",
+        href: "#",
+        descriptionHtml: participantCardDescriptionHtml
+      }) }}
+    </li>
+    <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+      {{ card({
+        clickable: true,
+        heading: "Arbitration",
+        headingClasses: "nhsuk-heading-m",
+        href: "#",
+        descriptionHtml: false
+      }) }}
+    </li>
+  </ul>
+
+  <h2>All available clinics to read</h2>
+
+  {% if clinics | length === 0 %}
+    <p>No clinics from the last 7 days available for reading.</p>
+  {% else %}
+    <table class="nhsuk-table">
+      <thead class="nhsuk-table__head">
+        <tr>
+          <th scope="col">Clinic</th>
+          <th scope="col">Date</th>
+          <th scope="col" class="nhsuk-table__cell--numeric">Participants</th>
+          <th scope="col" class="nhsuk-table__cell--numeric">Days since screening</th>
+          <th scope="col">Reading status</th>
+        </tr>
+      </thead>
+      <tbody class="nhsuk-table__body">
+        {% for clinic in clinics %}
+          {% set location = clinic.location %}
+          {% set stats = clinic.readingStatus %}
+
+          <tr>
+            <td>
+              <a href="/reading/clinics/{{ clinic.id }}" class="nhsuk-link">
+                {% if location.type === 'mobile_unit' %}
+                  {{ location.name }} at {{ clinic.siteName }}
+                {% else %}
+                  {{ location.name }}
+                {% endif %}
+                <br>
+                ({{ clinic.sessionType | sentenceCase }})
+              </a>
+            </td>
+            <td>{{ clinic.date | formatDate |  noWrap }}<br>
+              {{clinic.sessionTimes | formatTimeRange | asHint }}
+            </td>
+            <td class="nhsuk-table__cell--numeric">
+              {{ stats.total }}
+              {% if stats.status != "Not started" %}
+                <br>
+                {{ (stats.remaining + " remaining") | noWrap | asHint }}
+              {% endif %}
+            </td>
+            <td class="nhsuk-table__cell--numeric">
+              {{ stats.daysSinceScreening }}
+            </td>
+            {# Reading status #}
+            <td>
+              {{ stats.status | toTag }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}

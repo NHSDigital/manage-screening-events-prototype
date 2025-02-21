@@ -25,11 +25,12 @@ sass.compiler = require('sass');
 function compileStyles() {
   return gulp
     .src(['app/assets/sass/**/*.scss', 'docs/assets/sass/**/*.scss'])
-    .pipe(sass({
-      outputStyle: 'expanded',
-      sourceComments: true
-    }).on('error', sass.logError))
-    .pipe(gulp.dest('public/css'));
+    .pipe(sass())
+    .pipe(gulp.dest('public/css'))
+    .on('error', (err) => {
+      console.log(err)
+      process.exit(1)
+    })
 }
 
 // Compile JavaScript (with ES6 support)
@@ -52,6 +53,7 @@ function compileAssets() {
     .pipe(gulp.dest('public'));
 }
 
+
 // Start nodemon
 function startNodemon(done) {
   const server = nodemon({
@@ -72,30 +74,30 @@ function startNodemon(done) {
     ],
     delay: 1000,
     quiet: false,
-  });
+  })
 
-  let starting = false;
+  let starting = false
 
   const onReady = () => {
-    starting = false;
-    done();
-  };
+    starting = false
+    done()
+  }
 
   server.on('start', () => {
-    starting = true;
-    setTimeout(onReady);
-  });
+    starting = true
+    setTimeout(onReady)
+  })
 
   server.on('stdout', (stdout) => {
-    process.stdout.write(stdout);
+    process.stdout.write(stdout)
     if (starting) {
-      onReady();
+      onReady()
     }
-  });
+  })
 
   server.on('restart', () => {
-    console.log('Restarting server due to changes...');
-  });
+    console.log('Restarting server due to changes...')
+  })
 }
 
 function reload() {
@@ -109,35 +111,38 @@ function startBrowserSync(done) {
     port: port + 1000,
     ui: false,
     files: [
+      'app/views/**/*',
       'public/css/**/*.css',
-      'public/js/**/*.js',
-      'app/views/**/*'
+      'public/js/**/*.js'
     ],
     ghostMode: false,
     open: false,
     notify: false,
     logFileChanges: false,
     reloadDebounce: 1000
-  }, done);
+  }, done)
+
+  // Watch compiled files for reload
+  gulp.watch('public/**/*.*').on('change', reload)
 }
 
 // Watch files
 function watch() {
-  gulp.watch('app/assets/sass/**/*.scss', gulp.series(compileStyles, reload));
-  gulp.watch('app/assets/javascript/**/*.js', gulp.series(compileScripts, reload));
-  gulp.watch('app/assets/**/**/*.*', gulp.series(compileAssets, reload));
-  gulp.watch('docs/assets/sass/**/*.scss', gulp.series(compileStyles, reload));
-  gulp.watch('docs/assets/javascript/**/*.js', gulp.series(compileScripts, reload));
-  gulp.watch('docs/assets/**/**/*.*', gulp.series(compileAssets, reload));
+  gulp.watch('app/assets/sass/**/*.scss', compileStyles)
+  gulp.watch('app/assets/javascript/**/*.js', compileScripts)
+  gulp.watch('app/assets/**/**/*.*', compileAssets)
+  gulp.watch('docs/assets/sass/**/*.scss', compileStyles)
+  gulp.watch('docs/assets/javascript/**/*.js', compileScripts)
+  gulp.watch('docs/assets/**/**/*.*', compileAssets)
 }
 
-exports.watch = watch;
-exports.compileStyles = compileStyles;
-exports.compileScripts = compileScripts;
-exports.cleanPublic = cleanPublic;
+exports.watch = watch
+exports.compileStyles = compileStyles
+exports.compileScripts = compileScripts
+exports.cleanPublic = cleanPublic
 
 gulp.task('build',
   gulp.series(cleanPublic, compileStyles, compileScripts, compileAssets)
-);
+)
 
-gulp.task('default', gulp.series(startNodemon, startBrowserSync, watch));
+gulp.task('default', gulp.series(startNodemon, startBrowserSync, watch))
