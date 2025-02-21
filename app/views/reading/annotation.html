@@ -2,7 +2,7 @@
 
 {% extends 'layout-reading.html' %}
 
-{% set pageHeading = "Add annotation for " + query.side + " breast" %}
+{% set pageHeading = "Add " + query.side + " breast annotation" %}
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
@@ -23,6 +23,23 @@
   <h1 class="nhsuk-heading-l js-image-count">
     {{ pageHeading }}
   </h1>
+
+  {{ input({
+    label: {
+      text: "Where in the breast is this annotation for?",
+      classes: "nhsuk-label--s"
+    },
+    id: "location",
+    name: "location"
+  }) }}
+
+  <div class="nhsuk-form-group nhsuk-u-margin-bottom-0">
+    {{ button({
+      text: "Select location on image",
+      classes: "nhsuk-button--secondary",
+      href: "#"
+    }) }}
+  </div>
 
   {% set checkboxItems = [] %}
 
@@ -66,7 +83,7 @@
     name: "example",
     fieldset: {
       legend: {
-        text: "What have you observed?",
+        text: "What features have you idenitfied?",
         classes: "nhsuk-fieldset__legend--s",
         isPageHeading: true
       }
@@ -78,7 +95,8 @@
     id: "select-1",
     name: "select-1",
     label: {
-      text: "Level of concern"
+      text: "What is your level of concern?",
+      classes: "nhsuk-label--s"
     },
     items: [
       {
@@ -110,25 +128,12 @@
     ]
   }) }}
 
-  {{ input({
-    label: {
-      text: "Location on " + query.side + " breast"
-    },
-    id: "location",
-    name: "location"
-  }) }}
 
-  <div class="nhsuk-form-group nhsuk-u-margin-bottom-0">
-    {{ button({
-      text: "Mark location on mammogram",
-      classes: "nhsuk-button--secondary",
-      href: "#"
-    }) }}
-  </div>
 
-  {{ input({
+  {{ textarea({
     label: {
-      text: "General comment"
+      text: "Provide additional comments",
+      classes: "nhsuk-label--s"
     },
     id: "comment",
     name: "comment"
@@ -136,8 +141,14 @@
 
   <div class="nhsuk-form-group nhsuk-u-margin-top-7">
     {{ button({
-      text: "Add annotation",
+      text: "Save and close",
       href: "./recall-for-assessment-details?annotatedSide" + query.side + "=true"
+    }) }}
+
+    {{ button({
+      text: "Save and add another",
+      classes: "nhsuk-button--secondary",
+      href: "#"
     }) }}
   </div>
 
