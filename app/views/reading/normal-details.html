@@ -1,0 +1,103 @@
+{# /app/views/events/reading/recall-reason.html #}
+
+{% extends 'layout-reading.html' %}
+
+{% set pageHeading = "Confirm your opinion" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './result-normal' %}
+
+{% set hideSecondaryNavigation = true %}
+
+{% set backLink = value %}
+
+{% block pageContent %}
+
+  {{ participant | log("Participant") }}
+  {{ event | log("Event") }}
+
+  <span class="nhsuk-caption-l">
+    {{ participant | getFullName }}
+  </span>
+
+  <h1 class="nhsuk-heading-l js-image-count">
+    {{ pageHeading }}
+  </h1>
+
+  {% set hasSymptoms = event.currentSymptoms | length > 0 %}
+
+  {% if hasSymptoms %}
+
+      <h2>{{ event.currentSymptoms | length }} {{ "symptom" | pluralise(event.currentSymptoms | length )}} reported</h2>
+      {% set symptoms = event.currentSymptoms %}
+      {% include "summary-lists/symptoms.njk" %}
+
+    {{ textarea({
+      name: "symptomsExplanation",
+      id: "symptomsExplanation",
+      label: {
+        text: "Explain why these symptoms do not require further assessment (optional)",
+        classes: "nhsuk-label--s"
+      },
+      _hint: {
+        text: "Any other details that may be relevant"
+      }
+    }) }}
+
+    <h2>Other details</h2>
+
+  {% endif %}
+
+  {% for side in ['right', 'left'] %}
+    {{ input({
+      label: {
+        text: (side + " breast comment (optional)") | sentenceCase,
+        classes: "nhsuk-label--s"
+      },
+      _classes: "nhsuk-u-width-two-thirds",
+      id: "normalDetails-" + side,
+      name: "normalDetails-" + side
+    }) }}
+  {% endfor %}
+
+  {% set radioConditionalHtml %}
+    <p>
+      <a href="./annotation?side={{ params.side }}">Add an annotation</a>
+    </p>
+  {% endset %}
+
+  {{ radios({
+    idPrefix: "markFeatures",
+    name: "markFeatures",
+    fieldset: {
+      legend: {
+        text: "Do you want to mark any features on these images?",
+        classes: "nhsuk-fieldset__legend--s",
+        isPageHeading: false
+      }
+    },
+    items: [
+      {
+        value: "yes",
+        text: "Yes",
+        conditional: {
+          html: radioConditionalHtml
+        }
+      },
+      {
+        value: "no",
+        text: "No"
+      }
+    ]
+  }) }}
+
+
+
+  {{ button({
+    text: "Submit normal and move to next"
+  }) }}
+
+{% endblock %}
+
+

@@ -5,6 +5,7 @@ const { getReadingClinics, getReadingProgress, getReadableEvents, getClinicReadi
 const { needsReading } = require('../lib/utils/status')
 const { getFullName } = require('../lib/utils/participants')
 const { snakeCase } = require('../lib/utils/strings')
+const { has } = require('browser-sync')
 
 module.exports = router => {
   // Set nav state
@@ -137,8 +138,8 @@ module.exports = router => {
     if (!event) return res.redirect(`/reading/clinics/${clinicId}`)
 
     // Check if current event has symptoms that need acknowledging
-    // const hasSymptoms = event?.currentSymptoms?.length > 0
-    // const hasRepeatImages = event?.mammogramData?.metadata?.hasRepeat
+    const hasSymptoms = event?.currentSymptoms?.length > 0
+    const hasRepeatImages = event?.mammogramData?.metadata?.hasRepeat
     // const hasAcknowledgedItems = data?.acknowledgeItems?.includes('true')
 
     // if ((hasSymptoms || hasRepeatImages) && !hasAcknowledgedItems) {
@@ -156,7 +157,11 @@ module.exports = router => {
       case 'normal':
         if (data.confirmNormalResults === 'true') {
           return res.redirect(`/reading/clinics/${clinicId}/events/${eventId}/confirm-normal`)
-        } else {
+        }
+        else if (hasSymptoms) {
+          return res.redirect(`/reading/clinics/${clinicId}/events/${eventId}/normal-details`)
+        }
+        else {
           return res.redirect(307, `/reading/clinics/${clinicId}/events/${eventId}/result-normal`)
         }
       case 'technical_recall':

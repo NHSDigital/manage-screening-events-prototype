@@ -112,12 +112,12 @@
                 })}}
               {% endif %}
               {# Only for testing showing where repeats are: #}
-              {# {% if event.mammogramData.metadata.hasRepeat %}
+              {% if event.mammogramData.metadata.hasRepeat %}
                 {{ tag({
                   text: "Has repeat",
                   classes: "nhsuk-tag--yellow"
                 })}}
-              {% endif %} #}
+              {% endif %}
             </td>
             <td>
               {{ event.participant.demographicInformation.dateOfBirth | formatDate }}

@@ -43,6 +43,24 @@
     }) %}
   {% endfor %}
 
+  {% set otherTextInputHtml %}
+    {{ input({
+      label: {
+        text: "Provide details"
+      },
+      id: "other text",
+      name: "other text"
+    }) }}
+  {% endset %}
+
+  {% set checkboxItems = checkboxItems | push({
+    value: "other",
+    text: "Other",
+    conditional: {
+      html: otherTextInputHtml
+    }
+  }) %}
+
   {{ checkboxes({
     idPrefix: "example",
     name: "example",
