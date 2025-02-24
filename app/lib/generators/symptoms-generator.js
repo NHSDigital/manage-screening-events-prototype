@@ -158,9 +158,9 @@ const generateSymptoms = (options = {}) => {
 
   // Determine how many symptoms (weighted towards fewer)
   const numberOfSymptoms = weighted.select({
-    1: 0.6,
-    2: 0.3,
-    3: 0.1
+    1: 0.8,
+    2: 0.15,
+    3: 0.05
   })
 
   // Track used types to avoid duplicates

@@ -153,7 +153,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
 
       // Higher chance of symptoms in assessment clinics
       // const symptomProbability = clinic.clinicType === 'assessment' ? 0.4 : 0.15
-      const symptomProbability = 0.25
+      const symptomProbability = 0.15
       event.currentSymptoms = generateSymptoms({
         probabilityOfSymptoms: symptomProbability
       })

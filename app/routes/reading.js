@@ -147,6 +147,20 @@ module.exports = router => {
     const hasRepeatImages = event?.mammogramData?.metadata?.hasRepeat
     // const hasAcknowledgedItems = data?.acknowledgeItems?.includes('true')
 
+    const existingResult = event.reads?.[0]?.result
+    console.log({existingResult})
+    if (existingResult && existingResult === result) {
+      const events = getReadableEvents(data, clinicId)
+      const progress = getReadingProgress(events, eventId)
+
+      // Redirect to next participant if available
+      if (progress.hasNextUnread) {
+        return res.redirect(`/reading/clinics/${clinicId}/events/${progress.nextUnreadId}`)
+      } else {
+        return res.redirect(`/reading/clinics/${clinicId}`)
+      }
+    }
+
     // if ((hasSymptoms || hasRepeatImages) && !hasAcknowledgedItems) {
     //   console.log('still with the errors')
     //   req.flash('error', {
