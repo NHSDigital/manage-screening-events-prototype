@@ -73,7 +73,7 @@ const getClinicReadingStatus = (data, clinicId) => {
     status,
     statusColor: getStatusTagColour(status),
     daysSinceScreening: readableEvents[0] ?
-      dayjs().diff(dayjs(readableEvents[0].timing.startTime), 'days') : 0
+      dayjs().startOf('day').diff(dayjs(readableEvents[0].timing.startTime).startOf('day'), 'days') : 0
   }
 }
 
@@ -112,6 +112,7 @@ const getFirstUnreadEventOverall = (data) => {
  */
 const getReadingProgress = (events, currentEventId, skippedEvents = []) => {
   const currentIndex = events.findIndex(e => e.id === currentEventId)
+  console.log({currentIndex})
 
   // Sequential navigation
   const nextEventId = currentIndex < events.length - 1 ?

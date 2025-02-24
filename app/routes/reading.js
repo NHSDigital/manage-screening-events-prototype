@@ -63,6 +63,8 @@ module.exports = router => {
     })
 
     const events = getReadableEvents(data, clinicId)
+    console.log("Events length:")
+    console.log(events.length)
     console.log({clinicId})
 
     const progress = getReadingProgress(
@@ -90,10 +92,13 @@ module.exports = router => {
   router.get('/reading/clinics/:clinicId', (req, res) => {
     const { clinicId } = req.params
     const data = req.session.data
+    const clinic = data.clinics.find(c => c.id === clinicId)
+
+    if (!clinic) return res.redirect('/reading')
+
 
     const readingStatus = getClinicReadingStatus(data, clinicId)
     const events = getReadableEvents(data, clinicId)
-    const clinic = data.clinics.find(c => c.id === clinicId)
 
     res.render('reading/list', {
       clinic,
@@ -177,9 +182,7 @@ module.exports = router => {
   // Generic result recording route
   router.post('/reading/clinics/:clinicId/events/:eventId/result-:resultType', (req, res) => {
     console.log('result recording route')
-    const { clinicId, eventId } = req.params
-    const resultType = req.params.resultType
-    console.log({resultType})
+    const { clinicId, eventId, resultType } = req.params
     const { reason, annotations } = req.body
     const data = req.session.data
 
@@ -215,7 +218,8 @@ module.exports = router => {
       data.events[eventIndex].reads.push(readResult)
     }
 
-    const progress = getReadingProgress(data.events, eventId)
+    const events = getReadableEvents(data, clinicId)
+    const progress = getReadingProgress(events, eventId)
 
     // Redirect to next participant if available
     if (progress.hasNextUnread) {
