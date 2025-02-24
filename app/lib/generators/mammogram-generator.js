@@ -30,7 +30,7 @@ const REPEAT_REASONS = [
 // Default probability settings
 const DEFAULT_PROBABILITIES = {
   viewMissing: 0.05, // 5% chance of a view being missing
-  needsRepeat: 0.25, // 25% chance of needing a repeat
+  needsRepeat: 0.10, // 10% chance of needing a repeat
   repeatsPerRound: [1, 2] // When repeating, how many views to repeat (min, max)
 }
 
