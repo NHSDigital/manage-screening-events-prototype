@@ -100,7 +100,8 @@ const getStatusTagColour = (status) => {
 
     // Image reading
     not_started: 'grey',
-    unread: 'grey',
+    not_provided: 'grey',
+    not_read: 'grey',
     skipped: 'white',
 
     // Image reading results
