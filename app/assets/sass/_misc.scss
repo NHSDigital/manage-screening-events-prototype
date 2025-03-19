@@ -11,6 +11,16 @@
   }
 }
 
+.app-image-two-up {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+
+  img {
+    width: 48%;
+  }
+}
+
 .app-suppress-link-styles * {
   text-decoration: none;
   color: $nhsuk-secondary-text-color;
