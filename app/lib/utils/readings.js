@@ -63,8 +63,8 @@ const getClinicReadingStatus = (data, clinicId) => {
   )
 
   const readEvents = readableEvents.filter(e => e.reads?.length > 0)
-  const status = readEvents.length === readableEvents.length ? 'Read twice' :
-    readEvents.length > 0 ? 'In progress' : 'Not read'
+  const status = readEvents.length === readableEvents.length ? 'Complete' :
+    readEvents.length > 0 ? 'In progress' : 'Not started'
 
   return {
     total: readableEvents.length,
