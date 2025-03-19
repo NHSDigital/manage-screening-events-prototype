@@ -99,6 +99,7 @@ const getStatusTagColour = (status) => {
     event_attended_not_screened: 'orange',
 
     // Image reading
+    not_started: 'grey',
     not_provided: 'grey',
     not_read: 'grey',
     skipped: 'white',
