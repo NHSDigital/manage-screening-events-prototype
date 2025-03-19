@@ -2,7 +2,7 @@
 
 {% extends 'layout-reading.html' %}
 
-{% set pageHeading = "Confirm your opinion" %}
+{% set pageHeading = "Confirm opinion normal" %}
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
@@ -29,27 +29,45 @@
 
   {% if hasSymptoms %}
 
-      <h2>{{ event.currentSymptoms | length }} {{ "symptom" | pluralise(event.currentSymptoms | length )}} reported</h2>
-      {% set symptoms = event.currentSymptoms %}
-      {% include "summary-lists/symptoms.njk" %}
+      {% set calloutHeading %}
+        Significant {{ "symptom" | pluralise(event.currentSymptoms | length )}} reported
+      {% endset %}
 
-    {{ textarea({
-      name: "symptomsExplanation",
-      id: "symptomsExplanation",
-      label: {
-        text: "Explain why these symptoms do not require further assessment (optional)",
-        classes: "nhsuk-label--s"
-      },
-      _hint: {
-        text: "Any other details that may be relevant"
-      }
-    }) }}
+      {% set warningCalloutHtml %}
+        {% set symptoms = event.currentSymptoms %}
+        {% include "summary-lists/symptoms.njk" %}
+      {% endset %}
 
-    <h2>Other details</h2>
+      {{ warningCallout({
+        heading: calloutHeading | trim,
+        HTML: warningCalloutHtml
+      }) }}
 
   {% endif %}
 
-  {% for side in ['right', 'left'] %}
+  {{ textarea({
+    name: "normalDetails",
+    id: "normalDetails",
+    label: {
+      text: "Provide information to support your decision",
+      classes: "nhsuk-label--s"
+    }
+  }) }}
+
+  {% if hasSymptoms %}
+    {{ checkboxes({
+      idPrefix: "symptomsAcknowledged",
+      name: "symptomsAcknowledged",
+      items: [
+        {
+          value: "true",
+          text: "I acknowledge that the reported symptoms have been considered in my decision"
+        }
+      ]
+    }) }}
+  {% endif %}
+
+  {# {% for side in ['right', 'left'] %}
     {{ input({
       label: {
         text: (side + " breast comment (optional)") | sentenceCase,
@@ -90,12 +108,10 @@
         text: "No"
       }
     ]
-  }) }}
-
-
+  }) }} #}
 
   {{ button({
-    text: "Submit normal and move to next"
+    text: "Confirm opinion and continue"
   }) }}
 
 {% endblock %}
