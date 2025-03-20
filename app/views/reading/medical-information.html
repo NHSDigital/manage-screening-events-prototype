@@ -15,15 +15,42 @@
 
 
 
-  <span class="nhsuk-caption-l">
+  {# <span class="nhsuk-caption-l">
     {{ participant | getFullName }}
-  </span>
+  </span> #}
 
-  <h1 class="nhsuk-heading-l js-image-count">
+  {# <h2 class="nhsuk-heading-m js-image-count">
     {{ pageHeading }}
-  </h1>
+  </h2> #}
 
-
+  {{ summaryList({
+    rows: [
+      {
+        key: {
+          text: "Last known mammogram"
+        },
+        value: {
+          text: "15 July 2022 (2 years ago)"
+        }
+      },
+      {
+        key: {
+          text: "Breast features"
+        },
+        value: {
+          text: "Mole (6mm) on upper outer left breast"
+        }
+      },
+      {
+        key: {
+          text: "Hormone replacement therapy (HRT)"
+        },
+        value: {
+          html: "Taken since December 2023"
+        }
+      }
+    ]
+  }) }}
 
 
   {% set symptomsHtml %}
@@ -31,12 +58,12 @@
     {% include "summary-lists/symptoms.njk" %}
   {% endset %}
 
-  {{ card({
+  {# {{ card({
     heading: "Symptoms",
     headingLevel: "2",
     feature: false,
     descriptionHtml: symptomsHtml
-  }) }}
+  }) }} #}
 
   {% set valueHtml = 'None' %}
 
@@ -83,12 +110,12 @@
     } | showMissingInformationLink) }}
   {% endset %}
 
-  {{ card({
+  {# {{ card({
     heading: "Medical information",
     headingLevel: "2",
     feature: false,
     descriptionHtml: medicalInformationCardHtml
-  }) }}
+  }) }} #}
 
   {% set valueHtml = "No" %}
 
@@ -115,12 +142,12 @@
     } | showMissingInformationLink) }}
   {% endset %}
 
-  {{ card({
+  {# {{ card({
     heading: "Other information",
     headingLevel: "2",
     feature: false,
     descriptionHtml: otherInformationHtml
-  }) }}
+  }) }} #}
 
   {% set observationsCardHtml %}
     {# <p>There were <a href="#">2 observations</a> made by the mammographer during screening.</p> #}
@@ -159,12 +186,12 @@
 
   {% endset %}
 
-  {{ card({
+  {# {{ card({
     heading: "Breast features",
     headingLevel: "2",
     feature: false,
     descriptionHtml: observationsCardHtml
-  }) }}
+  }) }} #}
 
 {% endblock %}
 

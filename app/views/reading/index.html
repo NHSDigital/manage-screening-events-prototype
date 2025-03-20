@@ -25,17 +25,19 @@
 
         <ul class="nhsuk-list nhsuk-list--bullet nhsuk-body-s nhsuk-u-margin-bottom-3">
           <li>
-            {{ clinic.location.name }}
+            172 cases requiring a 1st read
+            {# {{ clinic.location.name }}
             {% if clinic.location.type === 'mobile_unit' %}
               at {{ clinic.siteName }}
-            {% endif %}
+            {% endif %} #}
           </li>
           <li>
+            Oldest from
             {{ clinic.date | formatDate | noWrap }} ({{ clinic.date | formatRelativeDate | sentenceCase }})
           </li>
-          <li>
+          {# <li>
             {{ clinic.readingStatus.total }} image {{ "record" if clinic.readingStatus.total == 1 else "records" }}
-          </li>
+          </li> #}
         </ul>
       {% endset %}
 
@@ -47,11 +49,11 @@
       {%- endset %}
 
       {{ card({
-        heading: "Next 1st read clinic",
+        heading: "1st reads",
         headingClasses: "nhsuk-heading-s",
         descriptionHtml: clinicCardDescriptionHtml ~ actionLink({
           classes: "nhsuk-link--no-visited-state",
-          text: "Start 1st read",
+          text: "Start 1st reading",
           href: clinicHref
         })
       }) }}
@@ -65,17 +67,20 @@
       {% set clinicCardDescriptionHtml %}
         <ul class="nhsuk-list nhsuk-list--bullet nhsuk-body-s nhsuk-u-margin-bottom-3">
           <li>
+            52 cases requiring 2nd read
+          </li>
+          {# <li>
             {{ clinic.location.name }}
             {% if clinic.location.type === 'mobile_unit' %}
               at {{ clinic.siteName }}
             {% endif %}
-          </li>
+          </li> #}
           <li>
-            {{ clinic.date | formatDate | noWrap }} ({{ clinic.date | formatRelativeDate | sentenceCase }})
+            Oldest from {{ clinic.date | formatDate | noWrap }} ({{ clinic.date | formatRelativeDate | sentenceCase }})
           </li>
-          <li>
+          {# <li>
             {{ clinic.readingStatus.total }} image {{ "record" if clinic.readingStatus.total == 1 else "records" }}
-          </li>
+          </li> #}
         </ul>
       {% endset %}
 
@@ -87,11 +92,11 @@
       {%- endset %}
 
       {{ card({
-        heading: "Next 2nd read clinic",
+        heading: "2nd reads",
         headingClasses: "nhsuk-heading-s",
         descriptionHtml: clinicCardDescriptionHtml ~ actionLink({
           classes: "nhsuk-link--no-visited-state",
-          text: "Start 2nd read",
+          text: "Start 2nd reading",
           href: clinicHref
         })
       }) }}
@@ -118,7 +123,9 @@
     </li>
   </ul>
 
-  <h2>All available clinics to read</h2>
+  <h2>Available clinics</h2>
+
+  <p><a href="#">See previously read clinics</a></p>
 
   {% if clinics | length === 0 %}
     <p>No clinics from the last 7 days available for reading.</p>
@@ -126,9 +133,11 @@
     <table class="nhsuk-table">
       <thead class="nhsuk-table__head">
         <tr>
-          <th scope="col" class="nhsuk-u-width-one-half">Location (clinic code)</th>
+          <th scope="col" class="nhsuk-u-width-one-half">Clinic</th>
           <th scope="col">Date</th>
           <th scope="col">Cases</th>
+          <th scope="col">1st read </th>
+          <th scope="col">2nd read </th>
           <th scope="col">Status</th>
         </tr>
       </thead>
@@ -145,24 +154,58 @@
                 {% else %}
                   {{ location.name }}
                 {% endif %}
+                {# <br> #}
+                ({{ clinic.sessionType }})
                 <br>
-                ({{ clinic.sessionType | sentenceCase }})
+                {{ clinic.clinicCode }}
               </a>
             </td>
             <td>
               {{ clinic.date | formatDate | noWrap }}<br>
               {{ clinic.date | formatRelativeDate | sentenceCase | asHint }}
             </td>
+            {# Total cases #}
             <td>
               {{ stats.total }}
+            </td>
+            {# First read #}
+            <td>
+              {{ stats | log("Stats") }}
+              {# {{ stats.total }} #}
+              {{stats.complete}}
+            </td>
+            {# <td>
+              Total: {{ stats.total }}<br>
+              1st remaining: {{stats.total}}<br>
+              2nd remaining: 0
+            </td> #}
+            {# Second read #}
+            <td>
+              0
+              <br>
+              {% if stats.complete > 0 %}
+                {# <span class="app-text-grey app-nowrap">
+                  ({{ stats.complete }} available)
+                </span> #}
+              {% endif %}
+              {# <span class="noWrap">
+                0 available
+              </span>
+              <br>
+              <span class="app-text-grey">
+                {% set hint %}
+                  ({{ stats.total }} required)
+                {% endset %}
+                {{ hint | noWrap }}
+              </span> #}
             </td>
             {# Reading status #}
             <td>
               {{ stats.status | toTag }}
-              {% if stats.status != "Not read" %}
+              {# {% if stats.status != "Not read" %}
                 <br>
                 {{ (stats.remaining + " remaining") | noWrap | asHint }}
-              {% endif %}
+              {% endif %} #}
             </td>
           </tr>
         {% endfor %}

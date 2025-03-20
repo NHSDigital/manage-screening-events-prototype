@@ -111,7 +111,7 @@ module.exports = router => {
 
   // Redirect event to assessment tab
   router.get('/reading/clinics/:clinicId/events/:eventId', (req, res) => {
-    res.redirect(`/reading/clinics/${req.params.clinicId}/events/${req.params.eventId}/assessment`)
+    res.redirect(`/reading/clinics/${req.params.clinicId}/events/${req.params.eventId}/medical-information`)
   })
 
   // Additional route handlers for each step

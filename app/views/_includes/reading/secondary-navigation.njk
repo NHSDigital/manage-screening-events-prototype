@@ -2,14 +2,18 @@
 
 {% set secondaryNavItems = [] %}
 
-{% set tabItems = [
+{# {% set tabItems = [
   { id: '#', label: 'Reading outcomes' } if event.reads | length > 10,
   { id: 'assessment', label: 'Review' },
   { id: 'participant-details', label: 'Participant info' },
   { id: 'medical-information', label: 'Medical info' },
   { id: 'images', label: 'Image history' }
-] | removeEmpty %}
+] | removeEmpty %} #}
 
+{% set tabItems = [
+  { id: 'medical-information', label: 'Relevant medical information' },
+  { id: 'images', label: 'Image history' }
+] | removeEmpty %}
 
 {% for tab in tabItems %}
   {% set href -%}

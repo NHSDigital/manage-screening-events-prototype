@@ -40,11 +40,12 @@
   <div class="nhsuk-grid-column-full">
     {# Clinic time and date #}
     {# 9am to midday - 31 December 2024 #}
-    <p>{{ clinic.sessionTimes | formatTimeRange }} - {{ clinic.date | formatDate }}</p>
+    <p>{{ clinic.date | formatDate }} ({{ clinic.date | formatRelativeDate | sentenceCase }})</p>
 
     {{ data.readingSession.skippedEvents | log("Progress") }}
     {{readingStatus | log("Reading status")}}
     {{ events | log("Events") }}
+    {{ clinic | log("Clinic")}}
 
     {# Reading still do do #}
     {% if readingStatus.remaining > 0 %}
@@ -103,7 +104,7 @@
         {# {{ event | log("Event") }} #}
           <tr>
             <td>
-              <a href="/reading/clinics/{{ clinicId }}/events/{{ event.id }}/assessment">{{ event.participant | getFullName }}</a>
+              <a href="/reading/clinics/{{ clinicId }}/events/{{ event.id }}">{{ event.participant | getFullName }}</a>
             </td>
             <td>
               {% if event.currentSymptoms | length %}

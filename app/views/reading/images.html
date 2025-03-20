@@ -13,9 +13,9 @@
 
 {% block pageContent %}
 
-  <h1 class="nhsuk-heading-l js-image-count">
+  {# <h1 class="nhsuk-heading-l js-image-count">
     {{ pageHeading }}
-  </h1>
+  </h1> #}
 
   {% set clinicHistory = data | getParticipantClinicHistory(participant.id) %}
 
@@ -91,11 +91,13 @@
   }) }}
   {% endset %}
 
-  {{ card({
+  {{ previousMammogramsHtml | safe }}
+
+  {# {{ card({
     heading: "Previous mammograms",
     headingLevel: "2",
     descriptionHtml: previousMammogramsHtml
-  }) }}
+  }) }} #}
 
   {% set recordSharingHtml %}
     {{ summaryList({
@@ -138,11 +140,13 @@
     }) }}
   {% endset %}
 
-  {{ card({
+  {{ recordSharingHtml | safe}}
+
+  {# {{ card({
     heading: "Record sharing",
     headingLevel: "2",
     descriptionHtml: recordSharingHtml
-  }) }}
+  }) }} #}
 {% endblock %}
 
 
