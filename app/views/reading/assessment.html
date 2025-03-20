@@ -56,11 +56,11 @@
 
           {% if hasSymptoms %}
             {# {% if thingsToReview | length > 1 %} #}
-              <h3>{{ event.currentSymptoms | length }} {{ "symptom" | pluralise(event.currentSymptoms | length )}} reported</h3>
+              {# <h3>{{ event.currentSymptoms | length }} {{ "symptom" | pluralise(event.currentSymptoms | length )}} reported</h3> #}
             {# {% endif %} #}
             {% set symptoms = event.currentSymptoms %}
             {% include "summary-lists/symptoms.njk" %}
-            <p><a href="./medical-information">See participant’s medical information</a></p>
+            {# <p><a href="./medical-information">See participant’s medical information</a></p> #}
           {% endif %}
 
           {% if hasAdditionalImages %}
@@ -141,12 +141,14 @@
         {% set calloutHeading %}
           {% if thingsToReview | length > 1 %}
             To review
+          {% elseif thingsToReview[0] == 'Symptoms' %}
+            Significant symptoms reported
           {% else %}
             {{ thingsToReview[0] }}
           {% endif %}
         {% endset %}
         {{ warningCallout({
-          heading: "Important" or calloutHeading | trim,
+          heading: calloutHeading | trim,
           HTML: warningCalloutHtml
         }) }}
       {% endif %}
