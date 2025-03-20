@@ -148,22 +148,7 @@
   </div>
 </div>
 
-{% set isPartialMammography = event.mammogramData.isPartialMammography %}
-{% set partialMammographyHtml %}
-<h3>Partial mammography</h3>
-<p>
-  Partial mamography reason: Patient was uncomfortable and asked to stop
-</p>
-{% endset %}
-{% if isPartialMammography %}
-<div class="nhsuk-grid-row">
-  <div class="nhsuk-grid-column-two-thirds">
-    {{ insetText({
-      html: partialMammographyHtml
-    }) }}
-  </div>
-</div>
-{% endif %}
+
 
 {% set questionText = "What is your opinion of these images?" %}
 
@@ -262,6 +247,22 @@
 
 </div>
 
+{% endif %}
+
+{% set isPartialMammography = event.mammogramData.isPartialMammography %}
+{% set partialMammographyHtml %}
+<p>
+  <b>Partial mammography:</b> Patient was uncomfortable and asked to stop
+</p>
+{% endset %}
+{% if isPartialMammography %}
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-two-thirds">
+    {{ insetText({
+      html: partialMammographyHtml
+    }) }}
+  </div>
+</div>
 {% endif %}
 
 </form>
