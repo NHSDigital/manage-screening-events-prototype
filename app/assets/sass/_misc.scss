@@ -21,6 +21,17 @@
   }
 }
 
+.app-position-relative {
+  position: relative;
+}
+
+.app-align-right {
+  float: right;
+  * {
+    text-align: right;
+  }
+}
+
 .app-suppress-link-styles * {
   text-decoration: none;
   color: $nhsuk-secondary-text-color;
