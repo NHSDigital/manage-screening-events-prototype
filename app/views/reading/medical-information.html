@@ -23,6 +23,28 @@
     {{ pageHeading }}
   </h2> #}
 
+
+  {% set mammogramDates = ["15 July 2022 (2 years ago)", "22 May 2022 (3 years ago)", "7 March 2023 (2 years ago)"] %}
+
+  {# faker.date.between({ from: '2000-01-01', to: Date.now() }); #}
+  {# {% set faker = randomFaker("my_date") %} #}
+  {% set randomDate = seededFaker().date.between({ from: '2019-01-01', to: '2023-01-01' }) %}
+  {% set lastMammogramText %}
+    {{ randomDate | formatDate }} ({{ randomDate | formatRelativeDate }})
+  {% endset %}
+
+
+  {% set hasHrt = randomBool(0.25, 'hrt') %}
+
+  {% set hasBreastFeature = randomBool(0.25, 'breastFeatures') %}
+
+  {% set breastFeatureText %}
+    {{ ['Mole', 'Scar', 'Wart', 'Lump'] | randomItem }} ({{ [3,4,5,6] | randomItem }}mm) on {{ ['upper outer left', 'upper inner right', 'lower outer left', 'lower inner right'] | randomItem }} breast
+  {% endset %}
+{#
+  {{ hasHrt | log("hasHrt") }}
+  {{ hasBreastFeature | log("hasBreastFeature") }} #}
+
   {{ summaryList({
     rows: [
       {
@@ -30,7 +52,7 @@
           text: "Last known mammogram"
         },
         value: {
-          text: "15 July 2022 (2 years ago)"
+          text: lastMammogramText
         }
       },
       {
@@ -38,17 +60,17 @@
           text: "Breast features"
         },
         value: {
-          text: "Mole (6mm) on upper outer left breast"
+          text: breastFeatureText
         }
-      },
+      } if hasBreastFeature,
       {
         key: {
           text: "Hormone replacement therapy (HRT)"
         },
         value: {
-          html: "Taken since December 2023"
+          html: "Taken since December " + [2022, 2023, 2024] | randomItem
         }
-      }
+      } if hasHrt
     ]
   }) }}
 

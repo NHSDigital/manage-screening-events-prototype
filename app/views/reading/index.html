@@ -148,7 +148,8 @@
 
           <tr>
             <td>
-              <a href="/reading/clinics/{{ clinic.id }}" class="nhsuk-link">
+              {% set queryExtra = "?firstReadComplete=true" if (loop.index0 < 4) else "" %}
+              <a href="/reading/clinics/{{ clinic.id }}{{ queryExtra }}" class="nhsuk-link">
                 {% if location.type === 'mobile_unit' %}
                   {{ location.name }} at {{ clinic.siteName }}
                 {% else %}
@@ -172,7 +173,11 @@
             <td>
               {{ stats | log("Stats") }}
               {# {{ stats.total }} #}
-              {{stats.complete}}
+              {% if loop.index0 < 4 %}
+                {{ stats.total }}
+              {% else %}
+                {{ stats.complete }}
+              {% endif %}
             </td>
             {# <td>
               Total: {{ stats.total }}<br>
@@ -201,7 +206,12 @@
             </td>
             {# Reading status #}
             <td>
-              {{ stats.status | toTag }}
+              {% if loop.index0 < 4 %}
+                {{ "In progress" | toTag }}
+              {% else %}
+                {{ stats.status | toTag }}
+              {% endif %}
+
               {# {% if stats.status != "Not read" %}
                 <br>
                 {{ (stats.remaining + " remaining") | noWrap | asHint }}
