@@ -49,7 +49,17 @@
 
   <div class="nhsuk-grid-row">
     <div class="nhsuk-grid-column-two-thirds">
-
+      {{ input({
+        label: {
+          text: "Location",
+          classes: "nhsuk-label--s"
+        },
+        hint: {
+          text: "For example, upper right quadrant"
+        },
+        id: "other text",
+        name: "other text"
+      }) }}
     </div>
   </div>
 
@@ -108,7 +118,7 @@
     name: "example",
     fieldset: {
       legend: {
-        text: "Select abnormality types",
+        text: "Select abnormality type",
         classes: "nhsuk-fieldset__legend--s",
         isPageHeading: true
       }
@@ -120,7 +130,7 @@
     id: "select-1",
     name: "select-1",
     label: {
-      text: "Select level of concern",
+      text: "Level of concern",
       classes: "nhsuk-label--s"
     },
     items: [
@@ -165,7 +175,7 @@
   <div class="nhsuk-form-group nhsuk-u-margin-top-7">
     {{ button({
       text: "Save and close",
-      href: "./recall-for-assessment-details?annotatedSide" + query.side + "=true"
+      href: "./recall-for-assessment-details?[imageReadingTemp][" + query.side + "][annotatedCount]=" + (data.imageReadingTemp[query.side].annotatedCount | int | default(0) + 1)
     }) }}
 
     {{ button({

@@ -26,7 +26,7 @@
     <div class="nhsuk-width-container">
       <div class="app-reading-status__row">
         <div class="app-reading-status__col">
-          <strong>Clinic:</strong>{{clinic | log("Clinic")}}
+          <strong>Clinic:</strong>
           {% set locationName %}
             {% if location.type === 'mobile_unit' %}
               {{ location.name }} at {{ clinic.siteName }}

@@ -12,157 +12,127 @@
 
 {% macro breastDetails(params) %}
 
-{% set breastDetailsHtml %}
-  {% set normalDetailsHtml %}
-    {{ input({
-      label: {
-        text: "Comment (optional)"
-      },
-      classes: "nhsuk-u-width-two-thirds",
-      id: "normalDetails-" + params.side,
-      name: "normalDetails-" + params.side
-    }) }}
-  {% endset %}
+  {% set breastDetailsHtml %}
 
-  {% set abnormalDetailsHtml %}
-    {# {{ input({
-      label: {
-        text: "Comment"
-      },
-      classes: "nhsuk-u-width-two-thirds",
-      id: "abnormalDetails-" + params.side,
-      name: "abnormalDetails-" + params.side
-    }) }} #}
-    {{ button({
-      text: "Mark an abnormality",
-      classes: "nhsuk-button--secondary",
-      href: "./annotation?side=" + params.side
-    }) }}
+    {% set Side = params.side | capitalize %}
 
-    {% if data['annotatedSide' + params.side] == 'true' %}
+    {% set abnormalDetailsHtml %}
 
-      {% set annotationValueHtml -%}
-        Level of concern: 4 - Probably cancerous
-        Location: Upper right quadrant
-        General comment: biopsy required
-      {%- endset %}
+      {% if data.imageReadingTemp[params.side].annotatedCount | int %}
 
-      {{ summaryList({
-        rows: [
-          {
-            key: {
-              text: "Mass ill-defined"
-            },
-            value: {
-              html: annotationValueHtml | trim | nl2br
-            },
-            actions: {
-              items: [
-                {
-                  href: "#",
-                  text: "Change",
-                  visuallyHiddenText: "name"
-                }
-              ]
+
+        {% set annotationValueHtml -%}
+          {% if params.side == 'right' %}
+            Location: upper right quadrant
+            Level of concern: 4 - Probably cancerous
+          {% else %}
+            Location: Lower left quadrant
+            Level of concern: 3 - Probably benign
+          {% endif %}
+        {%- endset %}
+
+        {% set summaryItems = [] %}
+
+        {% for item in range(0, data.imageReadingTemp[params.side].annotatedCount | int) %}
+
+        {% set abnormalityList = [
+          "Mass well-defined",
+          "Mass ill-defined",
+          "Architectural distortion",
+          "Asymetric density",
+          "Microcalcification outside a mass",
+          "Clinical abnormality",
+          "Lymph node abnormality"
+          ] %}
+
+          {% set abnormalityType = abnormalityList | randomItem(params.side ~ loop.index0) %}
+
+          {% set summaryItems = summaryItems | push(
+            {
+              key: {
+                text: abnormalityType
+              },
+              value: {
+                html: annotationValueHtml | trim | nl2br
+              },
+              actions: {
+                items: [
+                  {
+                    href: "#",
+                    text: "Change",
+                    visuallyHiddenText: "name"
+                  }
+                ]
+              }
             }
-          }
-        ]
+          ) %}
+        {% endfor %}
+
+        {{ summaryItems | log("Summary items") }}
+
+        {{ summaryList({
+          rows: summaryItems
+        }) }}
+      {% endif %}
+
+      {{ button({
+        text: "Mark an abnormality" if not (data.imageReadingTemp[params.side].annotatedCount | int > 0) else "Mark another abnormality",
+        classes: "nhsuk-button--secondary",
+        href: "./annotation?side=" + params.side + "&[imageReadingTemp][" + params.side + "][breastAssessment]=abnormal"
       }) }}
-    {% else %}
-      {# {% set insetHtml %}
-        <p>No image annotations have been added.</p>
-      {% endset %}
 
-      {{ insetText({
-        html: insetHtml
-      }) }} #}
-    {% endif %}
-  {% endset %}
+    {% endset %}
 
-  {% set symptomaticDetailsHtml %}
+    {{ data.imageReadingTemp | log("Image reading") }}
+
+    {{ radios({
+      fieldset: {
+        legend: {
+          text: "What is your opinion of the " + params.side + " breast?",
+          classes: "nhsuk-fieldset__legend--s",
+          isPageHeading: false
+        }
+      },
+      items: [
+        {
+          value: "normal",
+          text: "Normal"
+        },
+        {
+          value: "clinical",
+          text: "Normal, but symptoms need clinical assessment"
+        } if event.currentSymptoms | length > 0,
+        {
+          value: "abnormal",
+          text: "Abnormal, recall for assessment",
+          conditional: {
+            html: abnormalDetailsHtml
+          }
+        }
+      ] | removeEmpty
+    } | decorateAttributes(data, "imageReadingTemp." + params.side + ".breastAssessment" )) }}
+
     {{ input({
       label: {
-        text: "Comment"
+        text: Side + " breast comment (optional)",
+        classes: "nhsuk-label--s"
       },
-      classes: "nhsuk-u-width-two-thirds",
-      id: "symptomaticDetails-" + params.side,
-      name: "symptomaticDetails-" + params.side
-    }) }}
+      classes: "nhsuk-u-width-two-thirds"
+    } | decorateAttributes(data, "imageReadingTemp." + params.side + ".comment")) }}
+
+
   {% endset %}
-
-  {{ data['breast-assessment-' + params.side] | log("breast-assessment-" + params.side) }}
-  {{ radios({
-    idPrefix: "breast-assessment-" + params.side,
-    name: "breast-assessment-" + params.side,
-    fieldset: {
-      legend: {
-        text: "What is your opinion of the " + params.side + " breast?",
-        classes: "nhsuk-fieldset__legend--s",
-        isPageHeading: false
-      }
-    },
-    value: data["breast-assessment-" ~ params.side],
-    items: [
-      {
-        value: "normal",
-        text: "Normal",
-        _conditional: {
-          html: normalDetailsHtml
-        }
-      },
-      {
-        value: "clinical",
-        text: "Normal, but symptoms need clinical assessment",
-        _conditional: {
-          html: symptomaticDetailsHtml
-        }
-      } if event.currentSymptoms | length > 0,
-      {
-        value: "abnormal",
-        text: "Abnormal, recall for assessment",
-        conditional: {
-          html: abnormalDetailsHtml
-        },
-        checked: true if data['annotatedSide' + params.side] == 'true'
-      }
-    ] | removeEmpty
-  }) }}
-
-  {# <h3 class="nhsuk-heading-s">Image annotations</h3> #}
-
-
-
-
-
-  {# <p><a href="./annotation?side={{ params.side }}">Add an annotation</a></p> #}
-
-  {{ input({
-    label: {
-      text: (params.side + " breast comment (optional)") | sentenceCase,
-      classes: "nhsuk-label--s"
-    },
-    classes: "nhsuk-u-width-two-thirds",
-    id: "comment-" + params.side,
-    name: "comment-" + params.side
-  }) }}
-
-
-
-{% endset %}
 
   {{ card({
-    heading: (params.side + " breast") | sentenceCase,
+    heading: Side + " breast",
     headingLevel: "2",
     feature: true,
     descriptionHtml: breastDetailsHtml
   }) }}
+
 {% endmacro %}
 
-
 {% block pageContent %}
-
-  {{ participant | log("participant") }}
-  {{ progress.skippedEvents | log("progress") }}
 
   <div class="nhsuk-grid-row">
     <div class="nhsuk-grid-column-two-thirds">
@@ -192,17 +162,6 @@
 
   <div class="nhsuk-grid-row">
     <div class="nhsuk-grid-column-two-thirds">
-      {# {{ textarea({
-        name: "example",
-        id: "example",
-        label: {
-          text: "General assessment comments (optional)",
-          classes: "nhsuk-label--s"
-        },
-        _hint: {
-          text: "Any other details that may be relevant"
-        }
-      }) }} #}
 
       {{ button({
         text: "Confirm opinion and continue"
