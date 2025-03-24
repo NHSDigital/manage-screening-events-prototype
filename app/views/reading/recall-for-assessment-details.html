@@ -35,14 +35,14 @@
 
         {% for item in range(0, data.imageReadingTemp[params.side].annotatedCount | int) %}
 
-        {% set abnormalityList = [
-          "Mass well-defined",
-          "Mass ill-defined",
-          "Architectural distortion",
-          "Asymetric density",
-          "Microcalcification outside a mass",
-          "Clinical abnormality",
-          "Lymph node abnormality"
+          {% set abnormalityList = [
+            "Mass well-defined",
+            "Mass ill-defined",
+            "Architectural distortion",
+            "Asymetric density",
+            "Microcalcification outside a mass",
+            "Clinical abnormality",
+            "Lymph node abnormality"
           ] %}
 
           {% set abnormalityType = abnormalityList | randomItem(params.side ~ loop.index0) %}
@@ -148,6 +148,9 @@
 
   <div class="nhsuk-grid-row">
     <div class="nhsuk-grid-column-full">
+
+      {% set symptoms = event.currentSymptoms %}
+      {% include "symptomsWarningCard.njk" %}
 
       {% for breastSide in ["right", "left"] %}
 

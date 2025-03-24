@@ -4,7 +4,7 @@
 
 {% set pageHeading = "Confirm opinion normal" %}
 
-{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+{% set gridColumn = "none" %}
 
 {% set formAction = './result-normal' %}
 
@@ -14,105 +14,57 @@
 
 {% block pageContent %}
 
-  {{ participant | log("Participant") }}
   {{ event | log("Event") }}
 
-  <span class="nhsuk-caption-l">
-    {{ participant | getFullName }}
-  </span>
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      <span class="nhsuk-caption-l">
+        {{ participant | getFullName }}
+      </span>
+      <h1 class="nhsuk-heading-l js-image-count">
+        {{ pageHeading }}
+      </h1>
+    </div>
+  </div>
 
-  <h1 class="nhsuk-heading-l js-image-count">
-    {{ pageHeading }}
-  </h1>
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-full">
+      {% set symptoms = event.currentSymptoms %}
+      {% set hasSymptoms = symptoms| length > 0 %}
 
-  {% set hasSymptoms = event.currentSymptoms | length > 0 %}
+      {% include "symptomsWarningCard.njk" %}
+    </div>
+  </div>
 
-  {% if hasSymptoms %}
-
-      {% set calloutHeading %}
-        Significant {{ "symptom" | pluralise(event.currentSymptoms | length )}} reported
-      {% endset %}
-
-      {% set warningCalloutHtml %}
-        {% set symptoms = event.currentSymptoms %}
-        {% include "summary-lists/symptoms.njk" %}
-      {% endset %}
-
-      {{ warningCallout({
-        heading: calloutHeading | trim,
-        HTML: warningCalloutHtml
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      {{ textarea({
+        name: "normalDetails",
+        id: "normalDetails",
+        label: {
+          text: "Provide information to support your decision",
+          classes: "nhsuk-label--s"
+        }
       }) }}
 
-  {% endif %}
+      {% if hasSymptoms %}
+        {{ checkboxes({
+          idPrefix: "symptomsAcknowledged",
+          name: "symptomsAcknowledged",
+          items: [
+            {
+              value: "true",
+              text: "I acknowledge that the reported symptoms have been considered in my decision"
+            }
+          ]
+        }) }}
+      {% endif %}
 
-  {{ textarea({
-    name: "normalDetails",
-    id: "normalDetails",
-    label: {
-      text: "Provide information to support your decision",
-      classes: "nhsuk-label--s"
-    }
-  }) }}
-
-  {% if hasSymptoms %}
-    {{ checkboxes({
-      idPrefix: "symptomsAcknowledged",
-      name: "symptomsAcknowledged",
-      items: [
-        {
-          value: "true",
-          text: "I acknowledge that the reported symptoms have been considered in my decision"
-        }
-      ]
-    }) }}
-  {% endif %}
-
-  {# {% for side in ['right', 'left'] %}
-    {{ input({
-      label: {
-        text: (side + " breast comment (optional)") | sentenceCase,
-        classes: "nhsuk-label--s"
-      },
-      _classes: "nhsuk-u-width-two-thirds",
-      id: "normalDetails-" + side,
-      name: "normalDetails-" + side
-    }) }}
-  {% endfor %}
-
-  {% set radioConditionalHtml %}
-    <p>
-      <a href="./annotation?side={{ params.side }}">Add an annotation</a>
-    </p>
-  {% endset %}
-
-  {{ radios({
-    idPrefix: "markFeatures",
-    name: "markFeatures",
-    fieldset: {
-      legend: {
-        text: "Do you want to mark any features on these images?",
-        classes: "nhsuk-fieldset__legend--s",
-        isPageHeading: false
-      }
-    },
-    items: [
-      {
-        value: "yes",
-        text: "Yes",
-        conditional: {
-          html: radioConditionalHtml
-        }
-      },
-      {
-        value: "no",
-        text: "No"
-      }
-    ]
-  }) }} #}
-
-  {{ button({
-    text: "Confirm opinion and continue"
-  }) }}
+      {{ button({
+        text: "Confirm opinion and continue"
+      }) }}
+    </div>
+  </div>
 
 {% endblock %}
 
