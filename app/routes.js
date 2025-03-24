@@ -3,6 +3,7 @@
 // External dependencies
 const express = require('express')
 const { regenerateData, needsRegeneration } = require('./lib/utils/regenerate-data')
+const { resetCallSequence } = require('./lib/utils/random')
 
 const router = express.Router()
 
@@ -18,6 +19,12 @@ router.use(async (req, res, next) => {
     console.error('Error checking/regenerating data:', err)
     next(err)
   }
+})
+
+// Reset randomisation per page load
+router.use((req, res, next) => {
+  resetCallSequence()
+  next()
 })
 
 require('./routes/settings')(router)

@@ -1,0 +1,13 @@
+{% set hasSymptoms = symptoms | length > 0 %}
+
+{% if hasSymptoms %}
+
+  {% set warningCalloutHtml %}
+    {% include "summary-lists/symptoms.njk" %}
+  {% endset %}
+
+  {{ warningCallout({
+    heading: 'Significant symptoms reported',
+    HTML: warningCalloutHtml
+  }) }}
+{% endif %}

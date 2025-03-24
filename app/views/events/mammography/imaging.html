@@ -1,8 +1,9 @@
 
 {% extends 'layout-app.html' %}
 
+{% set imageCount = event.mammogramData.metadata.totalImages %}
 
-{% set pageHeading = "5 images taken" %}
+{% set pageHeading = imageCount + " images taken" %}
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
 {% set formAction = './imaging-answer' %}
@@ -11,7 +12,7 @@
 {% block pageContent %}
 
   {{ participant | log("Participant") }}
-
+  {{ event | log("Event") }}
   {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
 
   <span class="nhsuk-caption-l">

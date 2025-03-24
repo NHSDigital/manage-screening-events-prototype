@@ -2,9 +2,9 @@
 
 {% extends 'layout-reading.html' %}
 
-{% set pageHeading = "Add " + query.side + " breast annotation" %}
+{% set pageHeading = "Add " + query.side + " breast abnormality" %}
 
-{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+{% set gridColumn = "none" %}
 
 {% set formAction = './result-abnormal' %}
 
@@ -16,35 +16,64 @@
   {{ participant | log("participant") }}
   {{ progress.skippedEvents | log("progress") }}
 
-  <span class="nhsuk-caption-l">
-    {{ participant | getFullName }}
-  </span>
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      <span class="nhsuk-caption-l">
+        {{ participant | getFullName }}
+      </span>
 
-  <h1 class="nhsuk-heading-l js-image-count">
-    {{ pageHeading }}
-  </h1>
+      <h1 class="nhsuk-heading-l">
+        {{ pageHeading }}
+      </h1>
 
-  {{ input({
-    label: {
-      text: "Where in the breast is this annotation for?",
-      classes: "nhsuk-label--s"
-    },
-    hint: {
-      text: "For example, ‘Right upper outer quadrant’"
-    },
-    id: "location",
-    name: "location"
-  }) }}
+      <h2 class="nhsuk-heading-m">Mark the location</h2>
+    </div>
+  </div>
 
-  <div class="nhsuk-form-group nhsuk-u-margin-bottom-0">
-    {{ button({
-      text: "Select location on image",
-      classes: "nhsuk-button--secondary",
-      href: "#"
-    }) }}
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-full">
+      {% if query.side == 'right' %}
+        {% set views = ['RMLO', 'RCC'] %}
+      {% else %}
+        {% set views = ['LMLO', 'LCC'] %}
+      {% endif %}
+
+      <div class="app-image-two-up nhsuk-u-margin-bottom-6">
+        {% for view in views %}
+          <img class="nhsuk-image__img" src="/images/mammogram-diagrams/{{ view }}.png" alt="">
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      {{ input({
+        label: {
+          text: "Location",
+          classes: "nhsuk-label--s"
+        },
+        hint: {
+          text: "For example, upper right quadrant"
+        },
+        id: "other text",
+        name: "other text"
+      }) }}
+    </div>
   </div>
 
   {% set checkboxItems = [] %}
+
+  {% macro makeCheckboxConditionalItem(params) %}
+    {{ input({
+      label: {
+        text: "Provide details"
+      },
+      id: params.value + "Details",
+      name: params.value + "Details"
+    }) }}
+  {% endmacro %}
 
   {% set abnormalityList = [
     "Mass well-defined",
@@ -59,7 +88,10 @@
   {% for abnormality in abnormalityList %}
     {% set checkboxItems = checkboxItems | push({
       value: abnormality | camelCase,
-      text: abnormality
+      text: abnormality,
+      conditional: {
+        html: makeCheckboxConditionalItem({value: abnormality | camelCase})
+      }
     }) %}
   {% endfor %}
 
@@ -86,7 +118,7 @@
     name: "example",
     fieldset: {
       legend: {
-        text: "What features have you idenitfied?",
+        text: "Select abnormality type",
         classes: "nhsuk-fieldset__legend--s",
         isPageHeading: true
       }
@@ -98,7 +130,7 @@
     id: "select-1",
     name: "select-1",
     label: {
-      text: "What is your level of concern?",
+      text: "Level of concern",
       classes: "nhsuk-label--s"
     },
     items: [
@@ -131,25 +163,23 @@
     ]
   }) }}
 
-
-
-  {{ textarea({
+  {# {{ textarea({
     label: {
       text: "Provide additional comments",
       classes: "nhsuk-label--s"
     },
     id: "comment",
     name: "comment"
-  }) }}
+  }) }} #}
 
   <div class="nhsuk-form-group nhsuk-u-margin-top-7">
     {{ button({
       text: "Save and close",
-      href: "./recall-for-assessment-details?annotatedSide" + query.side + "=true"
+      href: "./recall-for-assessment-details?[imageReadingTemp][" + query.side + "][annotatedCount]=" + (data.imageReadingTemp[query.side].annotatedCount | int | default(0) + 1)
     }) }}
 
     {{ button({
-      text: "Save and add another",
+      text: "Save and add another abnormality",
       classes: "nhsuk-button--secondary",
       href: "#"
     }) }}

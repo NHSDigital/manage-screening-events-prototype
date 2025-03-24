@@ -29,6 +29,13 @@ const determineClinicType = (location, breastScreeningUnit) => {
   })
 }
 
+const generateClinicCode = () => {
+  // Example format: AB123 where AB is one of an array.
+  const prefixOptions = ['CH', 'MU', 'WS',]
+  const suffix = faker.number.int({ min: 100, max: 999 })
+  return `${faker.helpers.arrayElement(prefixOptions)}${suffix}`
+}
+
 const generateTimeSlots = (date, sessionTimes, clinicType) => {
   const { slotDurationMinutes } = config.clinics
   const today = dayjs().startOf('day')
@@ -151,6 +158,7 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes, overr
 
   return {
     id: generateId(),
+    clinicCode: generateClinicCode(),
     date: date.toISOString().split('T')[0],
     breastScreeningUnitId: breastScreeningUnit.id,
     locationType: location.type,

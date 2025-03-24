@@ -15,15 +15,64 @@
 
 
 
-  <span class="nhsuk-caption-l">
+  {# <span class="nhsuk-caption-l">
     {{ participant | getFullName }}
-  </span>
+  </span> #}
 
-  <h1 class="nhsuk-heading-l js-image-count">
+  {# <h2 class="nhsuk-heading-m js-image-count">
     {{ pageHeading }}
-  </h1>
+  </h2> #}
 
 
+  {% set mammogramDates = ["15 July 2022 (2 years ago)", "22 May 2022 (3 years ago)", "7 March 2023 (2 years ago)"] %}
+
+  {# faker.date.between({ from: '2000-01-01', to: Date.now() }); #}
+  {# {% set faker = randomFaker("my_date") %} #}
+  {% set randomDate = seededFaker().date.between({ from: '2019-01-01', to: '2023-01-01' }) %}
+  {% set lastMammogramText %}
+    {{ randomDate | formatDate }} ({{ randomDate | formatRelativeDate }})
+  {% endset %}
+
+
+  {% set hasHrt = randomBool(0.25, 'hrt') %}
+
+  {% set hasBreastFeature = randomBool(0.25, 'breastFeatures') %}
+
+  {% set breastFeatureText %}
+    {{ ['Mole', 'Scar', 'Wart', 'Lump'] | randomItem }} ({{ [3,4,5,6] | randomItem }}mm) on {{ ['upper outer left', 'upper inner right', 'lower outer left', 'lower inner right'] | randomItem }} breast
+  {% endset %}
+{#
+  {{ hasHrt | log("hasHrt") }}
+  {{ hasBreastFeature | log("hasBreastFeature") }} #}
+
+  {{ summaryList({
+    rows: [
+      {
+        key: {
+          text: "Last known mammogram"
+        },
+        value: {
+          text: lastMammogramText
+        }
+      },
+      {
+        key: {
+          text: "Breast features"
+        },
+        value: {
+          text: breastFeatureText
+        }
+      } if hasBreastFeature,
+      {
+        key: {
+          text: "Hormone replacement therapy (HRT)"
+        },
+        value: {
+          html: "Taken since December " + [2022, 2023, 2024] | randomItem
+        }
+      } if hasHrt
+    ]
+  }) }}
 
 
   {% set symptomsHtml %}
@@ -31,12 +80,12 @@
     {% include "summary-lists/symptoms.njk" %}
   {% endset %}
 
-  {{ card({
+  {# {{ card({
     heading: "Symptoms",
     headingLevel: "2",
     feature: false,
     descriptionHtml: symptomsHtml
-  }) }}
+  }) }} #}
 
   {% set valueHtml = 'None' %}
 
@@ -83,12 +132,12 @@
     } | showMissingInformationLink) }}
   {% endset %}
 
-  {{ card({
+  {# {{ card({
     heading: "Medical information",
     headingLevel: "2",
     feature: false,
     descriptionHtml: medicalInformationCardHtml
-  }) }}
+  }) }} #}
 
   {% set valueHtml = "No" %}
 
@@ -115,12 +164,12 @@
     } | showMissingInformationLink) }}
   {% endset %}
 
-  {{ card({
+  {# {{ card({
     heading: "Other information",
     headingLevel: "2",
     feature: false,
     descriptionHtml: otherInformationHtml
-  }) }}
+  }) }} #}
 
   {% set observationsCardHtml %}
     {# <p>There were <a href="#">2 observations</a> made by the mammographer during screening.</p> #}
@@ -159,12 +208,12 @@
 
   {% endset %}
 
-  {{ card({
+  {# {{ card({
     heading: "Breast features",
     headingLevel: "2",
     feature: false,
     descriptionHtml: observationsCardHtml
-  }) }}
+  }) }} #}
 
 {% endblock %}
 
