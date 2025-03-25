@@ -40,7 +40,10 @@
 
       <div class="app-image-two-up nhsuk-u-margin-bottom-6">
         {% for view in views %}
-          <img class="nhsuk-image__img" src="/images/mammogram-diagrams/{{ view }}.png" alt="">
+         <div class="app-mammogram-container">
+           <img draggable="false" class="nhsuk-image__img app-mammogram-image" src="/images/mammogram-diagrams/{{ view | lower }}.png" alt="">
+         </div>
+
         {% endfor %}
       </div>
 
@@ -60,131 +63,285 @@
         id: "other text",
         name: "other text"
       }) }}
+
+      {% set checkboxItems = [] %}
+
+      {% macro makeCheckboxConditionalItem(params) %}
+        {{ input({
+          label: {
+            text: "Provide details"
+          },
+          id: params.value + "Details",
+          name: params.value + "Details"
+        }) }}
+      {% endmacro %}
+
+      {% set abnormalityList = [
+        "Mass well-defined",
+        "Mass ill-defined",
+        "Architectural distortion",
+        "Asymetric density",
+        "Microcalcification outside a mass",
+        "Clinical abnormality",
+        "Lymph node abnormality"
+        ] %}
+
+      {% for abnormality in abnormalityList %}
+        {% set checkboxItems = checkboxItems | push({
+          value: abnormality | camelCase,
+          text: abnormality,
+          conditional: {
+            html: makeCheckboxConditionalItem({value: abnormality | camelCase})
+          }
+        }) %}
+      {% endfor %}
+
+      {% set otherTextInputHtml %}
+        {{ input({
+          label: {
+            text: "Provide details"
+          },
+          id: "other text",
+          name: "other text"
+        }) }}
+      {% endset %}
+
+      {% set checkboxItems = checkboxItems | push({
+        value: "other",
+        text: "Other",
+        conditional: {
+          html: otherTextInputHtml
+        }
+      }) %}
+
+      {{ checkboxes({
+        idPrefix: "example",
+        name: "example",
+        fieldset: {
+          legend: {
+            text: "Select abnormality type",
+            classes: "nhsuk-fieldset__legend--s",
+            isPageHeading: true
+          }
+        },
+        items: checkboxItems
+      }) }}
+
+      {{ select({
+        id: "select-1",
+        name: "select-1",
+        label: {
+          text: "Level of concern",
+          classes: "nhsuk-label--s"
+        },
+        items: [
+          {
+            value: 1,
+            text: "Please select",
+            disabled: true,
+            selected: true
+          },
+          {
+            value: 1,
+            text: "1 - Normal"
+          },
+          {
+            value: 2,
+            text: "2 - Benign"
+          },
+          {
+            value: 3,
+            text: "3 - Probably benign"
+          },
+          {
+            value: 4,
+            text: "4 - Probably cancerous"
+          },
+          {
+            value: 5,
+            text: "5 - Likely cancerous"
+          }
+        ]
+      }) }}
+
+      {# {{ textarea({
+        label: {
+          text: "Provide additional comments",
+          classes: "nhsuk-label--s"
+        },
+        id: "comment",
+        name: "comment"
+      }) }} #}
+
+      <div class="nhsuk-form-group nhsuk-u-margin-top-7">
+        {{ button({
+          text: "Save and close",
+          href: "./recall-for-assessment-details?[imageReadingTemp][" + query.side + "][annotatedCount]=" + (data.imageReadingTemp[query.side].annotatedCount | int | default(0) + 1)
+        }) }}
+
+        {{ button({
+          text: "Save and add another abnormality",
+          classes: "nhsuk-button--secondary",
+          href: "./annotation?[imageReadingTemp][" + query.side + "][annotatedCount]=" + (data.imageReadingTemp[query.side].annotatedCount | int | default(0) + 2)
+        }) }}
+      </div>
     </div>
-  </div>
-
-  {% set checkboxItems = [] %}
-
-  {% macro makeCheckboxConditionalItem(params) %}
-    {{ input({
-      label: {
-        text: "Provide details"
-      },
-      id: params.value + "Details",
-      name: params.value + "Details"
-    }) }}
-  {% endmacro %}
-
-  {% set abnormalityList = [
-    "Mass well-defined",
-    "Mass ill-defined",
-    "Architectural distortion",
-    "Asymetric density",
-    "Microcalcification outside a mass",
-    "Clinical abnormality",
-    "Lymph node abnormality"
-    ] %}
-
-  {% for abnormality in abnormalityList %}
-    {% set checkboxItems = checkboxItems | push({
-      value: abnormality | camelCase,
-      text: abnormality,
-      conditional: {
-        html: makeCheckboxConditionalItem({value: abnormality | camelCase})
-      }
-    }) %}
-  {% endfor %}
-
-  {% set otherTextInputHtml %}
-    {{ input({
-      label: {
-        text: "Provide details"
-      },
-      id: "other text",
-      name: "other text"
-    }) }}
-  {% endset %}
-
-  {% set checkboxItems = checkboxItems | push({
-    value: "other",
-    text: "Other",
-    conditional: {
-      html: otherTextInputHtml
-    }
-  }) %}
-
-  {{ checkboxes({
-    idPrefix: "example",
-    name: "example",
-    fieldset: {
-      legend: {
-        text: "Select abnormality type",
-        classes: "nhsuk-fieldset__legend--s",
-        isPageHeading: true
-      }
-    },
-    items: checkboxItems
-  }) }}
-
-  {{ select({
-    id: "select-1",
-    name: "select-1",
-    label: {
-      text: "Level of concern",
-      classes: "nhsuk-label--s"
-    },
-    items: [
-      {
-        value: 1,
-        text: "Please select",
-        disabled: true,
-        selected: true
-      },
-      {
-        value: 1,
-        text: "1 - Normal"
-      },
-      {
-        value: 2,
-        text: "2 - Benign"
-      },
-      {
-        value: 3,
-        text: "3 - Probably benign"
-      },
-      {
-        value: 4,
-        text: "4 - Probably cancerous"
-      },
-      {
-        value: 5,
-        text: "5 - Likely cancerous"
-      }
-    ]
-  }) }}
-
-  {# {{ textarea({
-    label: {
-      text: "Provide additional comments",
-      classes: "nhsuk-label--s"
-    },
-    id: "comment",
-    name: "comment"
-  }) }} #}
-
-  <div class="nhsuk-form-group nhsuk-u-margin-top-7">
-    {{ button({
-      text: "Save and close",
-      href: "./recall-for-assessment-details?[imageReadingTemp][" + query.side + "][annotatedCount]=" + (data.imageReadingTemp[query.side].annotatedCount | int | default(0) + 1)
-    }) }}
-
-    {{ button({
-      text: "Save and add another abnormality",
-      classes: "nhsuk-button--secondary",
-      href: "#"
-    }) }}
   </div>
 
 {% endblock %}
 
 
+{% block pageScripts %}
+  <script>
+// Mammogram annotation functionality with improved dragging
+document.addEventListener('DOMContentLoaded', () => {
+  const mammogramImages = document.querySelectorAll('.app-mammogram-image')
+
+  // Keep track of markers for each image
+  const markers = {}
+
+  // Track dragging state
+  let activeMarker = null
+  let isDragging = false
+  let activeContainer = null
+
+  // Set up each mammogram image
+  mammogramImages.forEach((image, index) => {
+    // Add a unique identifier to each image
+    const imageId = `image-${index}`
+    image.dataset.imageId = imageId
+
+    // Make sure image container has position relative
+    const container = image.parentElement
+    if (container) {
+      container.style.position = 'relative'
+    }
+
+    // Apply custom cursor
+    image.style.cursor = 'crosshair'
+
+    // Add click handler to place/move marker
+    image.addEventListener('click', (event) => {
+      // Only place marker if we're not currently dragging
+      if (!isDragging) {
+        placeMarker(event, image, imageId)
+      }
+    })
+  })
+
+  // Place or move a marker
+  function placeMarker(event, image, imageId) {
+    // Get position relative to the image container
+    const container = image.parentElement
+    const rect = container.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+
+    if (markers[imageId]) {
+      // Update existing marker position
+      const marker = markers[imageId]
+      marker.style.left = `${x}px`
+      marker.style.top = `${y}px`
+    } else {
+      // Create new marker
+      const marker = document.createElement('div')
+      marker.className = 'app-mammogram-marker'
+      marker.dataset.imageId = imageId
+      marker.style.position = 'absolute'
+      marker.style.left = `${x}px`
+      marker.style.top = `${y}px`
+      marker.style.width = '30px'
+      marker.style.height = '30px'
+      marker.style.borderRadius = '50%'
+      marker.style.border = '3px solid #d5281b'
+      marker.style.backgroundColor = 'rgba(213, 40, 27, 0.4)'
+      marker.style.transform = 'translate(-50%, -50%)'
+      marker.style.boxShadow = '0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 8px rgba(0, 0, 0, 0.5)'
+      marker.style.zIndex = '10'
+      marker.style.cursor = 'grab'
+      marker.style.pointerEvents = 'auto' // Make it interactive for dragging
+
+      // Add crosshair
+      const horizontal = document.createElement('div')
+      horizontal.style.position = 'absolute'
+      horizontal.style.left = '0'
+      horizontal.style.top = '50%'
+      horizontal.style.width = '100%'
+      horizontal.style.height = '2px'
+      horizontal.style.backgroundColor = '#d5281b'
+      horizontal.style.transform = 'translateY(-50%)'
+
+      const vertical = document.createElement('div')
+      vertical.style.position = 'absolute'
+      vertical.style.left = '50%'
+      vertical.style.top = '0'
+      vertical.style.width = '2px'
+      vertical.style.height = '100%'
+      vertical.style.backgroundColor = '#d5281b'
+      vertical.style.transform = 'translateX(-50%)'
+
+      marker.appendChild(horizontal)
+      marker.appendChild(vertical)
+
+      // Add marker to container
+      container.appendChild(marker)
+      markers[imageId] = marker
+
+      // Add mousedown event for drag start
+      marker.addEventListener('mousedown', startDragging)
+    }
+  }
+
+  // Start dragging a marker
+  function startDragging(event) {
+    // Prevent default to avoid text selection during drag
+    event.preventDefault()
+
+    // Get the marker and its container
+    activeMarker = event.currentTarget
+    activeContainer = activeMarker.parentElement
+    isDragging = true
+
+    // Change cursor to indicate dragging
+    activeMarker.style.cursor = 'grabbing'
+
+    // Add a class for visual feedback
+    activeMarker.classList.add('dragging')
+  }
+
+  // Handle mouse movement for dragging
+  document.addEventListener('mousemove', (event) => {
+    if (!isDragging || !activeMarker || !activeContainer) return
+
+    const rect = activeContainer.getBoundingClientRect()
+
+    // Calculate position relative to the container
+    let x = event.clientX - rect.left
+    let y = event.clientY - rect.top
+
+    // Constrain to container bounds
+    x = Math.max(0, Math.min(rect.width, x))
+    y = Math.max(0, Math.min(rect.height, y))
+
+    // Update marker position
+    activeMarker.style.left = `${x}px`
+    activeMarker.style.top = `${y}px`
+  })
+
+  // End dragging
+  document.addEventListener('mouseup', () => {
+    if (activeMarker) {
+      // Reset cursor
+      activeMarker.style.cursor = 'grab'
+      // Remove dragging class
+      activeMarker.classList.remove('dragging')
+    }
+
+    // Reset dragging state
+    isDragging = false
+    activeMarker = null
+    activeContainer = null
+  })
+})
+  </script>
+{% endblock pageScripts %}
