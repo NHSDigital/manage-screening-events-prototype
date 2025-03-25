@@ -184,7 +184,7 @@
     {{ button({
       text: "Save and add another abnormality",
       classes: "nhsuk-button--secondary",
-      href: "#"
+      href: "./annotation?[imageReadingTemp][" + query.side + "][annotatedCount]=" + (data.imageReadingTemp[query.side].annotatedCount | int | default(0) + 2)
     }) }}
   </div>
 
