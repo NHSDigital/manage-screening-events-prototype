@@ -40,7 +40,7 @@
 
       <div class="app-image-two-up nhsuk-u-margin-bottom-6">
         {% for view in views %}
-          <img class="nhsuk-image__img" src="/images/mammogram-diagrams/{{ view }}.png" alt="">
+          <img class="nhsuk-image__img" src="/images/mammogram-diagrams/{{ view | lower }}.png" alt="">
         {% endfor %}
       </div>
 
