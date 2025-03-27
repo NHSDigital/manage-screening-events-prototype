@@ -14,7 +14,8 @@ module.exports = [
     },
     phoneNumber: '01865235621',
     abbreviation: 'WSB',
-    clinicTypes: ['screening', 'assessment'], // Can do both
+    // clinicTypes: ['screening', 'assessment'], // Can do both
+    clinicTypes: ['screening'],
     riskLevelHandling: [
       'routine',
       'moderate',
@@ -57,18 +58,6 @@ module.exports = [
           postcode: 'BN11 2DH',
         },
       },
-      // {
-      //   id: generateId(),
-      //   name: "Horton Hospital breast unit",
-      //   type: "hospital",
-      //   isMainSite: false,
-      //   address: {
-      //     line1: "Horton General Hospital",
-      //     line2: "Oxford Road",
-      //     city: "Banbury",
-      //     postcode: "OX16 9AL"
-      //   }
-      // },
       {
         id: '2yt5dukk', // Must be hardcoded so it matches generated data
         name: 'Mobile Unit JA1 CP7',

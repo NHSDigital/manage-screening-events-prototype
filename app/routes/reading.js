@@ -1,11 +1,13 @@
 // app/routes/image-reading.js
 const dayjs = require('dayjs')
 const { getEventData } = require('../lib/utils/event-data')
-const { getReadingClinics, getReadingProgress, getReadableEvents, getClinicReadingStatus } = require('../lib/utils/readings')
+const { getReadingClinics, getReadingProgress, getReadableEvents, getClinicReadingStatus } = require('../lib/utils/reading')
 const { needsReading } = require('../lib/utils/status')
 const { getFullName } = require('../lib/utils/participants')
 const { snakeCase } = require('../lib/utils/strings')
 const { has } = require('browser-sync')
+const { users } = require('../data/users')
+const _ = require('lodash')
 
 module.exports = router => {
   // Set nav state
@@ -109,7 +111,7 @@ module.exports = router => {
     })
   })
 
-  // Redirect event to assessment tab
+  // Initial path for reading a participant - redirect to start page / do setup
   router.get('/reading/clinics/:clinicId/events/:eventId', (req, res) => {
     const data = req.session.data
 
@@ -149,11 +151,13 @@ module.exports = router => {
 
     // Check if current event has symptoms that need acknowledging
     const hasSymptoms = event?.currentSymptoms?.length > 0
-    const hasRepeatImages = event?.mammogramData?.metadata?.hasRepeat
-    // const hasAcknowledgedItems = data?.acknowledgeItems?.includes('true')
 
-    const existingResult = event.reads?.[0]?.result
-    console.log({existingResult})
+    const currentUserId = data.currentUser.id
+    const existingResult = event?.imageReading?.reads?.[currentUserId]?.result
+
+    // const existingResult = event.reads?.[0]?.result
+
+    // If the result is the same as the existing one, skip to next unread
     if (existingResult && existingResult === result) {
       const events = getReadableEvents(data, clinicId)
       const progress = getReadingProgress(events, eventId)
@@ -165,16 +169,6 @@ module.exports = router => {
         return res.redirect(`/reading/clinics/${clinicId}`)
       }
     }
-
-    // if ((hasSymptoms || hasRepeatImages) && !hasAcknowledgedItems) {
-    //   console.log('still with the errors')
-    //   req.flash('error', {
-    //     text: 'You must acknowledge before continuing',
-    //     href: '#acknowledgeItems-1', // link to checkbox specifically rather than fieldset
-    //     name: 'acknowledgeItems'
-    //   })
-    //   return res.redirect(`/clinics/${clinicId}/reading/${eventId}/assessment`)
-    // }
 
     // Handle different result types
     switch (result) {
@@ -200,52 +194,49 @@ module.exports = router => {
 
   // Generic result recording route
   router.post('/reading/clinics/:clinicId/events/:eventId/result-:resultType', (req, res) => {
-    console.log('result recording route')
     const { clinicId, eventId, resultType } = req.params
     const { reason, annotations } = req.body
     const data = req.session.data
+    const currentUserId = data.currentUser.id
+    const formData = data.imageReadingTemp
+    delete data.imageReadingTemp
 
-    const eventIndex = data.events.findIndex(e => e.id === eventId)
-    if (eventIndex === -1) return res.redirect(`/reading/clinics/${clinicId}`)
+    // Find the event
+    const event = data.events.find(e => e.id === eventId)
+    if (!event) {
+      return res.redirect(`/reading/clinics/${clinicId}`)
+    }
 
     // Create base reading result
     const readResult = {
       result: snakeCase(resultType),
-      readerId: data.currentUser.id,
+      readerId: currentUserId,
       readerType: data.currentUser.role,
-      timestamp: new Date().toISOString()
+      ...formData,
+      timestamp: new Date().toISOString(),
     }
 
-    delete data.acknowledgeItems
-
-    // Add additional data based on result type
-    if (resultType === 'technical-recall' && reason) {
-      readResult.reason = reason
-    }
-    if (resultType === 'recall-for-assessment' && annotations) {
-      readResult.annotations = annotations
+    // Ensure the imageReading structure exists
+    if (!event.imageReading) {
+      event.imageReading = { reads: {} }
+    } else if (!event.imageReading.reads) {
+      event.imageReading.reads = {}
     }
 
-    // Check if this is an update to an existing read
-    if (data.readingUpdate && data.readingUpdate.eventId === eventId) {
-      // Replace the first read with the new one
-      data.events[eventIndex].reads[0] = readResult
-      delete data.readingUpdate
-    } else {
-      // Add as new read
-      data.events[eventIndex].reads = data.events[eventIndex].reads || []
-      data.events[eventIndex].reads.push(readResult)
-    }
+    // Add the read result
+    event.imageReading.reads[currentUserId] = readResult
 
+    // Get updated progress
     const events = getReadableEvents(data, clinicId)
     const progress = getReadingProgress(events, eventId)
 
-    // Redirect to next participant if available
+    // Redirect based on availability of unread events
     if (progress.hasNextUnread) {
       res.redirect(`/reading/clinics/${clinicId}/events/${progress.nextUnreadId}`)
     } else {
       res.redirect(`/reading/clinics/${clinicId}`)
     }
+
   })
 
 

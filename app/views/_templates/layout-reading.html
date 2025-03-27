@@ -22,6 +22,7 @@
 {% block header %}
   {{ super()}}
   {{ participant | log("Participant") }}
+  {{ event | log("Event") }}
   <div class="app-reading-status">
     <div class="nhsuk-width-container">
       <div class="app-reading-status__row">

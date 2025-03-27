@@ -8,7 +8,7 @@ const STATUS_GROUPS = {
   completed: ['event_complete', 'event_partially_screened'],
   final: ['event_complete', 'event_partially_screened', 'event_did_not_attend', 'event_attended_not_screened', 'event_cancelled'],
   active: ['event_scheduled', 'event_checked_in'],
-  needs_reading: ['event_complete', 'event_partially_screened'],
+  eligible_for_reading: ['event_complete', 'event_partially_screened'],
 }
 
 /**
@@ -67,14 +67,14 @@ const isActive = (input) => {
 }
 
 /**
- * Check if a status indicates reading is needed
+ * Check if a status indicates reading is eligible
  * @param {string|Object} input - Status string or event object
  * @returns {boolean} Whether reading is needed
  */
-const needsReading = (input) => {
+const eligibleForReading = (input) => {
   const status = getStatus(input)
   if (!status) return false
-  return isStatusInGroup(status, 'needs_reading')
+  return isStatusInGroup(status, 'eligible_for_reading')
 }
 
 /**
@@ -161,7 +161,7 @@ module.exports = {
   isCompleted,
   isFinal,
   isActive,
-  needsReading,
+  eligibleForReading,
   getStatusTagColour,
   getStatusText,
   filterEventsByStatus,

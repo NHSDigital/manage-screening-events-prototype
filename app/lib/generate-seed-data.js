@@ -251,27 +251,43 @@ const generateData = async () => {
   console.log('Generating clinics and events...')
   const today = dayjs().startOf('day')
 
-  // Define snapshots from newest to oldest
-  const snapshots = [
+  let snapshots = [
     // Current period
     generateSnapshotPeriod(
       today.subtract(config.clinics.daysBeforeToday, 'days'),
       config.clinics.daysToGenerate
-    ),
-    // Historical periods
-    generateSnapshotPeriod(
-      today.subtract(3, 'year').add(1, 'month'),
-      config.clinics.daysToGenerate
-    ),
-    generateSnapshotPeriod(
-      today.subtract(6, 'year').add(2, 'month'),
-      config.clinics.daysToGenerate
-    ),
-    generateSnapshotPeriod(
-      today.subtract(9, 'year').add(3, 'month'),
-      config.clinics.daysToGenerate
-    ),
+    )
   ]
+
+  // Generate historical periods
+  const historicPeriods = config?.clinics?.historicPeriodCount || 0
+
+  for (let index = 0; index < historicPeriods; index++) {
+    snapshots.push(
+      generateSnapshotPeriod(
+        today.subtract(index + 3, 'year'),
+        5
+        )
+      )
+  }
+
+  // Define snapshots from newest to oldest
+  // const snapshots = [
+
+  //   // Historical periods
+  //   generateSnapshotPeriod(
+  //     today.subtract(3, 'year').add(1, 'month'),
+  //     config.clinics.daysToGenerate
+  //   ),
+  //   generateSnapshotPeriod(
+  //     today.subtract(6, 'year').add(2, 'month'),
+  //     config.clinics.daysToGenerate
+  //   ),
+  //   generateSnapshotPeriod(
+  //     today.subtract(9, 'year').add(3, 'month'),
+  //     config.clinics.daysToGenerate
+  //   ),
+  // ]
 
   // Generate all data in batches per BSU
   const allData = breastScreeningUnits.map(unit => {

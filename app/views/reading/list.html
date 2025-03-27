@@ -140,12 +140,15 @@
 
               {% set metaStatus = "Not provided" %}
               {% set skipped = "Skipped" if data.readingSession.skippedEvents | includes(event.id) else false %}
-              {% if event.reads and event.reads[0] %}
+              {% set reading = event | getCurrentUserRead %}
+              {{ reading | log("Reading result")}}
+              {{ (reading.result or skipped or "Not provided") | toTag }}
+              {# {% if event.reads and event.reads[0] %}
                 {% set metaStatus = event.reads[0].result %}
               {% elseif skipped %}
                 {% set metaStatus = "Skipped" %}
               {% endif %}
-              {{ metaStatus | toTag }}
+              {{ metaStatus | toTag }} #}
                 {# {% set resultClass = "nhsuk-tag--" + ( colour | trim ) %} #}
 
                 {# {{ tag({

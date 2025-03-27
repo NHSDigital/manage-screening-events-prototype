@@ -1,16 +1,15 @@
-// app/lib/utils/readings.js
+// app/lib/utils/.js
 
 const dayjs = require('dayjs')
-const { needsReading } = require('./status')
-const { getStatusTagColour } = require('./status')
+const { eligibleForReading, getStatusTagColour } = require('./status')
 
 /**
- * Get all clinics from last 7 days that are available for reading
+ * Get all recent clinics that are available for reading
  * Includes completed screening events and reading progress
  */
 const getReadingClinics = (data, options = {}) => {
   const {
-    daysToLookBack = 7
+    daysToLookBack = 30
   } = options
 
   const cutoffDate = dayjs().subtract(daysToLookBack, 'days').startOf('day')
@@ -20,7 +19,7 @@ const getReadingClinics = (data, options = {}) => {
       // Only get clinics from last X days
       dayjs(clinic.date).isAfter(cutoffDate) &&
       // That have screenable events
-      data.events.some(e => e.clinicId === clinic.id && needsReading(e))
+      data.events.some(e => e.clinicId === clinic.id && eligibleForReading(e))
     )
     .map(clinic => {
       const unit = data.breastScreeningUnits.find(u => u.id === clinic.breastScreeningUnitId)
@@ -43,7 +42,7 @@ const getReadableEvents = (data, clinicId) => {
   return data.events
     .filter(event =>
       event.clinicId === clinicId &&
-      needsReading(event)
+      eligibleForReading(event)
     )
     .map(event => ({
       ...event,
@@ -59,7 +58,7 @@ const getReadableEvents = (data, clinicId) => {
  */
 const getClinicReadingStatus = (data, clinicId) => {
   const readableEvents = data.events.filter(event =>
-    event.clinicId === clinicId && needsReading(event)
+    event.clinicId === clinicId && eligibleForReading(event)
   )
 
   const readEvents = readableEvents.filter(e => e.reads?.length > 0)
@@ -91,7 +90,7 @@ const getFirstAvailableClinic = (data) => {
 const getFirstUnreadEvent = (data, clinicId) => {
   return data.events.find(event =>
     event.clinicId === clinicId &&
-    needsReading(event) &&
+    eligibleForReading(event) &&
     !event.reads?.length
   ) || null
 }
@@ -169,6 +168,48 @@ const findPreviousUnreadEvent = (events, currentIndex) => {
   return null
 }
 
+const getReadingStatus = (event) => {
+  const imageReadCount = Object.keys(event?.imageReading?.reads || {})
+
+  switch (imageReadCount) {
+    case 0:
+      return 'Not started'
+      break;
+    case 1: 'Read once'
+      break;
+    case 2: 'Read twice'
+    default:
+      break;
+  }
+}
+
+// All reads for an event
+const getReads = (event) => {
+  return Object.values(event?.imageReading?.reads || {})
+}
+
+// Get read for a specific user
+const getReadForUser = (event, userId) => {
+  return event?.imageReading?.reads?.[userId] || null
+}
+
+// Get read for current user
+const getCurrentUserRead = function(event, userId = null) {
+  const currentUserId = userId || this?.ctx?.data?.currentUser?.id
+  if (!currentUserId) {
+    console.warn('getCurrentUserRead: No user ID provided or found in context')
+    return null
+  }
+  return getReadForUser(event, currentUserId)
+}
+
+const writeReading = (event, userId, reading) => {
+  event.imageReading.reads[userId] = {
+    ...reading,
+    timestamp: new Date().toISOString()
+  }
+}
+
 module.exports = {
   getReadingClinics,
   getReadableEvents,
@@ -176,5 +217,10 @@ module.exports = {
   getFirstAvailableClinic,
   getFirstUnreadEvent,
   getFirstUnreadEventOverall,
-  getReadingProgress
+  getReadingProgress,
+  getReadingStatus,
+  getReads,
+  getReadForUser,
+  getCurrentUserRead,
+  writeReading
 }
