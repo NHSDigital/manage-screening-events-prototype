@@ -536,22 +536,6 @@ const countEventsForUserReading = (events, userId, options = {}) => {
   return getEventsForUserReading(events, userId, options).length;
 };
 
-/**
- * Enhance reading status with user-specific data
- * @param {Object} readingStatus - Basic reading status
- * @param {Array} events - Events being tracked
- * @param {string} userId - Current user ID
- * @returns {Object} Enhanced reading status
- */
-const enhanceReadingStatusForUser = (readingStatus, events, userId) => {
-  const userReadableCount = countEventsForUserReading(events, userId);
-
-  return {
-    ...readingStatus,
-    userReadableCount,
-    userCanRead: userReadableCount > 0
-  };
-};
 
 module.exports = {
   getReadingClinics,
@@ -587,5 +571,4 @@ module.exports = {
   getEventsForUserReading,
   findNextEventForUserReading,
   countEventsForUserReading,
-  enhanceReadingStatusForUser
 }

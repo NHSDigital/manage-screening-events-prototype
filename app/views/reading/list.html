@@ -72,9 +72,8 @@
         html: insetTextHtml
       }) }}
 
-      {% set firstUnreadEvent = events | find('readStatus', 'Not read') %}
-      {% if firstUnreadEvent %}
-        <a href="/reading/clinics/{{ clinicId }}/events/{{ firstUnreadEvent.id }}" class="nhsuk-button">
+      {% if firstUserReadableEvent %}
+        <a href="/reading/clinics/{{ clinicId }}/events/{{ firstUserReadableEvent.id }}" class="nhsuk-button">
           {{ "Resume reading" if completedCount else "Start reading" }}
         </a>
       {% endif %}
