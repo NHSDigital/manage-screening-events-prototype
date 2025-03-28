@@ -65,9 +65,6 @@ module.exports = router => {
     })
 
     const events = getReadableEvents(data, clinicId)
-    console.log("Events length:")
-    console.log(events.length)
-    console.log({clinicId})
 
     const progress = getReadingProgress(
       events,
@@ -116,6 +113,7 @@ module.exports = router => {
     const data = req.session.data
 
     // Delete temporary data from previous steps
+    console.log("Deleting temporary data");
     delete data.imageReadingTemp
 
     res.redirect(`/reading/clinics/${req.params.clinicId}/events/${req.params.eventId}/medical-information`)
@@ -150,34 +148,37 @@ module.exports = router => {
     if (!event) return res.redirect(`/reading/clinics/${clinicId}`)
 
     // Check if current event has symptoms that need acknowledging
-    const hasSymptoms = event?.currentSymptoms?.length > 0
+    // const hasSymptoms = event?.currentSymptoms?.length > 0
 
     const currentUserId = data.currentUser.id
     const existingResult = event?.imageReading?.reads?.[currentUserId]?.result
+    const updatedResult = data.imageReadingTemp?.updatedResult
 
     // const existingResult = event.reads?.[0]?.result
+    console.log({existingResult});
+    console.log({updatedResult});
 
-    // If the result is the same as the existing one, skip to next unread
-    if (existingResult && existingResult === result) {
-      const events = getReadableEvents(data, clinicId)
-      const progress = getReadingProgress(events, eventId)
+    if (existingResult) {
+      // No change made, so go to next person
+      if (existingResult === updatedResult) {
+        console.log("Existing result is the same")
+        const events = getReadableEvents(data, clinicId)
+        const progress = getReadingProgress(events, eventId)
 
-      // Redirect to next participant if available
-      if (progress.hasNextUnread) {
-        return res.redirect(`/reading/clinics/${clinicId}/events/${progress.nextUnreadId}`)
-      } else {
-        return res.redirect(`/reading/clinics/${clinicId}`)
+        // Redirect to next participant if available
+        if (progress.hasNextUnread) {
+          return res.redirect(`/reading/clinics/${clinicId}/events/${progress.nextUnreadId}`)
+        } else {
+          return res.redirect(`/reading/clinics/${clinicId}`)
+        }
       }
     }
 
     // Handle different result types
-    switch (result) {
+    switch (result || updatedResult) {
       case 'normal':
         if (data.confirmNormalResults === 'true') {
           return res.redirect(`/reading/clinics/${clinicId}/events/${eventId}/confirm-normal`)
-        }
-        else if (hasSymptoms) {
-          return res.redirect(`/reading/clinics/${clinicId}/events/${eventId}/normal-details`)
         }
         else {
           return res.redirect(307, `/reading/clinics/${clinicId}/events/${eventId}/result-normal`)

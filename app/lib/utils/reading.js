@@ -111,7 +111,6 @@ const getFirstUnreadEventOverall = (data) => {
  */
 const getReadingProgress = (events, currentEventId, skippedEvents = []) => {
   const currentIndex = events.findIndex(e => e.id === currentEventId)
-  console.log({currentIndex})
 
   // Sequential navigation
   const nextEventId = currentIndex < events.length - 1 ?

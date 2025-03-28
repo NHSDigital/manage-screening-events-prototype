@@ -162,8 +162,21 @@
               </a>
             </td>
             <td>
+              {% set daysSinceClinic = clinic.date | daysSince %}
+              {% if daysSinceClinic > 14 %}
+                {{ tag({
+                  text: "Late",
+                  classes: "nhsuk-tag--red"
+                })}}
+              {% elseif daysSinceClinic > 12 %}
+                {{ tag({
+                  text: "Urgent",
+                  classes: "nhsuk-tag--orange"
+                })}}
+              {% endif %}
               {{ clinic.date | formatDate | noWrap }}<br>
               {{ clinic.date | formatRelativeDate | sentenceCase | asHint }}
+
             </td>
             {# Total cases #}
             <td>
