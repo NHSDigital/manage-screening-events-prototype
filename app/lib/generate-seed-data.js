@@ -14,6 +14,8 @@ const { generateParticipant } = require('./generators/participant-generator')
 const { generateClinicsForBSU } = require('./generators/clinic-generator')
 const { generateEvent } = require('./generators/event-generator')
 const { getCurrentRiskLevel } = require('./utils/participants')
+const { generateReadingData } = require('./generators/reading-generator')
+
 const riskLevels = require('../data/risk-levels')
 
 // Load existing data
@@ -347,6 +349,9 @@ const generateData = async () => {
     return new Date(a.timing.startTime) - new Date(b.timing.startTime)
   })
 
+  console.log('Generating sample reading data...')
+  const eventsWithReadingData = generateReadingData(sortedEvents, require('../data/users'))
+
 
   // breastScreeningUnits.forEach(unit => {
   //   snapshots.forEach(date => {
@@ -371,7 +376,7 @@ const generateData = async () => {
       slots: clinic.slots.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime)),
     })),
   })
-  writeData('events.json', { events: sortedEvents })
+  writeData('events.json', { events: eventsWithReadingData })
   writeData('generation-info.json', {
     generatedAt: new Date().toISOString(),
     stats: {

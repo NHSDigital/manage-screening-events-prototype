@@ -21,10 +21,6 @@
 
 {% set gridColumn = "none" %}
 
-{% if query.firstReadComplete == 'true' %}
-  {% set fakeFirstRead = true %}
-{% endif %}
-
 {% block pageContent %}
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-full">
@@ -34,12 +30,7 @@
         {{ pageHeading }}
       </h1>
       <div class="app-header-with-status__status-tag">
-        {% if fakeFirstRead %}
-          {{ "In progress" | toTag }}
-        {% else %}
-          {{ readingStatus.status | toTag }}
-        {% endif %}
-
+        {{ readingStatus.status | toTag }}
       </div>
     </div>
   </div>

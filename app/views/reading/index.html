@@ -136,8 +136,8 @@
           <th scope="col" class="nhsuk-u-width-one-half">Clinic</th>
           <th scope="col">Date</th>
           <th scope="col">Cases</th>
-          <th scope="col">1st read </th>
-          <th scope="col">2nd read </th>
+          <th scope="col">1st read</th>
+          <th scope="col">2nd read</th>
           <th scope="col">Status</th>
         </tr>
       </thead>
@@ -148,8 +148,7 @@
 
           <tr>
             <td>
-              {% set queryExtra = "?firstReadComplete=true" if (loop.index0 < 4) else "" %}
-              <a href="/reading/clinics/{{ clinic.id }}{{ queryExtra }}" class="nhsuk-link">
+              <a href="/reading/clinics/{{ clinic.id }}" class="nhsuk-link">
                 {% if location.type === 'mobile_unit' %}
                   {{ location.name }} at {{ clinic.siteName }}
                 {% else %}
@@ -184,42 +183,26 @@
             </td>
             {# First read #}
             <td>
-              {{ stats | log("Stats") }}
-              {# {{ stats.total }} #}
-              {% if loop.index0 < 4 %}
-                {{ stats.total }}
-              {% else %}
-                {{ stats.complete }}
+              {{ stats.firstReadCount }}
+              {% if stats.firstReadRemaining > 0 %}
+                <br>
+                <span class="app-text-grey app-nowrap">
+                  ({{ stats.firstReadRemaining }} remaining)
+                </span>
               {% endif %}
             </td>
-            {# <td>
-              Total: {{ stats.total }}<br>
-              1st remaining: {{stats.total}}<br>
-              2nd remaining: 0
-            </td> #}
-            {# Second read #}
             <td>
-              0
-              <br>
-              {% if stats.complete > 0 %}
-                {# <span class="app-text-grey app-nowrap">
-                  ({{ stats.complete }} available)
-                </span> #}
+              {{ stats.secondReadCount }}
+              {% if stats.firstReadCount > stats.secondReadCount %}
+                <br>
+                <span class="app-text-grey app-nowrap">
+                  ({{ stats.secondReadRemaining }} remaining)
+                </span>
               {% endif %}
-              {# <span class="noWrap">
-                0 available
-              </span>
-              <br>
-              <span class="app-text-grey">
-                {% set hint %}
-                  ({{ stats.total }} required)
-                {% endset %}
-                {{ hint | noWrap }}
-              </span> #}
             </td>
             {# Reading status #}
             <td>
-              {% if loop.index0 < 4 %}
+              {% if loop.index0 < 0 %}
                 {{ "In progress" | toTag }}
               {% else %}
                 {{ stats.status | toTag }}

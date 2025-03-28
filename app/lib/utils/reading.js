@@ -64,40 +64,99 @@ const getReadableEvents = (data, clinicId) => {
 };
 
 /**
- * Get reading status and stats for a clinic with user-specific info
+ * Get detailed reading status for a group of events
+ * @param {Array} events - Array of events to analyze
+ * @returns {Object} Detailed reading status
+ */
+const getReadingStatusForEvents = (events) => {
+  if (!events || events.length === 0) {
+    return {
+      total: 0,
+      firstReadCount: 0,
+      firstReadRemaining: 0,
+      secondReadCount: 0,
+      secondReadRemaining: 0,
+      arbitrationCount: 0,
+      status: 'no_events',
+      statusColor: 'grey'
+    };
+  }
+
+  // Count first reads (events with at least one read)
+  const firstReadCount = events.filter(hasReads).length;
+
+  // Count second reads (events with at least two different readers)
+  const secondReadCount = events.filter(event => {
+    const metadata = getReadingMetadata(event);
+    return metadata.uniqueReaderCount >= 2;
+  }).length;
+
+  // Count events needing arbitration (still track this for informational purposes)
+  const arbitrationCount = events.filter(event => {
+    const metadata = getReadingMetadata(event);
+    return metadata.needsArbitration;
+  }).length;
+
+  // Determine detailed status based on read counts
+  let status;
+
+  if (firstReadCount === 0) {
+    status = 'not_started';
+  } else if (firstReadCount < events.length) {
+    if (secondReadCount > 0) {
+      status = 'mixed_reads';
+    } else {
+      status = 'partial_first_read';
+    }
+  } else if (secondReadCount === 0) {
+    status = 'first_read_complete';
+  } else if (secondReadCount < events.length) {
+    status = 'partial_second_read';
+  } else {
+    status = 'complete';
+  }
+
+  return {
+    total: events.length,
+    firstReadCount,
+    firstReadRemaining: events.length - firstReadCount,
+    secondReadCount,
+    secondReadRemaining: events.length - secondReadCount,
+    arbitrationCount,
+    status,
+    statusColor: getStatusTagColour(status),
+    daysSinceScreening: events[0] ?
+      dayjs().startOf('day').diff(dayjs(events[0].timing.startTime).startOf('day'), 'days') : 0
+  };
+};
+
+/**
+ * Get reading status and stats for a clinic
+ * @param {Object} data - Session data
+ * @param {string} clinicId - Clinic ID
+ * @param {string} [userId] - Optional user ID for user-specific stats
+ * @returns {Object} Reading status for the clinic
  */
 const getClinicReadingStatus = (data, clinicId, userId = null) => {
+  // Get eligible events for this clinic
   const readableEvents = data.events.filter(event =>
     event.clinicId === clinicId && eligibleForReading(event)
   );
 
-  // Count events with any reads using new structure
-  const readEvents = readableEvents.filter(hasReads);
-
-  const status = readEvents.length === readableEvents.length ? 'Complete' :
-    readEvents.length > 0 ? 'In progress' : 'Not started';
-
-  const result = {
-    total: readableEvents.length,
-    complete: readEvents.length,
-    remaining: readableEvents.length - readEvents.length,
-    status,
-    statusColor: getStatusTagColour(status),
-    daysSinceScreening: readableEvents[0] ?
-      dayjs().startOf('day').diff(dayjs(readableEvents[0].timing.startTime).startOf('day'), 'days') : 0
-  };
+  // Get general status for all events
+  const status = getReadingStatusForEvents(readableEvents);
 
   // Add user-specific data if userId provided
   if (userId) {
     const userReadableEvents = readableEvents.filter(event => canUserReadEvent(event, userId));
-    result.userReadableCount = userReadableEvents.length;
-    result.userCanRead = userReadableEvents.length > 0;
+    status.userReadableCount = userReadableEvents.length;
+    status.userCanRead = userReadableEvents.length > 0;
     if (userReadableEvents.length > 0) {
-      result.firstUserReadableId = userReadableEvents[0].id;
+      status.firstUserReadableId = userReadableEvents[0].id;
     }
   }
 
-  return result;
+  return status;
 };
 
 /**

@@ -115,6 +115,17 @@ const getStatusTagColour = (status) => {
     images_requested: 'orange',
     not_in_pacs: 'grey',
 
+    // Reading statuses
+    not_started: 'grey',
+    partial_first_read: 'blue',
+    first_read_complete: 'yellow',
+    partial_second_read: 'blue',
+    mixed_reads: 'yellow',
+    mixed_with_arbitration: 'yellow',
+    needs_arbitration: 'orange',
+    complete: 'green',
+    no_events: 'grey',
+
   }
   return colourMap[status.toLowerCase()] || ''
 }
