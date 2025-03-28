@@ -1,7 +1,15 @@
 // app/routes/image-reading.js
 const dayjs = require('dayjs')
 const { getEventData } = require('../lib/utils/event-data')
-const { getReadingClinics, getReadingProgress, getReadableEvents, getClinicReadingStatus } = require('../lib/utils/reading')
+const {
+  getClinicReadingStatus,
+  getFirstUserReadableEvent,
+  getReadableEvents,
+  getReadingClinics,
+  getReadingProgress,
+  hasReads,
+  writeReading
+} = require('../lib/utils/reading')
 const { needsReading } = require('../lib/utils/status')
 const { getFullName } = require('../lib/utils/participants')
 const { snakeCase } = require('../lib/utils/strings')
@@ -27,6 +35,7 @@ module.exports = router => {
     const data = req.session.data
     const eventData = getEventData(data, req.params.clinicId, req.params.eventId)
     const { clinicId, eventId } = req.params
+    const currentUserId = data.currentUser.id
 
     if (!eventData) {
       return res.redirect('/reading/clinics/' + req.params.clinicId)
@@ -47,29 +56,31 @@ module.exports = router => {
       }
     }
 
-    // Add to skipped list if an event was explicitly skipped
+    // Manage skipped events
     const skippedEventId = req.query.skipped
     delete data.skipped
     if (skippedEventId &&
       !data.readingSession.skippedEvents.includes(skippedEventId) &&
-      !data.events.find(e => e.id === skippedEventId)?.reads?.length)
+      !hasReads(data.events.find(e => e.id === skippedEventId)))
       {
         data.readingSession.skippedEvents.push(skippedEventId)
       }
 
     // Remove any events from skipped list that have now been read
     data.readingSession.skippedEvents =
-    data.readingSession.skippedEvents.filter(skippedId => {
-      const event = data.events.find(e => e.id === skippedId)
-      return !event?.reads?.length
-    })
+      data.readingSession.skippedEvents.filter(skippedId => {
+        const event = data.events.find(e => e.id === skippedId)
+        return !hasReads(event)
+      })
 
     const events = getReadableEvents(data, clinicId)
 
+    // Enhanced progress that includes user-specific navigation
     const progress = getReadingProgress(
       events,
       req.params.eventId,
-      data.readingSession?.skippedEvents || []
+      data.readingSession?.skippedEvents || [],
+      currentUserId
     )
 
     res.locals.location = eventData.location
@@ -81,6 +92,7 @@ module.exports = router => {
     res.locals.clinicId = req.params.clinicId
     res.locals.eventId = req.params.eventId
     res.locals.progress = progress
+    res.locals.currentUserId = currentUserId
 
     next()
   })
@@ -91,20 +103,24 @@ module.exports = router => {
   router.get('/reading/clinics/:clinicId', (req, res) => {
     const { clinicId } = req.params
     const data = req.session.data
+    const currentUserId = data.currentUser.id
     const clinic = data.clinics.find(c => c.id === clinicId)
 
     if (!clinic) return res.redirect('/reading')
 
-
-    const readingStatus = getClinicReadingStatus(data, clinicId)
     const events = getReadableEvents(data, clinicId)
+    const readingStatus = getClinicReadingStatus(data, clinicId, currentUserId)
+
+    // Find first event this user can read
+    const firstUserReadableEvent = getFirstUserReadableEvent(data, clinicId, currentUserId)
 
     res.render('reading/list', {
       clinic,
       events,
       clinicId: clinic.id,
       readingStatus,
-      completedCount: readingStatus.complete
+      completedCount: events.filter(e => hasReads(e)).length,
+      firstUserReadableEvent: firstUserReadableEvent
     })
   })
 
@@ -217,27 +233,22 @@ module.exports = router => {
       timestamp: new Date().toISOString(),
     }
 
-    // Ensure the imageReading structure exists
-    if (!event.imageReading) {
-      event.imageReading = { reads: {} }
-    } else if (!event.imageReading.reads) {
-      event.imageReading.reads = {}
-    }
+    // Write reading using the new function
+    writeReading(event, currentUserId, readResult)
 
-    // Add the read result
-    event.imageReading.reads[currentUserId] = readResult
-
-    // Get updated progress
+    // Get updated events and find next one for current user
     const events = getReadableEvents(data, clinicId)
-    const progress = getReadingProgress(events, eventId)
+    const currentIndex = events.findIndex(e => e.id === eventId)
 
-    // Redirect based on availability of unread events
-    if (progress.hasNextUnread) {
-      res.redirect(`/reading/clinics/${clinicId}/events/${progress.nextUnreadId}`)
+    // Use enhanced progress tracking for navigation
+    const progress = getReadingProgress(events, eventId, [], currentUserId)
+
+    // Redirect based on availability of user-readable events
+    if (progress.hasNextUserReadable) {
+      res.redirect(`/reading/clinics/${clinicId}/events/${progress.nextUserReadableId}`)
     } else {
       res.redirect(`/reading/clinics/${clinicId}`)
     }
-
   })
 
 

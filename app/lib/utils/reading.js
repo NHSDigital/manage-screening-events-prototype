@@ -64,9 +64,9 @@ const getReadableEvents = (data, clinicId) => {
 };
 
 /**
- * Get reading status and stats for a clinic
+ * Get reading status and stats for a clinic with user-specific info
  */
-const getClinicReadingStatus = (data, clinicId) => {
+const getClinicReadingStatus = (data, clinicId, userId = null) => {
   const readableEvents = data.events.filter(event =>
     event.clinicId === clinicId && eligibleForReading(event)
   );
@@ -77,15 +77,40 @@ const getClinicReadingStatus = (data, clinicId) => {
   const status = readEvents.length === readableEvents.length ? 'Complete' :
     readEvents.length > 0 ? 'In progress' : 'Not started';
 
-  return {
+  const result = {
     total: readableEvents.length,
     complete: readEvents.length,
-    remaining: readableEvents.length - readEvents.length, // Fixed calculation
+    remaining: readableEvents.length - readEvents.length,
     status,
     statusColor: getStatusTagColour(status),
     daysSinceScreening: readableEvents[0] ?
       dayjs().startOf('day').diff(dayjs(readableEvents[0].timing.startTime).startOf('day'), 'days') : 0
   };
+
+  // Add user-specific data if userId provided
+  if (userId) {
+    const userReadableEvents = readableEvents.filter(event => canUserReadEvent(event, userId));
+    result.userReadableCount = userReadableEvents.length;
+    result.userCanRead = userReadableEvents.length > 0;
+    if (userReadableEvents.length > 0) {
+      result.firstUserReadableId = userReadableEvents[0].id;
+    }
+  }
+
+  return result;
+};
+
+/**
+ * Get first unread event in a clinic that current user can read
+ */
+const getFirstUserReadableEvent = (data, clinicId, userId) => {
+  const events = data.events.filter(event =>
+    event.clinicId === clinicId &&
+    eligibleForReading(event) &&
+    canUserReadEvent(event, userId)
+  );
+
+  return events.length > 0 ? events[0] : null;
 };
 
 /**
@@ -119,9 +144,9 @@ const getFirstUnreadEventOverall = (data) => {
 
 /**
  * Get progress through reading a set of events
- * Handles navigation between events
+ * Enhanced to include user-specific navigation
  */
-const getReadingProgress = (events, currentEventId, skippedEvents = []) => {
+const getReadingProgress = (events, currentEventId, skippedEvents = [], userId = null) => {
   const currentIndex = events.findIndex(e => e.id === currentEventId);
 
   // Sequential navigation
@@ -137,6 +162,15 @@ const getReadingProgress = (events, currentEventId, skippedEvents = []) => {
   const nextUnreadId = findNextUnreadEvent(events, currentIndex);
   const previousUnreadId = findPreviousUnreadEvent(events, currentIndex);
 
+  // Only find user-specific navigation if userId is provided
+  let nextUserReadableId = null;
+  let previousUserReadableId = null;
+
+  if (userId) {
+    nextUserReadableId = findNextUserReadableEvent(events, currentIndex, userId);
+    previousUserReadableId = findPreviousUserReadableEvent(events, currentIndex, userId);
+  }
+
   return {
     current: currentIndex + 1,
     total: events.length,
@@ -149,6 +183,12 @@ const getReadingProgress = (events, currentEventId, skippedEvents = []) => {
     hasPreviousUnread: !!previousUnreadId,
     nextUnreadId,
     previousUnreadId,
+    // User-specific navigation
+    hasNextUserReadable: !!nextUserReadableId,
+    hasPreviousUserReadable: !!previousUserReadableId,
+    nextUserReadableId,
+    previousUserReadableId,
+    // Skipped events
     skippedCount: skippedEvents.length,
     skippedEvents,
     isCurrentSkipped: skippedEvents.includes(currentEventId),
@@ -334,6 +374,31 @@ const findNextArbitrationEvent = (events, currentIndex) => {
   return findNextEventByReadType(events, currentIndex, needsArbitration);
 };
 
+// Helper functions for finding next/previous user-readable events
+const findNextUserReadableEvent = (events, currentIndex, userId) => {
+  // Look after current position
+  for (let i = currentIndex + 1; i < events.length; i++) {
+    if (canUserReadEvent(events[i], userId)) return events[i].id;
+  }
+  // Look from start if none found
+  for (let i = 0; i < currentIndex; i++) {
+    if (canUserReadEvent(events[i], userId)) return events[i].id;
+  }
+  return null;
+};
+
+const findPreviousUserReadableEvent = (events, currentIndex, userId) => {
+  // Look before current position
+  for (let i = currentIndex - 1; i >= 0; i--) {
+    if (canUserReadEvent(events[i], userId)) return events[i].id;
+  }
+  // Look from end if none found
+  for (let i = events.length - 1; i > currentIndex; i--) {
+    if (canUserReadEvent(events[i], userId)) return events[i].id;
+  }
+  return null;
+};
+
 // Batches
 /**
  * Create a batch of events filtered by criteria
@@ -383,10 +448,116 @@ const getBatchProgress = (batchEvents, currentEventId, skippedEvents = []) => {
   return getReadingProgress(batchEvents, currentEventId, skippedEvents);
 };
 
+/**
+ * Check if current user can read an event
+ * @param {Object} event - The event to check
+ * @param {string} userId - Current user ID
+ * @param {Object} options - Options for determining eligibility
+ * @returns {boolean} Whether the current user can read this event
+ */
+const canUserReadEvent = (event, userId, options = {}) => {
+  const {
+    preventDuplicateReads = true, // Prevent same user reading twice by default
+    maxReadsPerEvent = 2,         // Default max reads per event
+  } = options;
+
+  const metadata = getReadingMetadata(event);
+
+  // If max reads already reached, no more reads needed
+  if (metadata.readCount >= maxReadsPerEvent && !metadata.needsArbitration) {
+    return false;
+  }
+
+  // Check if user has already read this event
+  const hasUserRead = !!getReadForUser(event, userId);
+
+  // If preventing duplicate reads and user already read, not eligible
+  if (preventDuplicateReads && hasUserRead) {
+    return false;
+  }
+
+  // Special case: arbitration might allow a third read
+  if (metadata.needsArbitration) {
+    // Logic for determining who can arbitrate
+    // For now, allow if user hasn't already read
+    return !hasUserRead;
+  }
+
+  return true;
+};
+
+/**
+ * Get events that need reads from the current user
+ * @param {Array} events - Array of all events
+ * @param {string} userId - Current user ID
+ * @param {Object} options - Options for determining eligibility
+ * @returns {Array} Events the user can read
+ */
+const getEventsForUserReading = (events, userId, options = {}) => {
+  return events.filter(event =>
+    eligibleForReading(event) && canUserReadEvent(event, userId, options)
+  );
+};
+
+/**
+ * Get next event that needs reading by the current user
+ * @param {Array} events - Array of events
+ * @param {number} currentIndex - Current index in events array
+ * @param {string} userId - Current user ID
+ * @param {Object} options - Options for determining eligibility
+ * @returns {string|null} ID of next event or null
+ */
+const findNextEventForUserReading = (events, currentIndex, userId, options = {}) => {
+  // Look after current position
+  for (let i = currentIndex + 1; i < events.length; i++) {
+    if (canUserReadEvent(events[i], userId, options)) {
+      return events[i].id;
+    }
+  }
+
+  // Look from start if none found
+  for (let i = 0; i < currentIndex; i++) {
+    if (canUserReadEvent(events[i], userId, options)) {
+      return events[i].id;
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Get count of events that need reading by the current user
+ * @param {Array} events - Array of events
+ * @param {string} userId - Current user ID
+ * @param {Object} options - Options for determining eligibility
+ * @returns {number} Count of events needing reading
+ */
+const countEventsForUserReading = (events, userId, options = {}) => {
+  return getEventsForUserReading(events, userId, options).length;
+};
+
+/**
+ * Enhance reading status with user-specific data
+ * @param {Object} readingStatus - Basic reading status
+ * @param {Array} events - Events being tracked
+ * @param {string} userId - Current user ID
+ * @returns {Object} Enhanced reading status
+ */
+const enhanceReadingStatusForUser = (readingStatus, events, userId) => {
+  const userReadableCount = countEventsForUserReading(events, userId);
+
+  return {
+    ...readingStatus,
+    userReadableCount,
+    userCanRead: userReadableCount > 0
+  };
+};
+
 module.exports = {
   getReadingClinics,
   getReadableEvents,
   getClinicReadingStatus,
+  getFirstUserReadableEvent,
   getFirstAvailableClinic,
   getFirstUnreadEvent,
   getFirstUnreadEventOverall,
@@ -410,5 +581,11 @@ module.exports = {
   getFirstReadBatch,
   getSecondReadBatch,
   getArbitrationBatch,
-  getBatchProgress
+  getBatchProgress,
+  // User-specific reading functions
+  canUserReadEvent,
+  getEventsForUserReading,
+  findNextEventForUserReading,
+  countEventsForUserReading,
+  enhanceReadingStatusForUser
 }
