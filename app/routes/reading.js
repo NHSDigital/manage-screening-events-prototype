@@ -104,7 +104,7 @@ module.exports = router => {
       events,
       clinicId: clinic.id,
       readingStatus,
-      completedCount: events.filter(e => e.reads?.length > 0).length
+      completedCount: readingStatus.complete
     })
   })
 
