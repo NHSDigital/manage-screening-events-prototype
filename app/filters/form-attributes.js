@@ -108,7 +108,6 @@ const decorateAttributes = (originalObject, data, path) => {
   // Set id and name attributes if not already defined
   obj.id = obj.id || pathParts.join('-')
   obj.name = obj.name || pathParts.map(s => `[${s}]`).join('')
-  console.log("Object name:", obj.name)
   return obj
 }
 

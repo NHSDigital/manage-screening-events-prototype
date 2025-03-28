@@ -22,6 +22,8 @@
 {% block header %}
   {{ super()}}
   {{ participant | log("Participant") }}
+  {{ event | log("Event") }}
+  {{ data.imageReadingTemp | log("ImageReadingTemp")}}
   <div class="app-reading-status">
     <div class="nhsuk-width-container">
       <div class="app-reading-status__row">
@@ -112,14 +114,13 @@
           {% endif %}
         </div>
 
-        {% if progress.hasNextUnread %}
+        {% if progress.hasNextUserReadable %}
           <div class="nhsuk-grid-column-one-third app-align-right">
             {{ appForwardLink({
-              href: "/reading/clinics/" ~ clinicId ~ "/events/" ~ progress.nextUnreadId ~ "?skipped=" ~ eventId,
+              href: "/reading/clinics/" ~ clinicId ~ "/events/" ~ progress.nextUserReadableId ~ "?skipped=" ~ eventId,
               text: "Skip to next unread"
             }) }}
           </div>
-
         {% endif %}
 
       </div>

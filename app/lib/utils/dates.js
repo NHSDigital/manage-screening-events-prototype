@@ -134,6 +134,22 @@ const formatRelativeDate = (dateString, withoutSuffix = false) => {
 }
 
 /**
+ * Calculate the number of days since a given date
+ * @param {string} dateString - ISO date string for past date
+ * @param {string|dayjs} [compareDate=null] - Optional reference date (defaults to today)
+ * @returns {number} Number of days since the date (positive integer for past dates)
+ */
+const daysSince = (dateString, compareDate = null) => {
+  if (!dateString) return 0
+
+  const date = dayjs(dateString).startOf('day')
+  const reference = compareDate ? dayjs(compareDate).startOf('day') : dayjs().startOf('day')
+
+  // Return positive number for days in the past
+  return reference.diff(date, 'day')
+}
+
+/**
  * Check if date is in the past
  * @param {string} dateString - ISO date string
  */
@@ -261,4 +277,5 @@ module.exports = {
   getWeekDates,
   // Export dayjs instance for direct use if needed
   dayjs,
+  daysSince,
 }

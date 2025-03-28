@@ -8,7 +8,7 @@ const STATUS_GROUPS = {
   completed: ['event_complete', 'event_partially_screened'],
   final: ['event_complete', 'event_partially_screened', 'event_did_not_attend', 'event_attended_not_screened', 'event_cancelled'],
   active: ['event_scheduled', 'event_checked_in'],
-  needs_reading: ['event_complete', 'event_partially_screened'],
+  eligible_for_reading: ['event_complete', 'event_partially_screened'],
 }
 
 /**
@@ -67,14 +67,14 @@ const isActive = (input) => {
 }
 
 /**
- * Check if a status indicates reading is needed
+ * Check if a status indicates reading is eligible
  * @param {string|Object} input - Status string or event object
  * @returns {boolean} Whether reading is needed
  */
-const needsReading = (input) => {
+const eligibleForReading = (input) => {
   const status = getStatus(input)
   if (!status) return false
-  return isStatusInGroup(status, 'needs_reading')
+  return isStatusInGroup(status, 'eligible_for_reading')
 }
 
 /**
@@ -114,6 +114,17 @@ const getStatusTagColour = (status) => {
     requested: 'orange',
     images_requested: 'orange',
     not_in_pacs: 'grey',
+
+    // Reading statuses
+    not_started: 'grey',
+    partial_first_read: 'blue',
+    first_read_complete: 'yellow',
+    partial_second_read: 'blue',
+    mixed_reads: 'yellow',
+    mixed_with_arbitration: 'yellow',
+    needs_arbitration: 'orange',
+    complete: 'green',
+    no_events: 'grey',
 
   }
   return colourMap[status.toLowerCase()] || ''
@@ -161,7 +172,7 @@ module.exports = {
   isCompleted,
   isFinal,
   isActive,
-  needsReading,
+  eligibleForReading,
   getStatusTagColour,
   getStatusText,
   filterEventsByStatus,

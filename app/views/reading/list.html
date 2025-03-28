@@ -21,10 +21,6 @@
 
 {% set gridColumn = "none" %}
 
-{% if query.firstReadComplete == 'true' %}
-  {% set fakeFirstRead = true %}
-{% endif %}
-
 {% block pageContent %}
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-full">
@@ -34,12 +30,7 @@
         {{ pageHeading }}
       </h1>
       <div class="app-header-with-status__status-tag">
-        {% if fakeFirstRead %}
-          {{ "In progress" | toTag }}
-        {% else %}
-          {{ readingStatus.status | toTag }}
-        {% endif %}
-
+        {{ readingStatus.status | toTag }}
       </div>
     </div>
   </div>
@@ -72,9 +63,8 @@
         html: insetTextHtml
       }) }}
 
-      {% set firstUnreadEvent = events | find('readStatus', 'Not read') %}
-      {% if firstUnreadEvent %}
-        <a href="/reading/clinics/{{ clinicId }}/events/{{ firstUnreadEvent.id }}" class="nhsuk-button">
+      {% if firstUserReadableEvent %}
+        <a href="/reading/clinics/{{ clinicId }}/events/{{ firstUserReadableEvent.id }}" class="nhsuk-button">
           {{ "Resume reading" if completedCount else "Start reading" }}
         </a>
       {% endif %}
@@ -140,12 +130,15 @@
 
               {% set metaStatus = "Not provided" %}
               {% set skipped = "Skipped" if data.readingSession.skippedEvents | includes(event.id) else false %}
-              {% if event.reads and event.reads[0] %}
+              {% set reading = event | getCurrentUserRead %}
+              {{ reading | log("Reading result")}}
+              {{ (reading.result or skipped or "Not provided") | toTag }}
+              {# {% if event.reads and event.reads[0] %}
                 {% set metaStatus = event.reads[0].result %}
               {% elseif skipped %}
                 {% set metaStatus = "Skipped" %}
               {% endif %}
-              {{ metaStatus | toTag }}
+              {{ metaStatus | toTag }} #}
                 {# {% set resultClass = "nhsuk-tag--" + ( colour | trim ) %} #}
 
                 {# {{ tag({
