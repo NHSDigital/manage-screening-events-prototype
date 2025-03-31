@@ -55,6 +55,10 @@
       <a href="./settings?settings[reading][blindReading]={{'true' if data.settings.reading.blindReading !== 'true' else 'false'}}&clearQuery=true">{{ 'Enable' if data.settings.reading.blindReading=='false' else 'Disable'}} blind reading</a>
     </p>
 
+    <p>
+      <a href="./settings?settings[reading][showRemaining]={{'true' if data.settings.reading.showRemaining !== 'true' else 'false'}}&clearQuery=true">{{ 'Show remaining counts' if data.settings.reading.showRemaining=='false' else 'Show completed counts'}}</a>
+    </p>
+
     <h2>Generated data</h2>
 
     <dl class="nhsuk-summary-list">

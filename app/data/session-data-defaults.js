@@ -57,6 +57,7 @@ const defaultSettings = {
   reading: {
     blindReading: config.reading.blindReading,
     confirmNormal: 'false',
+    showRemaining: 'true',
   },
 }
 

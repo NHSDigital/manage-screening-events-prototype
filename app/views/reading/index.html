@@ -5,7 +5,7 @@
 {% set pageHeading = "Image reading" %}
 {% set hideBackLink = true %}
 {% set gridColumn = "nhsuk-grid-column-full" %}
-{% set showRemaining = true %}
+{% set showRemaining = data.settings.reading.showRemaining | falsify %}
 
 {% set incompleteClinics = clinics | removeWhere('readingStatus.status', 'complete') %}
 
