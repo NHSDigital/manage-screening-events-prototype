@@ -130,9 +130,9 @@ const generateReadingData = (events, users) => {
   }
 
   // NEXT TWO OLDEST CLINICS: Complete first reads only
-  if (clinics.length >= 4) {
+  if (clinics.length >= 6) {
     let count = 0
-    for (let i = 2; i < 4 && i < clinics.length; i++) {
+    for (let i = 2; i < 6 && i < clinics.length; i++) {
       const clinic = clinics[i]
       console.log(`Adding complete first reads to clinic ${clinic.id}`)
 
@@ -170,9 +170,9 @@ const generateReadingData = (events, users) => {
   }
 
   // NEXT TWO OLDEST CLINICS: 75% first read
-  if (clinics.length >= 6) {
+  if (clinics.length >= 8) {
     let count = 0
-    for (let i = 4; i < 6 && i < clinics.length; i++) {
+    for (let i = 6; i < 8 && i < clinics.length; i++) {
       const clinic = clinics[i]
       console.log(`Adding partial first reads to clinic ${clinic.id}`)
 

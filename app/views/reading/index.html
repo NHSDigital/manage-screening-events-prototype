@@ -165,12 +165,12 @@
             </td>
             <td>
               {% set daysSinceClinic = clinic.date | daysSince %}
-              {% if daysSinceClinic > 14 %}
+              {% if daysSinceClinic > 13 %}
                 {{ tag({
                   text: "Late",
                   classes: "nhsuk-tag--red"
                 })}}
-              {% elseif daysSinceClinic > 12 %}
+              {% elseif daysSinceClinic > 10 %}
                 {{ tag({
                   text: "Urgent",
                   classes: "nhsuk-tag--orange"

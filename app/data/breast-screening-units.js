@@ -80,50 +80,28 @@ module.exports = [
           },
         ],
       },
-      {
-        id: 'acxcdcnj', // Must be hardcoded so it matches generated data
-        name: 'Mobile Unit WX71 HCR',
-        type: 'mobile_unit',
-        isMainSite: false,
-        clinicTypes: ['screening'], // Can only do screening
-        // Mobile units only handle routine screening
-        riskLevelHandling: [
-          'routine',
-        ],
-        registration: 'WX71 HCR',
-        // Override BSU session patterns for this location
-        sessionPatterns: [
-          {
-            name: 'full_day',
-            type: 'single',
-            sessions: [
-              { startTime: '09:00', endTime: '17:00' },
-            ],
-          },
-        ],
-      },
       // {
-      //   id: "acjdcnj", // Must be hardcoded so it matches generated data
-      //   name: "Mobile Unit CD1 5HR",
-      //   type: "mobile_unit",
+      //   id: 'acxcdcnj', // Must be hardcoded so it matches generated data
+      //   name: 'Mobile Unit WX71 HCR',
+      //   type: 'mobile_unit',
       //   isMainSite: false,
-      //   clinicTypes: ['screening'],  // Can only do screening
+      //   clinicTypes: ['screening'], // Can only do screening
       //   // Mobile units only handle routine screening
       //   riskLevelHandling: [
       //     'routine',
       //   ],
-      //   registration: "CD1 5HR",
+      //   registration: 'WX71 HCR',
       //   // Override BSU session patterns for this location
       //   sessionPatterns: [
       //     {
       //       name: 'full_day',
       //       type: 'single',
       //       sessions: [
-      //         { startTime: "09:00", endTime: "17:00" }
-      //       ]
-      //     }
-      //   ]
-      // }
+      //         { startTime: '09:00', endTime: '17:00' },
+      //       ],
+      //     },
+      //   ],
+      // },
     ],
   },
 ]

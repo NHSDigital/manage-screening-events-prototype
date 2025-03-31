@@ -43,20 +43,20 @@
   <div class="nhsuk-card__content">
     <h2>General</h2>
     <p>
-      <a href="./settings?settings[darkMode]={{'true' if data.settings.darkMode !== 'true' else 'false'}}&clearQuery=true">{{ 'Enable' if data.settings.darkMode=='false' else 'Disable'}} dark mode</a>
+      <a class="nhsuk-link--no-visited-state" href="./settings?settings[darkMode]={{'true' if data.settings.darkMode !== 'true' else 'false'}}&clearQuery=true">{{ 'Enable' if data.settings.darkMode=='false' else 'Disable'}} dark mode</a>
     </p>
 
     <h2>Image reading</h2>
     <p>
-      <a href="./settings?settings[reading][confirmNormal]={{'true' if data.settings.reading.confirmNormal !== 'true' else 'false'}}&clearQuery=true">{{ 'Require confirmation for normal results' if data.settings.reading.confirmNormal=='false' else 'Do not confirm normal results'}}</a>
+      <a class="nhsuk-link--no-visited-state" href="./settings?settings[reading][confirmNormal]={{'true' if data.settings.reading.confirmNormal !== 'true' else 'false'}}&clearQuery=true">{{ 'Require confirmation for normal results' if data.settings.reading.confirmNormal=='false' else 'Do not confirm normal results'}}</a>
     </p>
 
     <p>
-      <a href="./settings?settings[reading][blindReading]={{'true' if data.settings.reading.blindReading !== 'true' else 'false'}}&clearQuery=true">{{ 'Enable' if data.settings.reading.blindReading=='false' else 'Disable'}} blind reading</a>
+      <a class="nhsuk-link--no-visited-state" href="./settings?settings[reading][blindReading]={{'true' if data.settings.reading.blindReading !== 'true' else 'false'}}&clearQuery=true">{{ 'Enable' if data.settings.reading.blindReading=='false' else 'Disable'}} blind reading</a>
     </p>
 
     <p>
-      <a href="./settings?settings[reading][showRemaining]={{'true' if data.settings.reading.showRemaining !== 'true' else 'false'}}&clearQuery=true">{{ 'Show remaining counts' if data.settings.reading.showRemaining=='false' else 'Show completed counts'}}</a>
+      <a class="nhsuk-link--no-visited-state" href="./settings?settings[reading][showRemaining]={{'true' if data.settings.reading.showRemaining !== 'true' else 'false'}}&clearQuery=true">{{ 'Show remaining counts' if data.settings.reading.showRemaining=='false' else 'Show completed counts'}}</a>
     </p>
 
     <h2>Generated data</h2>
