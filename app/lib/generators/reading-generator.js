@@ -55,6 +55,7 @@ const generateReadingData = (events, users) => {
       events: eventsByClinic[clinicId],
       date: eventsByClinic[clinicId][0].timing.startTime
     }))
+    .sort((a, b) => new Date(a.id) - new Date(b.id)) // Some clinics share the same date so sort first by a unique ID to keep consistent sort
     .sort((a, b) => new Date(a.date) - new Date(b.date))
 
   console.log(`Found ${clinics.length} clinics with completed events in the last 30 days`)
@@ -168,7 +169,7 @@ const generateReadingData = (events, users) => {
     console.log(`Added first reads to ${count} events in the next 2 clinics`)
   }
 
-  // NEXT TWO OLDEST CLINICS: 50% first reads
+  // NEXT TWO OLDEST CLINICS: 75% first read
   if (clinics.length >= 6) {
     let count = 0
     for (let i = 4; i < 6 && i < clinics.length; i++) {
@@ -179,7 +180,7 @@ const generateReadingData = (events, users) => {
       const eventsToRead = clinic.events
         .filter(event => !updatedEventIds.has(event.id))
         .sort(() => Math.random() - 0.5) // Shuffle
-        .slice(0, Math.ceil(clinic.events.length / 2)) // Take first half
+        .slice(0, Math.ceil(clinic.events.length / 4)) // Take first 75%
 
       eventsToRead.forEach(event => {
         // Find the event in our array

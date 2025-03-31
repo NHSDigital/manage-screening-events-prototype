@@ -63,10 +63,56 @@ const removeEmpty = (items) => {
   }
 }
 
+/**
+ * Filter array to items where the specified property matches one of the comparison values
+ * @param {Array} array - Array to filter
+ * @param {string} key - Object property path to match against (supports dot notation)
+ * @param {*|Array} compare - Value or array of values to match
+ * @returns {Array} Filtered array containing only matching items
+ * @example
+ * where([{type: 'dog'}, {type: 'cat'}], 'type', 'dog') // Returns [{type: 'dog'}]
+ * where(users, 'address.postcode', ['OX1', 'OX2']) // Returns users with matching postcodes
+ */
+const where = (array, key, compare) => {
+  if (!array || !Array.isArray(array)) return []
+
+  // Force comparison value to array
+  const compareValues = Array.isArray(compare) ? compare : [compare]
+
+  return array.filter(item => {
+    const value = _.get(item, key)
+    return compareValues.includes(value)
+  })
+}
+
+/**
+ * Filter array to remove items where the specified property matches one of the comparison values
+ * @param {Array} array - Array to filter
+ * @param {string} key - Object property path to match against (supports dot notation)
+ * @param {*|Array} compare - Value or array of values to exclude
+ * @returns {Array} Filtered array with matching items removed
+ * @example
+ * removeWhere([{type: 'dog'}, {type: 'cat'}], 'type', 'dog') // Returns [{type: 'cat'}]
+ * removeWhere(users, 'status', ['inactive', 'suspended']) // Returns only active users
+ */
+const removeWhere = (array, key, compare) => {
+  if (!array || !Array.isArray(array)) return []
+
+  // Force comparison value to array
+  const compareValues = Array.isArray(compare) ? compare : [compare]
+
+  return array.filter(item => {
+    const value = _.get(item, key)
+    return !compareValues.includes(value)
+  })
+}
+
 module.exports = {
   push,
   includes,
   find,
   removeEmpty,
   findById,
+  where,
+  removeWhere,
 }

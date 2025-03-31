@@ -32,6 +32,7 @@ const getReadingClinics = (data, options = {}) => {
         readingStatus: getClinicReadingStatus(data, clinic.id)
       }
     })
+    .sort((a, b) => new Date(a.id) - new Date(b.id)) // Some clinics share the same date so sort first by a unique ID to keep consistent sort
     .sort((a, b) => new Date(a.date) - new Date(b.date))
 }
 
@@ -76,6 +77,7 @@ const getReadingStatusForEvents = (events) => {
       firstReadRemaining: 0,
       secondReadCount: 0,
       secondReadRemaining: 0,
+      secondReadReady: 0,
       arbitrationCount: 0,
       status: 'no_events',
       statusColor: 'grey'
@@ -89,6 +91,12 @@ const getReadingStatusForEvents = (events) => {
   const secondReadCount = events.filter(event => {
     const metadata = getReadingMetadata(event);
     return metadata.uniqueReaderCount >= 2;
+  }).length;
+
+  // Count events that are ready for second read (have first read but not second)
+  const secondReadReady = events.filter(event => {
+    const metadata = getReadingMetadata(event);
+    return metadata.readCount === 1; // Exactly one read means ready for second
   }).length;
 
   // Count events needing arbitration (still track this for informational purposes)
@@ -122,6 +130,7 @@ const getReadingStatusForEvents = (events) => {
     firstReadRemaining: events.length - firstReadCount,
     secondReadCount,
     secondReadRemaining: events.length - secondReadCount,
+    secondReadReady, // Events ready for immediate second read
     arbitrationCount,
     status,
     statusColor: getStatusTagColour(status),

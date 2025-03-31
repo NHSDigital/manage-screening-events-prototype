@@ -5,6 +5,9 @@
 {% set pageHeading = "Image reading" %}
 {% set hideBackLink = true %}
 {% set gridColumn = "nhsuk-grid-column-full" %}
+{% set showRemaining = true %}
+
+{% set incompleteClinics = clinics | removeWhere('readingStatus.status', 'complete') %}
 
 {% block pageContent %}
   <h1>{{ pageHeading }}</h1>
@@ -18,7 +21,7 @@
   <ul class="nhsuk-grid-row nhsuk-card-group">
     <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
 
-      {% set clinic = clinics[0] %}
+      {% set clinic = incompleteClinics[0] %}
       {{ clinic | log("First clinic") }}
 
       {% set clinicCardDescriptionHtml %}
@@ -61,7 +64,7 @@
     </li>
     <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
 
-      {% set clinic = clinics[2] %}
+      {% set clinic = incompleteClinics[2] %}
       {{ clinic | log("Second clinic") }}
 
       {% set clinicCardDescriptionHtml %}
@@ -127,7 +130,7 @@
 
   <p><a href="#">See previously read clinics</a></p>
 
-  {% if clinics | length === 0 %}
+  {% if incompleteClinics | length === 0 %}
     <p>No clinics from the last 7 days available for reading.</p>
   {% else %}
     <table class="nhsuk-table">
@@ -142,7 +145,7 @@
         </tr>
       </thead>
       <tbody class="nhsuk-table__body">
-        {% for clinic in clinics %}
+        {% for clinic in incompleteClinics %}
           {% set location = clinic.location %}
           {% set stats = clinic.readingStatus %}
 
@@ -183,35 +186,37 @@
             </td>
             {# First read #}
             <td>
-              {{ stats.firstReadCount }}
+              {% if showRemaining %}
+                {{ stats.firstReadRemaining }}
+              {% else %}
+                {{ stats.firstReadCount }}
+              {% endif %}
+{#
               {% if stats.firstReadRemaining > 0 %}
                 <br>
                 <span class="app-text-grey app-nowrap">
                   ({{ stats.firstReadRemaining }} remaining)
                 </span>
-              {% endif %}
+              {% endif %} #}
             </td>
             <td>
-              {{ stats.secondReadCount }}
+              {% if showRemaining %}
+                {{ stats.secondReadReady }}
+              {% else %}
+                {{ stats.secondReadCount }}
+              {% endif %}
+
+              {# {{ stats.secondReadCount }}
               {% if stats.firstReadCount > stats.secondReadCount %}
                 <br>
                 <span class="app-text-grey app-nowrap">
                   ({{ stats.secondReadRemaining }} remaining)
                 </span>
-              {% endif %}
+              {% endif %} #}
             </td>
             {# Reading status #}
             <td>
-              {% if loop.index0 < 0 %}
-                {{ "In progress" | toTag }}
-              {% else %}
-                {{ stats.status | toTag }}
-              {% endif %}
-
-              {# {% if stats.status != "Not read" %}
-                <br>
-                {{ (stats.remaining + " remaining") | noWrap | asHint }}
-              {% endif %} #}
+              {{ stats.status | toTag }}
             </td>
           </tr>
         {% endfor %}
