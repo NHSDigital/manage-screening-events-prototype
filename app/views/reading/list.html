@@ -67,10 +67,20 @@
       }) }}
 
       {% if firstUserReadableEvent %}
-        <a href="/reading/clinics/{{ clinicId }}/events/{{ firstUserReadableEvent.id }}" class="nhsuk-button">
-          {{ "Resume reading" if readingStatus.firstReadCount > 0 else "Start reading" }}
-        </a>
-      {% endif %}
+      {% set currentUserHasRead = false %}
+      {% for event in events %}
+        {% set metadata = event | getReadingMetadata %}
+        {% for read in metadata.reads %}
+          {% if read.readerId === data.currentUser.id %}
+            {% set currentUserHasRead = true %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+
+      <a href="/reading/clinics/{{ clinicId }}/events/{{ firstUserReadableEvent.id }}" class="nhsuk-button">
+        {{ "Resume reading" if currentUserHasRead else "Start reading" }}
+      </a>
+    {% endif %}
 
     {# All reading complete #}
     {% else %}
