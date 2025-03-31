@@ -306,7 +306,8 @@ const getReadingStatus = (event) => {
   if (metadata.readCount === 0) return 'Not read';
   if (metadata.readCount === 1) return 'First read complete';
   if (metadata.readCount === 2) {
-    return metadata.hasDisagreement ? 'Needs arbitration' : 'Second read complete';
+    return 'Second read complete'
+    // return metadata.hasDisagreement ? 'Needs arbitration' : 'Second read complete';
   }
   return `Read ${metadata.readCount} times`;
 };

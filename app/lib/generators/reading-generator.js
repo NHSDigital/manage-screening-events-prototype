@@ -179,7 +179,6 @@ const generateReadingData = (events, users) => {
       // Only read 50% of events in these clinics
       const eventsToRead = clinic.events
         .filter(event => !updatedEventIds.has(event.id))
-        .sort(() => Math.random() - 0.5) // Shuffle
         .slice(0, Math.ceil(clinic.events.length / 4)) // Take first 75%
 
       eventsToRead.forEach(event => {

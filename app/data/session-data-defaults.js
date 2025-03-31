@@ -5,6 +5,7 @@ const breastScreeningUnits = require('./breast-screening-units')
 const path = require('path')
 const fs = require('fs')
 const { needsRegeneration } = require('../lib/utils/regenerate-data')
+const config = require('../config')
 
 // Check if generated data folder exists and create if needed
 const generatedDataPath = path.join(__dirname, 'generated')
@@ -51,9 +52,15 @@ try {
   console.warn('Error loading generated data:', err)
 }
 
-module.exports = {
+const defaultSettings = {
   darkMode: 'false',
-  confirmNormalResults: 'false',
+  reading: {
+    blindReading: config.reading.blindReading,
+    confirmNormal: 'false',
+  },
+}
+
+module.exports = {
   users,
   currentUser: users[0],
   breastScreeningUnits,
@@ -61,4 +68,7 @@ module.exports = {
   clinics,
   events,
   generationInfo,
+  config,
+  settings: defaultSettings,
+  defaultSettings
 }

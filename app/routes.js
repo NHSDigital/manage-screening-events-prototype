@@ -27,6 +27,21 @@ router.use((req, res, next) => {
   next()
 })
 
+// Clear query string from URL if clearQuery is present
+// This is useful for removing query parameters after processing them
+router.use((req, res, next) => {
+  if (req.query.clearQuery === 'true') {
+    // Remove clearQuery from session data
+    if (req.session.data && req.session.data.clearQuery) {
+      delete req.session.data.clearQuery
+    }
+
+    // Redirect to the same URL without query string
+    return res.redirect(req.path)
+  }
+  next()
+})
+
 require('./routes/settings')(router)
 require('./routes/clinics')(router)
 require('./routes/participants')(router)

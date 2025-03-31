@@ -193,7 +193,7 @@ module.exports = router => {
     // Handle different result types
     switch (result || updatedResult) {
       case 'normal':
-        if (data.confirmNormalResults === 'true') {
+        if (data.settings.reading.confirmNormal === 'true') {
           return res.redirect(`/reading/clinics/${clinicId}/events/${eventId}/confirm-normal`)
         }
         else {

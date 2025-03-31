@@ -40,7 +40,9 @@ module.exports = {
 
     simulatedTime: '11:30', // 24h format
   },
-
+  reading: {
+    blindReading: 'true', // Enable blind reading
+  },
   screening: {
     outcomes: {
       screening: {
