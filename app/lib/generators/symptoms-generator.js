@@ -49,17 +49,17 @@ const SYMPTOM_TYPES = {
       'Orange peel texture'
     ]
   },
-  other: {
-    weight: 0.1,
-    requiresLocation: false,
-    descriptions: [
-      'General breast pain',
-      'Unusual sensation or tenderness',
-      'Burning sensation',
-      'Sharp, shooting pains',
-      'Heavy or achy feeling'
-    ]
-  }
+  // other: {
+  //   weight: 0.1,
+  //   requiresLocation: false,
+  //   descriptions: [
+  //     'General breast pain',
+  //     'Unusual sensation or tenderness',
+  //     'Burning sensation',
+  //     'Sharp, shooting pains',
+  //     'Heavy or achy feeling'
+  //   ]
+  // }
 }
 
 const DURATIONS = {
