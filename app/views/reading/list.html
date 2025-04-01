@@ -101,7 +101,6 @@
       <thead>
         <tr>
           <th>Cases</th>
-          <th>Important info</th>
           <th>First read</th>
           <th>Second read</th>
           <th>Outcome</th>
@@ -112,21 +111,24 @@
           {% set metadata = event | getReadingMetadata %}
           <tr>
             <td>
-              <a href="/reading/clinics/{{ clinicId }}/events/{{ event.id }}">{{ event.participant | getFullName }}</a>
-            </td>
-            <td>
+              {% set readingHref -%}
+                /reading/clinics/{{ clinicId }}/events/{{ event.id }}
+              {%- endset %}
+              <a href="{{ readingHref if metadata.readCount < 2 else '#' }}">{{ event.participant | getFullName }}</a>
               {% if event.currentSymptoms | length %}
+              <br>
                 {{ tag({
                   text: "Has symptoms",
                   classes: "nhsuk-tag--yellow"
                 })}}
               {% endif %}
-              {# {% if event.mammogramData.metadata.hasRepeat %}
+              {% if (data.settings.reading.showRepeatsTag | falsify) and event.mammogramData.metadata.hasRepeat %}
+              <br>
                 {{ tag({
                   text: "Has repeat",
                   classes: "nhsuk-tag--yellow"
                 })}}
-              {% endif %} #}
+              {% endif %}
             </td>
             {# First read column #}
             <td>
@@ -140,15 +142,20 @@
                 {% if isBlind and not isCurrentUserRead and metadata.readCount < 2 %}
                   {{ "Completed (blind)" | toTag({colour: "blue"}) }}
                 {% else %}
-                  {{ firstRead.result | formatWords | sentenceCase | toTag }}
+                  {% if metadata.readCount >= 2 %}
+                    {{ firstRead.result | formatWords | sentenceCase | toTag({colour: "grey"}) }}
+                  {% else %}
+                    {{ firstRead.result | formatWords | sentenceCase | toTag }}
+                  {% endif %}
+
                 {% endif %}
 
                 <br>
-                <span class="app-text-grey app-nowrap">by {{ firstRead.readerId | getUsername({identifyCurrentUser: true}) }}</span>
+                <span class="app-text-grey app-nowrap nhsuk-body-s">by {{ firstRead.readerId | getUsername({identifyCurrentUser: true}) }}</span>
               {% elif skipped %}
-                {{ "Skipped" | toTag("grey") }}
+                {{ "Skipped" | toTag({color: "grey"}) }}
               {% else %}
-                {{ "Not read" | toTag("grey") }}
+                {{ "Not read" | toTag({color: "grey"}) }}
               {% endif %}
             </td>
             {# Second read column #}
@@ -160,16 +167,14 @@
                 {% set secondRead = metadata.reads[1] %}
                 {% set isCurrentUserRead = secondRead.readerId === data.currentUser.id %}
 
-                {% if isBlind and not isCurrentUserRead and metadata.needsArbitration %}
-                  {{ "Arbitration" | toTag({colour: "red"}) }}
-                {% else %}
-                  {{ secondRead.result | formatWords | sentenceCase | toTag }}
-                {% endif %}
+
+                {{ secondRead.result | formatWords | sentenceCase | toTag({colour: "grey"}) }}
+
 
                 <br>
-                <span class="app-text-grey app-nowrap">by {{ secondRead.readerId | getUsername({identifyCurrentUser: true}) }}</span>
+                <span class="app-text-grey app-nowrap nhsuk-body-s">by {{ secondRead.readerId | getUsername({identifyCurrentUser: true}) }}</span>
               {% elif metadata.readCount == 1 %}
-                {{ "Not read" | toTag("grey") }}
+                {{ "Not read" | toTag({colour: "blue"}) }}
               {% else %}
                 {{ "Waiting for 1st read" | toTag({colour: "grey"}) }}
               {% endif %}

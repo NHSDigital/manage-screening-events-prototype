@@ -16,11 +16,13 @@ const generateReadingData = (events, users) => {
     return events
   }
 
-  // Use the first and second users as our readers
+  // Use the first, second, and third users as our readers
   const firstReader = users[0]
   const secondReader = users[1]
+  const thirdReader = users[2]
 
-  console.log(`Generating reading data using ${firstReader.firstName} ${firstReader.lastName} and ${secondReader.firstName} ${secondReader.lastName} as readers`)
+  console.log(`Generating reading data using ${firstReader.firstName} ${firstReader.lastName}, ${secondReader.firstName} ${secondReader.lastName}, and ${thirdReader.firstName} ${thirdReader.lastName} as readers`)
+
 
   // Get completed screening events from the last 30 days
   const cutoffDate = dayjs().subtract(30, 'days').startOf('day')
@@ -129,7 +131,7 @@ const generateReadingData = (events, users) => {
     console.log(`Added first and second reads to ${count} events in the 2 oldest clinics`)
   }
 
-  // NEXT TWO OLDEST CLINICS: Complete first reads only
+  // NEXT FOUR OLDEST CLINICS: Complete first reads only
   if (clinics.length >= 6) {
     let count = 0
     for (let i = 2; i < 6 && i < clinics.length; i++) {
@@ -166,7 +168,55 @@ const generateReadingData = (events, users) => {
         count++
       })
     }
-    console.log(`Added first reads to ${count} events in the next 2 clinics`)
+    console.log(`Added first reads to ${count} events in the next 4 clinics`)
+  }
+
+  // ADD THIRD READER DATA TO CLINICS 2 AND 3 (partial second reads by third user)
+  if (clinics.length >= 4) {
+    let thirdReaderCount = 0
+
+    // Process clinics at index 2 and 3 (the first two of the 4 with first reads)
+    for (let i = 2; i < 4 && i < clinics.length; i++) {
+      const clinic = clinics[i]
+      console.log(`Adding partial second reads by third user to clinic ${clinic.id}`)
+
+      // Only add third reader to 50% of events in these clinics
+      const eventsToRead = clinic.events
+        .filter(event => updatedEventIds.has(event.id)) // Only events with first reads
+        .slice(0, Math.ceil(clinic.events.length / 2)) // Take first 50%
+
+      eventsToRead.forEach(event => {
+        // Find the event in our array
+        const eventIndex = updatedEvents.findIndex(e => e.id === event.id)
+        if (eventIndex === -1) return
+
+        // Get the first read result for this event
+        const firstRead = updatedEvents[eventIndex].imageReading.reads[secondReader.id]
+        if (!firstRead) return
+
+        // Second read by third user - 70% chance of agreement with first reader
+        let thirdResult = firstRead.result
+        if (Math.random() > 0.7) {
+          // Different result for disagreement
+          const otherResults = Object.keys(readResults).filter(r => r !== firstRead.result)
+          thirdResult = otherResults[Math.floor(Math.random() * otherResults.length)]
+        }
+
+        const thirdReadTime = dayjs(firstRead.timestamp)
+          .add(Math.floor(Math.random() * 2) + 1, 'days')
+          .toISOString()
+
+        updatedEvents[eventIndex].imageReading.reads[thirdReader.id] = {
+          result: thirdResult,
+          readerId: thirdReader.id,
+          readerType: thirdReader.role,
+          timestamp: thirdReadTime
+        }
+
+        thirdReaderCount++
+      })
+    }
+    console.log(`Added third reader data to ${thirdReaderCount} events in clinics 2 and 3`)
   }
 
   // NEXT TWO OLDEST CLINICS: 75% first read
@@ -179,7 +229,7 @@ const generateReadingData = (events, users) => {
       // Only read 50% of events in these clinics
       const eventsToRead = clinic.events
         .filter(event => !updatedEventIds.has(event.id))
-        .slice(0, Math.ceil(clinic.events.length / 4)) // Take first 75%
+        .slice(0, Math.ceil(clinic.events.length * 0.75)) // Take first 75%
 
       eventsToRead.forEach(event => {
         // Find the event in our array

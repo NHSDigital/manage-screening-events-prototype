@@ -169,16 +169,31 @@ const getClinicReadingStatus = (data, clinicId, userId = null) => {
 };
 
 /**
- * Get first unread event in a clinic that current user can read
+ * Filter events to only those a specific user can read
+ * @param {Array} events - Array of events to filter
+ * @param {string} userId - User ID to check for
+ * @param {Object} options - Additional options for eligibility
+ * @returns {Array} Array of events the user can read
  */
-const getFirstUserReadableEvent = (data, clinicId, userId) => {
-  const events = data.events.filter(event =>
-    event.clinicId === clinicId &&
+const filterEventsUserCanRead = (events, userId, options = {}) => {
+  return events.filter(event =>
+    // Check if the event is eligible for reading at all
     eligibleForReading(event) &&
-    canUserReadEvent(event, userId)
+    // Then check if this specific user can read it
+    canUserReadEvent(event, userId, options)
   );
+};
 
-  return events.length > 0 ? events[0] : null;
+/**
+ * Get first event from an array that a user can read
+ * @param {Array} events - Array of events to search
+ * @param {string} userId - User ID to check for
+ * @param {Object} options - Additional options for eligibility
+ * @returns {Object|null} First event user can read or null if none
+ */
+const getFirstUserReadableEvent = (events, userId, options = {}) => {
+  const readableEvents = filterEventsUserCanRead(events, userId, options);
+  return readableEvents.length > 0 ? readableEvents[0] : null;
 };
 
 /**
@@ -532,8 +547,8 @@ const canUserReadEvent = (event, userId, options = {}) => {
 
   const metadata = getReadingMetadata(event);
 
-  // If max reads already reached, no more reads needed
-  if (metadata.readCount >= maxReadsPerEvent && !metadata.needsArbitration) {
+  // If we already have enough unique readers, no more reads needed
+  if (metadata.uniqueReaderCount >= maxReadsPerEvent) {
     return false;
   }
 
@@ -545,13 +560,8 @@ const canUserReadEvent = (event, userId, options = {}) => {
     return false;
   }
 
-  // Special case: arbitration might allow a third read
-  if (metadata.needsArbitration) {
-    // Logic for determining who can arbitrate
-    // For now, allow if user hasn't already read
-    return !hasUserRead;
-  }
-
+  // Simple case: user can read if we haven't reached max readers
+  // and they haven't already read it (if preventDuplicateReads is true)
   return true;
 };
 
@@ -610,6 +620,7 @@ module.exports = {
   getReadingClinics,
   getReadableEvents,
   getClinicReadingStatus,
+  filterEventsUserCanRead,
   getFirstUserReadableEvent,
   getFirstAvailableClinic,
   getFirstUnreadEvent,

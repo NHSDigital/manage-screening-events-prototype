@@ -112,7 +112,7 @@ module.exports = router => {
     const readingStatus = getClinicReadingStatus(data, clinicId, currentUserId)
 
     // Find first event this user can read
-    const firstUserReadableEvent = getFirstUserReadableEvent(data, clinicId, currentUserId)
+    const firstUserReadableEvent = getFirstUserReadableEvent(events, currentUserId);
 
     res.render('reading/list', {
       clinic,
