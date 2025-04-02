@@ -35,7 +35,7 @@
 
   {% set hasBreastFeature = randomBool(0.25, 'breastFeatures') %}
   {% set breastFeatureText %}
-    {{ ['Mole', 'Scar', 'Wart', 'Lump'] | randomItem }} ({{ [3,4,5,6] | randomItem }}mm) on {{ ['upper outer left', 'upper inner right', 'lower outer left', 'lower inner right'] | randomItem }} breast
+    {{ ['Mole', 'Scar', 'Wart', 'Lump'] | randomItem }} ({{ [3,4,5,6] | randomItem }}mm) on {{ ['left upper outer', 'right upper inner ', 'left lower outer', 'right lower inner'] | randomItem }} breast
   {% endset %}
 
   {{ summaryList({

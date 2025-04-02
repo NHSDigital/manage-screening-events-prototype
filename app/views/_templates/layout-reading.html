@@ -103,12 +103,12 @@
       text: "Back to reading list"
     }) }}
 
-    {% if (progress.hasPrevious or progress.hasNext) and not hideSecondaryNavigation %}
+    {% if (progress.hasPreviousUserReadable or progress.hasNext) and not hideSecondaryNavigation %}
       <div class="nhsuk-grid-row app-position-relative nhsuk-u-margin-bottom-3">
         <div class="nhsuk-grid-column-two-thirds">
-          {% if progress.hasPrevious %}
+          {% if progress.hasPreviousUserReadable %}
             {{ backLink({
-              href: "/reading/clinics/" ~ clinicId ~ "/events/" ~ progress.previousEventId,
+              href: "/reading/clinics/" ~ clinicId ~ "/events/" ~ progress.previousUserReadableId,
               text: "Previous case"
             }) }}
           {% endif %}

@@ -228,90 +228,73 @@ const getFirstUnreadEventOverall = (data) => {
 /**
  * Get progress through reading a set of events
  * Enhanced to include user-specific navigation
+ * @param {Array} events - Array of events to track progress through
+ * @param {string} currentEventId - ID of current event
+ * @param {Array} skippedEvents - Array of event IDs that have been skipped
+ * @param {string} [userId=null] - Optional user ID (defaults to current user if available)
+ * @returns {Object} Progress information
  */
-const getReadingProgress = (events, currentEventId, skippedEvents = [], userId = null) => {
+const getReadingProgress = function(events, currentEventId, skippedEvents = [], userId = null) {
+  // Get user ID from context if not provided and we're in a template context
+  const currentUserId = userId || (this?.ctx?.data?.currentUser?.id);
+
   const currentIndex = events.findIndex(e => e.id === currentEventId);
 
-  // Sequential navigation
-  const nextEventId = currentIndex < events.length - 1 ?
-    events[currentIndex + 1].id : null;
-  const previousEventId = currentIndex > 0 ?
-    events[currentIndex - 1].id : null;
-
-  // Calculate completed count with new structure
+  // Get complete events count
   const completedCount = events.filter(hasReads).length;
 
-  // Find next/previous unread events with wraparound
-  const nextUnreadId = findNextUnreadEvent(events, currentIndex);
-  const previousUnreadId = findPreviousUnreadEvent(events, currentIndex);
+  // Basic sequential navigation
+  const nextEvent = getNextEvent(events, currentEventId, false);
+  const previousEvent = getPreviousEvent(events, currentEventId, false);
 
-  // Only find user-specific navigation if userId is provided
-  let nextUserReadableId = null;
-  let previousUserReadableId = null;
+  // Get events needing first reads
+  const unreadEvents = filterEventsByNeedsFirstRead(events);
 
-  if (userId) {
-    nextUserReadableId = findNextUserReadableEvent(events, currentIndex, userId);
-    previousUserReadableId = findPreviousUserReadableEvent(events, currentIndex, userId);
+  // For user-specific navigation, get events this user can read or has read
+  let userNavigableEvents = events;
+  if (currentUserId) {
+    userNavigableEvents = filterEventsByUserCanReadOrHasRead(events, currentUserId);
+  }
+
+  // Find next/previous of each type
+  const nextUnreadEvent = currentIndex !== -1 ?
+    getNextEvent(unreadEvents, currentEventId, true) : null;
+  const previousUnreadEvent = currentIndex !== -1 ?
+    getPreviousEvent(unreadEvents, currentEventId, true) : null;
+
+  // Find next/previous user-readable events if userId provided
+  let nextUserReadableEvent = null;
+  let previousUserReadableEvent = null;
+
+  if (currentUserId && currentIndex !== -1) {
+    nextUserReadableEvent = getNextEvent(userNavigableEvents, currentEventId, true);
+    previousUserReadableEvent = getPreviousEvent(userNavigableEvents, currentEventId, true);
   }
 
   return {
     current: currentIndex + 1,
     total: events.length,
     completed: completedCount,
-    hasNext: !!nextEventId,
-    hasPrevious: !!previousEventId,
-    nextEventId,
-    previousEventId,
-    hasNextUnread: !!nextUnreadId,
-    hasPreviousUnread: !!previousUnreadId,
-    nextUnreadId,
-    previousUnreadId,
+    hasNext: !!nextEvent,
+    hasPrevious: !!previousEvent,
+    nextEventId: nextEvent?.id || null,
+    previousEventId: previousEvent?.id || null,
+    hasNextUnread: !!nextUnreadEvent,
+    hasPreviousUnread: !!previousUnreadEvent,
+    nextUnreadId: nextUnreadEvent?.id || null,
+    previousUnreadId: previousUnreadEvent?.id || null,
     // User-specific navigation
-    hasNextUserReadable: !!nextUserReadableId,
-    hasPreviousUserReadable: !!previousUserReadableId,
-    nextUserReadableId,
-    previousUserReadableId,
+    hasNextUserReadable: !!nextUserReadableEvent,
+    hasPreviousUserReadable: !!previousUserReadableEvent,
+    nextUserReadableId: nextUserReadableEvent?.id || null,
+    previousUserReadableId: previousUserReadableEvent?.id || null,
     // Skipped events
     skippedCount: skippedEvents.length,
     skippedEvents,
     isCurrentSkipped: skippedEvents.includes(currentEventId),
-    nextEventSkipped: nextEventId ? skippedEvents.includes(nextEventId) : false,
-    previousEventSkipped: previousEventId ? skippedEvents.includes(previousEventId) : false
+    nextEventSkipped: nextEvent ? skippedEvents.includes(nextEvent.id) : false,
+    previousEventSkipped: previousEvent ? skippedEvents.includes(previousEvent.id) : false
   };
-};
-
-// Helper functions for finding next/previous unread events
-const findNextUnreadEvent = (events, currentIndex) => {
-  // Look after current position
-  for (let i = currentIndex + 1; i < events.length; i++) {
-    if (!hasReads(events[i])) return events[i].id;
-  }
-  // Look from start if none found
-  for (let i = 0; i < currentIndex; i++) {
-    if (!hasReads(events[i])) return events[i].id;
-  }
-  return null;
-};
-
-const findPreviousUnreadEvent = (events, currentIndex) => {
-  // Look before current position
-  for (let i = currentIndex - 1; i >= 0; i--) {
-    if (!hasReads(events[i])) return events[i].id;
-  }
-  // Look from end if none found
-  for (let i = events.length - 1; i > currentIndex; i--) {
-    if (!hasReads(events[i])) return events[i].id;
-  }
-  return null;
-};
-
-/**
- * Check if an event has any reads
- * @param {Object} event - The event to check
- * @returns {boolean} Whether the event has any reads
- */
-const hasReads = (event) => {
-  return event.imageReading?.reads && Object.keys(event.imageReading.reads).length > 0;
 };
 
 
@@ -458,31 +441,6 @@ const findNextArbitrationEvent = (events, currentIndex) => {
   return findNextEventByReadType(events, currentIndex, needsArbitration);
 };
 
-// Helper functions for finding next/previous user-readable events
-const findNextUserReadableEvent = (events, currentIndex, userId) => {
-  // Look after current position
-  for (let i = currentIndex + 1; i < events.length; i++) {
-    if (canUserReadEvent(events[i], userId)) return events[i].id;
-  }
-  // Look from start if none found
-  for (let i = 0; i < currentIndex; i++) {
-    if (canUserReadEvent(events[i], userId)) return events[i].id;
-  }
-  return null;
-};
-
-const findPreviousUserReadableEvent = (events, currentIndex, userId) => {
-  // Look before current position
-  for (let i = currentIndex - 1; i >= 0; i--) {
-    if (canUserReadEvent(events[i], userId)) return events[i].id;
-  }
-  // Look from end if none found
-  for (let i = events.length - 1; i > currentIndex; i--) {
-    if (canUserReadEvent(events[i], userId)) return events[i].id;
-  }
-  return null;
-};
-
 // Batches
 /**
  * Create a batch of events filtered by criteria
@@ -532,38 +490,7 @@ const getBatchProgress = (batchEvents, currentEventId, skippedEvents = []) => {
   return getReadingProgress(batchEvents, currentEventId, skippedEvents);
 };
 
-/**
- * Check if current user can read an event
- * @param {Object} event - The event to check
- * @param {string} userId - Current user ID
- * @param {Object} options - Options for determining eligibility
- * @returns {boolean} Whether the current user can read this event
- */
-const canUserReadEvent = (event, userId, options = {}) => {
-  const {
-    preventDuplicateReads = true, // Prevent same user reading twice by default
-    maxReadsPerEvent = 2,         // Default max reads per event
-  } = options;
 
-  const metadata = getReadingMetadata(event);
-
-  // If we already have enough unique readers, no more reads needed
-  if (metadata.uniqueReaderCount >= maxReadsPerEvent) {
-    return false;
-  }
-
-  // Check if user has already read this event
-  const hasUserRead = !!getReadForUser(event, userId);
-
-  // If preventing duplicate reads and user already read, not eligible
-  if (preventDuplicateReads && hasUserRead) {
-    return false;
-  }
-
-  // Simple case: user can read if we haven't reached max readers
-  // and they haven't already read it (if preventDuplicateReads is true)
-  return true;
-};
 
 /**
  * Get events that need reads from the current user
@@ -615,6 +542,206 @@ const countEventsForUserReading = (events, userId, options = {}) => {
   return getEventsForUserReading(events, userId, options).length;
 };
 
+/************************************************************************
+// Filters
+//***********************************************************************
+
+
+/**
+ * Filter events that are eligible for reading
+ * @param {Array} events - All events
+ * @returns {Array} Events eligible for reading
+ */
+const filterEventsByEligibleForReading = (events) => {
+  return events.filter(event => eligibleForReading(event));
+};
+
+/**
+ * Filter events that need a first read
+ * @param {Array} events - Events to filter
+ * @returns {Array} Events needing first read
+ */
+const filterEventsByNeedsFirstRead = (events) => {
+  return events.filter(event => needsFirstRead(event));
+};
+
+/**
+ * Filter events that need a second read
+ * @param {Array} events - Events to filter
+ * @returns {Array} Events needing second read
+ */
+const filterEventsByNeedsSecondRead = (events) => {
+  return events.filter(event => needsSecondRead(event));
+};
+
+/**
+ * Filter events that are fully read (have all required reads)
+ * @param {Array} events - Events to filter
+ * @param {number} requiredReads - Number of required reads (default: 2)
+ * @returns {Array} Fully read events
+ */
+const filterEventsByFullyRead = (events, requiredReads = 2) => {
+  return events.filter(event => {
+    const metadata = getReadingMetadata(event);
+    return metadata.uniqueReaderCount >= requiredReads;
+  });
+};
+
+/**
+ * Filter events that a specific user can read
+ * @param {Array} events - Events to filter
+ * @param {string} userId - User ID
+ * @returns {Array} Events user can read
+ */
+const filterEventsByUserCanRead = (events, userId) => {
+  return events.filter(event => canUserReadEvent(event, userId));
+};
+
+/**
+ * Filter events that user can read or has already read
+ * @param {Array} events - Array of events to filter
+ * @param {string} userId - User ID to check
+ * @param {Object} options - Options for determining eligibility
+ * @returns {Array} Events user can read or has read
+ *
+ * Priarily to support navigating backwards through events
+ */
+const filterEventsByUserCanReadOrHasRead = (events, userId, options = {}) => {
+  const {
+    maxReadsPerEvent = 2
+  } = options;
+
+  return events.filter(event => {
+    const metadata = getReadingMetadata(event);
+
+    // Include if user has already read this event
+    if (userHasReadEvent(event, userId)) {
+      return true;
+    }
+
+    // Include if event isn't fully read and user can read it
+    if (metadata.uniqueReaderCount < maxReadsPerEvent) {
+      return true;
+    }
+
+    // Exclude events that are fully read by other users
+    return false;
+  });
+};
+
+/**
+ * Filter events for a specific clinic
+ * @param {Array} events - All events
+ * @param {string} clinicId - Clinic ID
+ * @returns {Array} Events for the clinic
+ */
+const filterEventsByClinic = (events, clinicId) => {
+  return events.filter(event => event.clinicId === clinicId);
+};
+
+/************************************************************************
+// Selector functions
+//***********************************************************************
+
+/**
+ * Get the first event from an array
+ * @param {Array} events - Array of events
+ * @returns {Object|null} First event or null
+ */
+const getFirstEvent = (events) => {
+  return events.length > 0 ? events[0] : null;
+};
+
+/**
+ * Get the next event after a specific event
+ * @param {Array} events - Array of events
+ * @param {string} currentEventId - Current event ID
+ * @param {boolean} wrap - Whether to wrap around to start if at end
+ * @returns {Object|null} Next event or null
+ */
+const getNextEvent = (events, currentEventId, wrap = true) => {
+  const currentIndex = events.findIndex(e => e.id === currentEventId);
+  if (currentIndex === -1) return null;
+
+  // Next event exists
+  if (currentIndex < events.length - 1) {
+    return events[currentIndex + 1];
+  }
+
+  // Wrap around to first event
+  return wrap && events.length > 0 ? events[0] : null;
+};
+
+/**
+ * Get the previous event before a specific event
+ * @param {Array} events - Array of events
+ * @param {string} currentEventId - Current event ID
+ * @param {boolean} wrap - Whether to wrap around to end if at start
+ * @returns {Object|null} Previous event or null
+ */
+const getPreviousEvent = (events, currentEventId, wrap = true) => {
+  const currentIndex = events.findIndex(e => e.id === currentEventId);
+  if (currentIndex === -1) return null;
+
+  // Previous event exists
+  if (currentIndex > 0) {
+    return events[currentIndex - 1];
+  }
+
+  // Wrap around to last event
+  return wrap && events.length > 0 ? events[events.length - 1] : null;
+};
+
+/************************************************************************
+// Booleans
+//***********************************************************************
+
+/**
+ * Check if a user has already read an event
+ * @param {Object} event - The event to check
+ * @param {string} userId - User ID to check
+ * @returns {boolean} Whether the user has read this event
+ */
+const userHasReadEvent = (event, userId) => {
+  return !!getReadForUser(event, userId);
+};
+
+/**
+ * Check if current user can read an event
+ * @param {Object} event - The event to check
+ * @param {string} userId - Current user ID
+ * @param {Object} options - Options for determining eligibility
+ * @returns {boolean} Whether the current user can read this event
+ */
+const canUserReadEvent = (event, userId, options = {}) => {
+  const {
+    maxReadsPerEvent = 2 // Default max reads per event
+  } = options;
+
+  const metadata = getReadingMetadata(event);
+
+  // If we already have enough unique readers, no more reads needed
+  if (metadata.uniqueReaderCount >= maxReadsPerEvent) {
+    return false;
+  }
+
+  // User can't read if they've already read it
+  if (userHasReadEvent(event, userId)) {
+    return false;
+  }
+
+  // User can read if we haven't reached max readers and they haven't already read it
+  return true;
+};
+
+/**
+ * Check if an event has any reads
+ * @param {Object} event - The event to check
+ * @returns {boolean} Whether the event has any reads
+ */
+const hasReads = (event) => {
+  return event.imageReading?.reads && Object.keys(event.imageReading.reads).length > 0;
+};
 
 module.exports = {
   getReadingClinics,
@@ -631,7 +758,6 @@ module.exports = {
   getReadForUser,
   getCurrentUserRead,
   writeReading,
-  hasReads,
   getReadingMetadata,
   needsFirstRead,
   needsSecondRead,
@@ -647,8 +773,24 @@ module.exports = {
   getArbitrationBatch,
   getBatchProgress,
   // User-specific reading functions
-  canUserReadEvent,
+
   getEventsForUserReading,
   findNextEventForUserReading,
   countEventsForUserReading,
+  // Filters
+  filterEventsByEligibleForReading,
+  filterEventsByNeedsFirstRead,
+  filterEventsByNeedsSecondRead,
+  filterEventsByFullyRead,
+  filterEventsByUserCanRead,
+  filterEventsByUserCanReadOrHasRead,
+  filterEventsByClinic,
+  // Selector functions
+  getFirstEvent,
+  getNextEvent,
+  getPreviousEvent,
+  // Booleans
+  userHasReadEvent,
+  canUserReadEvent,
+  hasReads,
 }
