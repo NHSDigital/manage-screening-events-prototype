@@ -44,7 +44,7 @@
         </ul>
       {% endset %}
 
-      {% set firstUnreadEvent = data | getFirstUnreadEventOverall %}
+      {# {% set firstUnreadEvent = data | getFirstUnreadEventOverall %} #}
       {{ firstUnreadEvent | log("First unread event") }}
 
       {% set clinicHref -%}
@@ -87,7 +87,7 @@
         </ul>
       {% endset %}
 
-      {% set firstUnreadEvent = data | getFirstUnreadEventOverall %}
+      {# {% set firstUnreadEvent = data | getFirstUnreadEventOverall %} #}
       {{ firstUnreadEvent | log("First unread event") }}
 
       {% set clinicHref -%}

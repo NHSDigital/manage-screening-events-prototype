@@ -1,4 +1,4 @@
-{% set existingRead = event | getCurrentUserRead %}
+{% set existingRead = event | getReadForUser %}
 {% set existingResult = existingRead.result %}
 {% set hasSymptoms = event.currentSymptoms | length > 0 %}
 

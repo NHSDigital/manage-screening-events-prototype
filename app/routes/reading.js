@@ -1,21 +1,15 @@
 // app/routes/image-reading.js
-const dayjs = require('dayjs')
 const { getEventData } = require('../lib/utils/event-data')
 const {
-  getClinicReadingStatus,
   getFirstUserReadableEvent,
-  getReadableEvents,
+  getReadableEventsForClinic,
+  getReadingStatusForEvents,
   getReadingClinics,
   getReadingProgress,
   hasReads,
   writeReading
 } = require('../lib/utils/reading')
-const { needsReading } = require('../lib/utils/status')
-const { getFullName } = require('../lib/utils/participants')
 const { snakeCase } = require('../lib/utils/strings')
-const { has } = require('browser-sync')
-const { users } = require('../data/users')
-const _ = require('lodash')
 
 module.exports = router => {
   // Set nav state
@@ -27,19 +21,21 @@ module.exports = router => {
  // Route for showing all clinics available for reading
   router.get('/reading', (req, res) => {
     const clinics = getReadingClinics(req.session.data)
+    // let clinics = []
     res.render('reading/index', { clinics })
   })
 
   // Reading routes middleware
   router.use('/reading/clinics/:clinicId/events/:eventId', (req, res, next) => {
     const data = req.session.data
-    const eventData = getEventData(data, req.params.clinicId, req.params.eventId)
     const { clinicId, eventId } = req.params
+    const eventData = getEventData(data, clinicId, eventId)
     const currentUserId = data.currentUser.id
 
     if (!eventData) {
       return res.redirect('/reading/clinics/' + req.params.clinicId)
     }
+
     const event = eventData.event
 
     // Initialize reading session data if not exists
@@ -73,12 +69,12 @@ module.exports = router => {
         return !hasReads(event)
       })
 
-    const events = getReadableEvents(data, clinicId)
+    const events = getReadableEventsForClinic(data, clinicId)
 
     // Enhanced progress that includes user-specific navigation
     const progress = getReadingProgress(
       events,
-      req.params.eventId,
+      eventId,
       data.readingSession?.skippedEvents || [],
       currentUserId
     )
@@ -92,7 +88,6 @@ module.exports = router => {
     res.locals.clinicId = req.params.clinicId
     res.locals.eventId = req.params.eventId
     res.locals.progress = progress
-    res.locals.currentUserId = currentUserId
 
     next()
   })
@@ -108,8 +103,8 @@ module.exports = router => {
 
     if (!clinic) return res.redirect('/reading')
 
-    const events = getReadableEvents(data, clinicId)
-    const readingStatus = getClinicReadingStatus(data, clinicId, currentUserId)
+    const events = getReadableEventsForClinic(data, clinicId)
+    const readingStatus = getReadingStatusForEvents(events, currentUserId)
 
     // Find first event this user can read
     const firstUserReadableEvent = getFirstUserReadableEvent(events, currentUserId);
@@ -148,10 +143,7 @@ module.exports = router => {
     const eventData = getEventData(req.session.data, clinicId, eventId)
     if (!eventData) return res.redirect(`/reading/clinics/${clinicId}`)
 
-    res.render(`reading/${step}`, {
-      // ...eventData,
-      // progress: getReadingProgress(eventData.clinic, req.session.data.events, eventId)
-    })
+    res.render(`reading/${step}`)
   })
 
   // Change in reading.js
@@ -178,12 +170,12 @@ module.exports = router => {
       // No change made, so go to next person
       if (existingResult === updatedResult) {
         console.log("Existing result is the same")
-        const events = getReadableEvents(data, clinicId)
+        const events = getReadableEventsForClinic(data, clinicId)
         const progress = getReadingProgress(events, eventId)
 
         // Redirect to next participant if available
-        if (progress.hasNextUnread) {
-          return res.redirect(`/reading/clinics/${clinicId}/events/${progress.nextUnreadId}`)
+        if (progress.hasNextUserReadable) {
+          return res.redirect(`/reading/clinics/${clinicId}/events/${progress.nextUserReadableId}`)
         } else {
           return res.redirect(`/reading/clinics/${clinicId}`)
         }
@@ -237,7 +229,7 @@ module.exports = router => {
     writeReading(event, currentUserId, readResult)
 
     // Get updated events and find next one for current user
-    const events = getReadableEvents(data, clinicId)
+    const events = getReadableEventsForClinic(data, clinicId)
     const currentIndex = events.findIndex(e => e.id === eventId)
 
     // Use enhanced progress tracking for navigation
