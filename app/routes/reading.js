@@ -7,6 +7,7 @@ const {
   getReadingClinics,
   getReadingProgress,
   hasReads,
+  canUserReadEvent,
   writeReading
 } = require('../lib/utils/reading')
 const { snakeCase } = require('../lib/utils/strings')
@@ -52,22 +53,30 @@ module.exports = router => {
       }
     }
 
+
     // Manage skipped events
     const skippedEventId = req.query.skipped
+    if (skippedEventId) {
+      console.log('has skipped event', skippedEventId)
+    }
     delete data.skipped
     if (skippedEventId &&
       !data.readingSession.skippedEvents.includes(skippedEventId) &&
-      !hasReads(data.events.find(e => e.id === skippedEventId)))
+      canUserReadEvent(data.events.find(e => e.id === skippedEventId), currentUserId))
       {
+        console.log('Adding to skipped events', skippedEventId)
         data.readingSession.skippedEvents.push(skippedEventId)
+        console.log('Skipped events:', data.readingSession)
       }
 
     // Remove any events from skipped list that have now been read
     data.readingSession.skippedEvents =
       data.readingSession.skippedEvents.filter(skippedId => {
         const event = data.events.find(e => e.id === skippedId)
-        return !hasReads(event)
+        return canUserReadEvent(event, currentUserId)
       })
+
+    console.log('Skipped events:', data.readingSession)
 
     const events = getReadableEventsForClinic(data, clinicId)
 

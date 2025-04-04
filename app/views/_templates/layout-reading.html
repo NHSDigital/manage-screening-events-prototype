@@ -40,12 +40,15 @@
         </div>
         <div class="app-reading-status__col">
           <strong>Progress:</strong>
-          <span>{{ progress.current }} of {{ progress.total }} ({{ progress.completed }} read,
-            {{ progress.total - progress.completed }} remaining
+          {{ progress | log("Progress") }}
+          {{ data.readingSession | log("Reading session") }}
+
+          <span>{{ progress.userReadCount }} read,
+            {{ progress.userReadableCount }} remaining
             {%- if progress.skippedEvents | length > 0 -%}
               , {{ progress.skippedEvents | length }} skipped
                {# <a href="#">(go to first unread)</a> #}
-            {% endif %})</span>
+            {% endif %}</span>
         </div>
 
       </div>
@@ -103,7 +106,15 @@
       text: "Back to reading list"
     }) }}
 
-    {% if (progress.hasPreviousUserReadable or progress.hasNext) and not hideSecondaryNavigation %}
+    {% if hideSecondaryNavigation %}
+      {{ backLink({
+        href: "javascript:history.back();",
+        text: "Back"
+      }) }}
+
+    {% endif %}
+
+    {% if (progress.hasPreviousUserReadable or progress.hasNextUserReadable) and not hideSecondaryNavigation %}
       <div class="nhsuk-grid-row app-position-relative nhsuk-u-margin-bottom-3">
         <div class="nhsuk-grid-column-two-thirds">
           {% if progress.hasPreviousUserReadable %}

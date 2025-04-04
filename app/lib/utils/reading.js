@@ -81,6 +81,205 @@ const writeReading = (event, userId, reading) => {
 //***********************************************************************
 
 /**
+ * Enhance events with pre-calculated reading metadata
+ * @param {Array} events - Array of events to enhance
+ * @param {Array} participants - Array of participants for lookups
+ * @param {string} userId - Current user ID
+ * @returns {Array} Enhanced events with pre-calculated metadata
+ */
+const enhanceEventsWithReadingData = (events, participants, userId) => {
+  // Create a lookup map for participants
+  const participantMap = new Map(
+    participants.map(p => [p.id, p])
+  )
+
+  // Enhanced events with pre-calculated metadata
+  return events.map(event => {
+    // Calculate metadata once
+    const metadata = getReadingMetadata(event)
+
+    return {
+      ...event,
+      participant: participantMap.get(event.participantId),
+      readStatus: metadata.readCount > 0 ? `Read (${metadata.readCount})` : 'Not read',
+      tagColor: getStatusTagColour(metadata.readCount > 0 ? 'read' : 'not_read'),
+      readingMetadata: metadata,
+      canUserRead: canUserReadEvent(event, userId)
+    }
+  })
+}
+
+/**
+ * Calculate core reading metrics used for both status and progress tracking
+ * @param {Array} events - Array of events to analyze
+ * @param {string} userId - User ID for user-specific metrics
+ * @param {Array} skippedEvents - Array of skipped event IDs
+ * @returns {Object} Core metrics object
+ */
+const calculateReadingMetrics = (events, userId = null, skippedEvents = []) => {
+  // Get user ID from context if not provided and we're in a template context
+  const currentUserId = userId || (this?.ctx?.data?.currentUser?.id);
+
+  if (!events || events.length === 0) {
+    return {
+      total: 0,
+      firstReadCount: 0,
+      firstReadRemaining: 0,
+      secondReadCount: 0,
+      secondReadRemaining: 0,
+      secondReadReady: 0,
+      arbitrationCount: 0,
+      completedCount: 0,
+      // User-specific counts
+      userReadCount: 0,
+      userFirstReadCount: 0,
+      userSecondReadCount: 0,
+      userReadableCount: 0,
+      userFirstReadableCount: 0,
+      userSecondReadableCount: 0,
+      userCanRead: false,
+      skippedCount: skippedEvents?.length || 0
+    }
+  }
+
+  // Count first reads (events with at least one read)
+  const firstReadCount = events.filter(hasReads).length
+  const completedCount = firstReadCount // For compatibility with current usage
+
+  // Count second reads (events with at least two different readers)
+  const secondReadCount = events.filter(event => {
+    const metadata = getReadingMetadata(event)
+    return metadata.uniqueReaderCount >= 2
+  }).length
+
+  // Count events that are ready for second read (have first read but not second)
+  const secondReadReady = events.filter(event => {
+    const metadata = getReadingMetadata(event)
+    return metadata.readCount === 1 // Exactly one read means ready for second
+  }).length
+
+  // Count events needing arbitration
+  const arbitrationCount = events.filter(event => {
+    const metadata = getReadingMetadata(event)
+    return metadata.needsArbitration
+  }).length
+
+  // User-specific counts
+  let userReadCount = 0
+  let userFirstReadCount = 0
+  let userSecondReadCount = 0
+  let userReadableCount = 0
+  let userFirstReadableCount = 0
+  let userSecondReadableCount = 0
+
+  if (currentUserId) {
+    // Events this user has read
+    userReadCount = events.filter(event => userHasReadEvent(event, currentUserId)).length
+
+    // Count first/second reads by this user
+    events.forEach(event => {
+      const metadata = getReadingMetadata(event)
+      const reads = event.imageReading?.reads ? Object.values(event.imageReading.reads) : []
+
+      // Find reads by this user
+      const userReads = reads.filter(read => read.readerId === currentUserId)
+
+      // Count based on read position (first or second)
+      if (userReads.length > 0) {
+        // Check if this user did the first read
+        if (reads[0]?.readerId === currentUserId) {
+          userFirstReadCount++
+        }
+
+        // Check if this user did the second read
+        if (reads.length > 1 && reads[1]?.readerId === currentUserId) {
+          userSecondReadCount++
+        }
+      }
+    })
+
+    // Events this user can read
+    userReadableCount = events.filter(event => canUserReadEvent(event, currentUserId)).length
+
+    // Events needing first read that this user can read
+    userFirstReadableCount = filterEventsByNeedsFirstRead(events)
+      .filter(event => canUserReadEvent(event, currentUserId)).length
+
+    // Events needing second read that this user can read
+    userSecondReadableCount = filterEventsByNeedsSecondRead(events)
+      .filter(event => canUserReadEvent(event, currentUserId)).length
+  }
+
+  return {
+    total: events.length,
+    firstReadCount,
+    firstReadRemaining: events.length - firstReadCount,
+    secondReadCount,
+    secondReadRemaining: events.length - secondReadCount,
+    secondReadReady,
+    arbitrationCount,
+    completedCount,
+    daysSinceScreening: events[0] ?
+      dayjs().startOf('day').diff(dayjs(events[0].timing.startTime).startOf('day'), 'days') : 0,
+    // User-specific counts
+    userReadCount,
+    userFirstReadCount,
+    userSecondReadCount,
+    userReadableCount,
+    userFirstReadableCount,
+    userSecondReadableCount,
+    userCanRead: userReadableCount > 0,
+    // Skipped events
+    skippedCount: skippedEvents?.length || 0
+  }
+}
+
+/**
+ * Get detailed reading status for a group of events
+ * @param {Array} events - Array of events to analyze
+ * @param {string} [userId=null] - Optional user ID (defaults to current user if available)
+ * @returns {Object} Detailed reading status
+ */
+const getReadingStatusForEvents = function(events, userId = null) {
+  // Get metrics from base calculation function
+  const metrics = calculateReadingMetrics(events, userId)
+
+  // If no events, return basic metrics with default status
+  if (!events || events.length === 0) {
+    return {
+      ...metrics,
+      status: 'no_events',
+      statusColor: 'grey'
+    }
+  }
+
+  // Determine detailed status based on read counts
+  let status
+
+  if (metrics.firstReadCount === 0) {
+    status = 'not_started'
+  } else if (metrics.firstReadCount < events.length) {
+    if (metrics.secondReadCount > 0) {
+      status = 'mixed_reads'
+    } else {
+      status = 'partial_first_read'
+    }
+  } else if (metrics.secondReadCount === 0) {
+    status = 'first_read_complete'
+  } else if (metrics.secondReadCount < events.length) {
+    status = 'partial_second_read'
+  } else {
+    status = 'complete'
+  }
+
+  return {
+    ...metrics,
+    status,
+    statusColor: getStatusTagColour(status)
+  }
+}
+
+/**
  * Get progress through reading a set of events
  * Enhanced to include user-specific navigation
  * @param {Array} events - Array of events to track progress through
@@ -90,46 +289,46 @@ const writeReading = (event, userId, reading) => {
  * @returns {Object} Progress information
  */
 const getReadingProgress = function(events, currentEventId, skippedEvents = [], userId = null) {
+  // Get base metrics
+  const metrics = calculateReadingMetrics(events, userId, skippedEvents)
+
   // Get user ID from context if not provided and we're in a template context
-  const currentUserId = userId || (this?.ctx?.data?.currentUser?.id);
+  const currentUserId = userId || (this?.ctx?.data?.currentUser?.id)
 
-  const currentIndex = events.findIndex(e => e.id === currentEventId);
-
-  // Get complete events count
-  const completedCount = events.filter(hasReads).length;
+  // Find current event index
+  const currentIndex = events.findIndex(e => e.id === currentEventId)
 
   // Basic sequential navigation
-  const nextEvent = getNextEvent(events, currentEventId, false);
-  const previousEvent = getPreviousEvent(events, currentEventId, false);
+  const nextEvent = getNextEvent(events, currentEventId, false)
+  const previousEvent = getPreviousEvent(events, currentEventId, false)
 
   // Get events needing any reads (first or second)
-  const readableEvents = filterEventsByNeedsAnyRead(events);
+  const readableEvents = filterEventsByNeedsAnyRead(events)
 
   // Find next/previous of each type
   const nextReadableEvent = currentIndex !== -1 ?
-    getNextEvent(readableEvents, currentEventId, true) : null;
+    getNextEvent(readableEvents, currentEventId, true) : null
   const previousReadableEvent = currentIndex !== -1 ?
-    getPreviousEvent(readableEvents, currentEventId, true) : null;
+    getPreviousEvent(readableEvents, currentEventId, true) : null
 
   // For user-specific navigation, get events this user can read or has read
-  let userNavigableEvents = events;
+  let userNavigableEvents = events
   if (currentUserId) {
-    userNavigableEvents = filterEventsByUserCanReadOrHasRead(events, currentUserId);
+    userNavigableEvents = filterEventsByUserCanReadOrHasRead(events, currentUserId)
   }
 
   // Find next/previous user-readable events if userId provided
-  let nextUserReadableEvent = null;
-  let previousUserReadableEvent = null;
+  let nextUserReadableEvent = null
+  let previousUserReadableEvent = null
 
   if (currentUserId && currentIndex !== -1) {
-    nextUserReadableEvent = getNextEvent(userNavigableEvents, currentEventId, true);
-    previousUserReadableEvent = getPreviousEvent(userNavigableEvents, currentEventId, true);
+    nextUserReadableEvent = getNextEvent(userNavigableEvents, currentEventId, true)
+    previousUserReadableEvent = getPreviousEvent(userNavigableEvents, currentEventId, true)
   }
 
   return {
+    ...metrics,
     current: currentIndex + 1,
-    total: events.length,
-    completed: completedCount,
     // Event navigation
     hasNext: !!nextEvent,
     hasPrevious: !!previousEvent,
@@ -145,153 +344,228 @@ const getReadingProgress = function(events, currentEventId, skippedEvents = [], 
     nextUserReadableId: nextUserReadableEvent?.id || null,
     previousUserReadableId: previousUserReadableEvent?.id || null,
     // Skipped events
-    skippedCount: skippedEvents.length,
     skippedEvents,
     isCurrentSkipped: skippedEvents.includes(currentEventId),
     nextEventSkipped: nextEvent ? skippedEvents.includes(nextEvent.id) : false,
     previousEventSkipped: previousEvent ? skippedEvents.includes(previousEvent.id) : false
-  };
-};
-
-/**
- * Get detailed reading status for a group of events
- * @param {Array} events - Array of events to analyze
- * @param {string} [userId=null] - Optional user ID (defaults to current user if available)
- * @returns {Object} Detailed reading status
- */
-const getReadingStatusForEvents = function(events, userId = null) {
-  // Get user ID from context if not provided and we're in a template context
-  const currentUserId = userId || (this?.ctx?.data?.currentUser?.id);
-
-  if (!events || events.length === 0) {
-    return {
-      total: 0,
-      firstReadCount: 0,
-      firstReadRemaining: 0,
-      secondReadCount: 0,
-      secondReadRemaining: 0,
-      secondReadReady: 0,
-      arbitrationCount: 0,
-      status: 'no_events',
-      statusColor: 'grey',
-      // User-specific counts
-      userReadCount: 0,
-      userFirstReadCount: 0,
-      userSecondReadCount: 0,
-      userReadableCount: 0,
-      userFirstReadableCount: 0,
-      userSecondReadableCount: 0
-    };
   }
+}
 
-  // Count first reads (events with at least one read)
-  const firstReadCount = events.filter(hasReads).length;
 
-  // Count second reads (events with at least two different readers)
-  const secondReadCount = events.filter(event => {
-    const metadata = getReadingMetadata(event);
-    return metadata.uniqueReaderCount >= 2;
-  }).length;
 
-  // Count events that are ready for second read (have first read but not second)
-  const secondReadReady = events.filter(event => {
-    const metadata = getReadingMetadata(event);
-    return metadata.readCount === 1; // Exactly one read means ready for second
-  }).length;
 
-  // Count events needing arbitration (still track this for informational purposes)
-  const arbitrationCount = events.filter(event => {
-    const metadata = getReadingMetadata(event);
-    return metadata.needsArbitration;
-  }).length;
+// /**
+//  * Get progress through reading a set of events
+//  * Enhanced to include user-specific navigation
+//  * @param {Array} events - Array of events to track progress through
+//  * @param {string} currentEventId - ID of current event
+//  * @param {Array} skippedEvents - Array of event IDs that have been skipped
+//  * @param {string} [userId=null] - Optional user ID (defaults to current user if available)
+//  * @returns {Object} Progress information
+//  */
+// const getReadingProgress = function(events, currentEventId, skippedEvents = [], userId = null) {
+//   // Get user ID from context if not provided and we're in a template context
+//   const currentUserId = userId || (this?.ctx?.data?.currentUser?.id);
 
-  // User-specific counts if userId provided
-  let userReadCount = 0;
-  let userFirstReadCount = 0;
-  let userSecondReadCount = 0;
-  let userReadableCount = 0;
-  let userFirstReadableCount = 0;
-  let userSecondReadableCount = 0;
+//   const currentIndex = events.findIndex(e => e.id === currentEventId);
 
-  if (currentUserId) {
-    // Events this user has read
-    userReadCount = events.filter(event => userHasReadEvent(event, currentUserId)).length;
+//   // Get complete events count
+//   const completedCount = events.filter(hasReads).length;
 
-    // Count first/second reads by this user
-    events.forEach(event => {
-      const metadata = getReadingMetadata(event);
-      const reads = event.imageReading?.reads ? Object.values(event.imageReading.reads) : [];
+//   // Basic sequential navigation
+//   const nextEvent = getNextEvent(events, currentEventId, false);
+//   const previousEvent = getPreviousEvent(events, currentEventId, false);
 
-      // Find reads by this user
-      const userReads = reads.filter(read => read.readerId === currentUserId);
+//   // Get events needing any reads (first or second)
+//   const readableEvents = filterEventsByNeedsAnyRead(events);
 
-      // Count based on read position (first or second)
-      if (userReads.length > 0) {
-        // Check if this user did the first read
-        if (reads[0]?.readerId === currentUserId) {
-          userFirstReadCount++;
-        }
+//   // Find next/previous of each type
+//   const nextReadableEvent = currentIndex !== -1 ?
+//     getNextEvent(readableEvents, currentEventId, true) : null;
+//   const previousReadableEvent = currentIndex !== -1 ?
+//     getPreviousEvent(readableEvents, currentEventId, true) : null;
 
-        // Check if this user did the second read
-        if (reads.length > 1 && reads[1]?.readerId === currentUserId) {
-          userSecondReadCount++;
-        }
-      }
-    });
+//   // For user-specific navigation, get events this user can read or has read
+//   let userNavigableEvents = events;
+//   if (currentUserId) {
+//     userNavigableEvents = filterEventsByUserCanReadOrHasRead(events, currentUserId);
+//   }
 
-    // Events this user can read
-    userReadableCount = events.filter(event => canUserReadEvent(event, currentUserId)).length;
+//   // Find next/previous user-readable events if userId provided
+//   let nextUserReadableEvent = null;
+//   let previousUserReadableEvent = null;
 
-    // Events needing first read that this user can read
-    userFirstReadableCount = filterEventsByNeedsFirstRead(events)
-      .filter(event => canUserReadEvent(event, currentUserId)).length;
+//   if (currentUserId && currentIndex !== -1) {
+//     nextUserReadableEvent = getNextEvent(userNavigableEvents, currentEventId, true);
+//     previousUserReadableEvent = getPreviousEvent(userNavigableEvents, currentEventId, true);
+//   }
 
-    // Events needing second read that this user can read
-    userSecondReadableCount = filterEventsByNeedsSecondRead(events)
-      .filter(event => canUserReadEvent(event, currentUserId)).length;
-  }
+//   return {
+//     current: currentIndex + 1,
+//     total: events.length,
+//     completed: completedCount,
+//     // Event navigation
+//     hasNext: !!nextEvent,
+//     hasPrevious: !!previousEvent,
+//     nextEventId: nextEvent?.id || null,
+//     previousEventId: previousEvent?.id || null,
+//     hasNextReadableEvent: !!nextReadableEvent,
+//     hasPreviousReadableEvent: !!previousReadableEvent,
+//     nextReadableEventId: nextReadableEvent?.id || null,
+//     previousReadableEventId: previousReadableEvent?.id || null,
+//     // User-specific navigation
+//     hasNextUserReadable: !!nextUserReadableEvent,
+//     hasPreviousUserReadable: !!previousUserReadableEvent,
+//     nextUserReadableId: nextUserReadableEvent?.id || null,
+//     previousUserReadableId: previousUserReadableEvent?.id || null,
+//     // Skipped events
+//     skippedCount: skippedEvents.length,
+//     skippedEvents,
+//     isCurrentSkipped: skippedEvents.includes(currentEventId),
+//     nextEventSkipped: nextEvent ? skippedEvents.includes(nextEvent.id) : false,
+//     previousEventSkipped: previousEvent ? skippedEvents.includes(previousEvent.id) : false
+//   };
+// };
 
-  // Determine detailed status based on read counts
-  let status;
+// /**
+//  * Get detailed reading status for a group of events
+//  * @param {Array} events - Array of events to analyze
+//  * @param {string} [userId=null] - Optional user ID (defaults to current user if available)
+//  * @returns {Object} Detailed reading status
+//  */
+// const getReadingStatusForEvents = function(events, userId = null) {
+//   // Get user ID from context if not provided and we're in a template context
+//   const currentUserId = userId || (this?.ctx?.data?.currentUser?.id);
 
-  if (firstReadCount === 0) {
-    status = 'not_started';
-  } else if (firstReadCount < events.length) {
-    if (secondReadCount > 0) {
-      status = 'mixed_reads';
-    } else {
-      status = 'partial_first_read';
-    }
-  } else if (secondReadCount === 0) {
-    status = 'first_read_complete';
-  } else if (secondReadCount < events.length) {
-    status = 'partial_second_read';
-  } else {
-    status = 'complete';
-  }
+//   if (!events || events.length === 0) {
+//     return {
+//       total: 0,
+//       firstReadCount: 0,
+//       firstReadRemaining: 0,
+//       secondReadCount: 0,
+//       secondReadRemaining: 0,
+//       secondReadReady: 0,
+//       arbitrationCount: 0,
+//       status: 'no_events',
+//       statusColor: 'grey',
+//       // User-specific counts
+//       userReadCount: 0,
+//       userFirstReadCount: 0,
+//       userSecondReadCount: 0,
+//       userReadableCount: 0,
+//       userFirstReadableCount: 0,
+//       userSecondReadableCount: 0
+//     };
+//   }
 
-  return {
-    total: events.length,
-    firstReadCount,
-    firstReadRemaining: events.length - firstReadCount,
-    secondReadCount,
-    secondReadRemaining: events.length - secondReadCount,
-    secondReadReady, // Events ready for immediate second read
-    arbitrationCount,
-    status,
-    statusColor: getStatusTagColour(status),
-    daysSinceScreening: events[0] ?
-      dayjs().startOf('day').diff(dayjs(events[0].timing.startTime).startOf('day'), 'days') : 0,
-    // User-specific counts
-    userReadCount,
-    userFirstReadCount,
-    userSecondReadCount,
-    userReadableCount,
-    userFirstReadableCount,
-    userSecondReadableCount,
-    userCanRead: userReadableCount > 0
-  };
-};
+//   // Count first reads (events with at least one read)
+//   const firstReadCount = events.filter(hasReads).length;
+
+//   // Count second reads (events with at least two different readers)
+//   const secondReadCount = events.filter(event => {
+//     const metadata = getReadingMetadata(event);
+//     return metadata.uniqueReaderCount >= 2;
+//   }).length;
+
+//   // Count events that are ready for second read (have first read but not second)
+//   const secondReadReady = events.filter(event => {
+//     const metadata = getReadingMetadata(event);
+//     return metadata.readCount === 1; // Exactly one read means ready for second
+//   }).length;
+
+//   // Count events needing arbitration (still track this for informational purposes)
+//   const arbitrationCount = events.filter(event => {
+//     const metadata = getReadingMetadata(event);
+//     return metadata.needsArbitration;
+//   }).length;
+
+//   // User-specific counts if userId provided
+//   let userReadCount = 0;
+//   let userFirstReadCount = 0;
+//   let userSecondReadCount = 0;
+//   let userReadableCount = 0;
+//   let userFirstReadableCount = 0;
+//   let userSecondReadableCount = 0;
+
+//   if (currentUserId) {
+//     // Events this user has read
+//     userReadCount = events.filter(event => userHasReadEvent(event, currentUserId)).length;
+
+//     // Count first/second reads by this user
+//     events.forEach(event => {
+//       const metadata = getReadingMetadata(event);
+//       const reads = event.imageReading?.reads ? Object.values(event.imageReading.reads) : [];
+
+//       // Find reads by this user
+//       const userReads = reads.filter(read => read.readerId === currentUserId);
+
+//       // Count based on read position (first or second)
+//       if (userReads.length > 0) {
+//         // Check if this user did the first read
+//         if (reads[0]?.readerId === currentUserId) {
+//           userFirstReadCount++;
+//         }
+
+//         // Check if this user did the second read
+//         if (reads.length > 1 && reads[1]?.readerId === currentUserId) {
+//           userSecondReadCount++;
+//         }
+//       }
+//     });
+
+//     // Events this user can read
+//     userReadableCount = events.filter(event => canUserReadEvent(event, currentUserId)).length;
+
+//     // Events needing first read that this user can read
+//     userFirstReadableCount = filterEventsByNeedsFirstRead(events)
+//       .filter(event => canUserReadEvent(event, currentUserId)).length;
+
+//     // Events needing second read that this user can read
+//     userSecondReadableCount = filterEventsByNeedsSecondRead(events)
+//       .filter(event => canUserReadEvent(event, currentUserId)).length;
+//   }
+
+//   // Determine detailed status based on read counts
+//   let status;
+
+//   if (firstReadCount === 0) {
+//     status = 'not_started';
+//   } else if (firstReadCount < events.length) {
+//     if (secondReadCount > 0) {
+//       status = 'mixed_reads';
+//     } else {
+//       status = 'partial_first_read';
+//     }
+//   } else if (secondReadCount === 0) {
+//     status = 'first_read_complete';
+//   } else if (secondReadCount < events.length) {
+//     status = 'partial_second_read';
+//   } else {
+//     status = 'complete';
+//   }
+
+//   return {
+//     total: events.length,
+//     firstReadCount,
+//     firstReadRemaining: events.length - firstReadCount,
+//     secondReadCount,
+//     secondReadRemaining: events.length - secondReadCount,
+//     secondReadReady, // Events ready for immediate second read
+//     arbitrationCount,
+//     status,
+//     statusColor: getStatusTagColour(status),
+//     daysSinceScreening: events[0] ?
+//       dayjs().startOf('day').diff(dayjs(events[0].timing.startTime).startOf('day'), 'days') : 0,
+//     // User-specific counts
+//     userReadCount,
+//     userFirstReadCount,
+//     userSecondReadCount,
+//     userReadableCount,
+//     userFirstReadableCount,
+//     userSecondReadableCount,
+//     userCanRead: userReadableCount > 0
+//   };
+// };
 
 /************************************************************************
 // Clinic stuff
@@ -340,33 +614,30 @@ const getReadingClinics = (data, options = {}) => {
 }
 
 /**
- * Get readable events for a clinic with read status
- * TODO: should this be deleted?
+ * Get readable events for a clinic with pre-calculated metadata
+ * @param {Object} data - Session data containing events, participants, etc.
+ * @param {string} clinicId - ID of the clinic to get events for
+ * @returns {Array} Events with enhanced metadata
  */
 const getReadableEventsForClinic = (data, clinicId) => {
-  return data.events
-    .filter(event =>
-      event.clinicId === clinicId &&
-      eligibleForReading(event)
-    )
-    .map(event => {
-      const metadata = getReadingMetadata(event);
+  // Filter eligible events for this clinic
+  const eligibleEvents = data.events.filter(event =>
+    event.clinicId === clinicId &&
+    eligibleForReading(event)
+  )
 
-      let readStatus = 'Not read';
-      if (metadata.readCount > 0) {
-        readStatus = `Read (${metadata.readCount})`;
-      }
+  // Enhance the events with reading metadata
+  const enhancedEvents = enhanceEventsWithReadingData(
+    eligibleEvents,
+    data.participants,
+    data.currentUser?.id
+  )
 
-      return {
-        ...event,
-        participant: data.participants.find(p => p.id === event.participantId),
-        readStatus,
-        tagColor: getStatusTagColour(metadata.readCount > 0 ? 'read' : 'not_read'),
-        readingMetadata: metadata // Include metadata for use in templates
-      };
-    })
-    .sort((a, b) => new Date(a.timing.startTime) - new Date(b.timing.startTime));
-};
+  // Sort by appointment time
+  return enhancedEvents.sort((a, b) =>
+    new Date(a.timing.startTime) - new Date(b.timing.startTime)
+  )
+}
 
 /************************************************************************
 // Filters
@@ -643,6 +914,7 @@ module.exports = {
   writeReading,
 
   // Multiple events
+  enhanceEventsWithReadingData,
   getReadingProgress,
   getReadingStatusForEvents,
 

@@ -69,7 +69,7 @@
       {% if firstUserReadableEvent %}
       {% set currentUserHasRead = false %}
       {% for event in events %}
-        {% set metadata = event | getReadingMetadata %}
+        {% set metadata = event.readingMetadata %}
         {% for read in metadata.reads %}
           {% if read.readerId === data.currentUser.id %}
             {% set currentUserHasRead = true %}
@@ -108,7 +108,7 @@
       </thead>
       <tbody>
         {% for event in events %}
-          {% set metadata = event | getReadingMetadata %}
+          {% set metadata = event.readingMetadata %}
           <tr>
             <td>
               {% set readingHref -%}
@@ -174,7 +174,11 @@
                 <br>
                 <span class="app-text-grey app-nowrap nhsuk-body-s">by {{ secondRead.readerId | getUsername({identifyCurrentUser: true}) }}</span>
               {% elif metadata.readCount == 1 %}
-                {{ "Not read" | toTag({colour: "blue"}) }}
+                {% if skipped %}
+                  {{ "Skipped" | toTag({color: "grey"}) }}
+                {% else %}
+                  {{ "Not read" | toTag({colour: "blue"}) }}
+                {% endif %}
               {% else %}
                 {{ "Waiting for 1st read" | toTag({colour: "grey"}) }}
               {% endif %}
