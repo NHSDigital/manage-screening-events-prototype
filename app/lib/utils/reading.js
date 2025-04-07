@@ -59,7 +59,15 @@ const getReadingMetadata = (event) => {
   };
 };
 
-const writeReading = (event, userId, reading) => {
+/**
+ * Update the writeReading function to also handle removing from skipped events
+ * @param {Object} event - The event to update
+ * @param {string} userId - User ID
+ * @param {Object} reading - Reading data to save
+ * @param {Object} [data] - Session data (needed for batch context)
+ * @param {string} [batchId] - Batch ID (if in batch context)
+ */
+const writeReading = (event, userId, reading, data = null, batchId = null) => {
   // Ensure imageReading structure exists
   if (!event.imageReading) {
     event.imageReading = { reads: {} };
@@ -73,6 +81,17 @@ const writeReading = (event, userId, reading) => {
     readerId: userId, // Ensure the reader ID is saved
     timestamp: new Date().toISOString()
   };
+
+  // If we have batch context, remove this event from skipped events
+  if (data && batchId && data.readingSessionBatches?.[batchId]) {
+    const batch = data.readingSessionBatches[batchId];
+
+    // Remove event from skipped list if present
+    const skippedIndex = batch.skippedEvents.indexOf(event.id);
+    if (skippedIndex !== -1) {
+      batch.skippedEvents.splice(skippedIndex, 1);
+    }
+  }
 };
 
 
@@ -116,7 +135,7 @@ const enhanceEventsWithReadingData = (events, participants, userId) => {
  * @param {Array} skippedEvents - Array of skipped event IDs
  * @returns {Object} Core metrics object
  */
-const calculateReadingMetrics = (events, userId = null, skippedEvents = []) => {
+const calculateReadingMetrics = function(events, userId = null, skippedEvents = []) {
   // Get user ID from context if not provided and we're in a template context
   const currentUserId = userId || (this?.ctx?.data?.currentUser?.id);
 
@@ -808,7 +827,7 @@ const getPreviousEvent = (events, currentEventId, wrap = true) => {
 /***********************************************************************/
 
 // Get read for a specific user
-const getReadForUser = (event, userId = null) => {
+const getReadForUser = function(event, userId = null) {
   const currentUserId = userId || this?.ctx?.data?.currentUser?.id
   return event.imageReading?.reads?.[currentUserId] || null;
 };
@@ -838,8 +857,10 @@ const getFirstUserReadableEvent = (events, userId = null) => {
  * @param {string} userId - User ID to check
  * @returns {boolean} Whether the user has read this event
  */
-const userHasReadEvent = (event, userId) => {
-  return !!getReadForUser(event, userId);
+const userHasReadEvent = function(event, userId) {
+  const currentUserId = userId || (this?.ctx?.data?.currentUser?.id)
+
+  return !!getReadForUser(event, currentUserId);
 };
 
 /**
@@ -849,10 +870,12 @@ const userHasReadEvent = (event, userId) => {
  * @param {Object} options - Options for determining eligibility
  * @returns {boolean} Whether the current user can read this event
  */
-const canUserReadEvent = (event, userId, options = {}) => {
+const canUserReadEvent = function(event, userId = null, options = {}) {
   const {
     maxReadsPerEvent = 2 // Default max reads per event
   } = options;
+
+  const currentUserId = userId || (this?.ctx?.data?.currentUser?.id)
 
   const metadata = getReadingMetadata(event);
 
@@ -862,7 +885,7 @@ const canUserReadEvent = (event, userId, options = {}) => {
   }
 
   // User can't read if they've already read it
-  if (userHasReadEvent(event, userId)) {
+  if (userHasReadEvent(event, currentUserId)) {
     return false;
   }
 
@@ -903,6 +926,251 @@ const needsArbitration = (event) => {
   const metadata = getReadingMetadata(event);
   return metadata.needsArbitration;
 };
+
+/************************************************************************
+// Batches
+//***********************************************************************
+
+/**
+ * Create a batch of events for reading based on specified criteria
+ * @param {Object} data - Session data
+ * @param {Object} options - Batch creation options
+ * @param {string} options.type - Type of batch ('all_reads', 'first_reads', 'second_reads', 'awaiting_priors', 'clinic', 'custom')
+ * @param {string} [options.name] - Display name for the batch
+ * @param {string} [options.clinicId] - Clinic ID (for clinic-specific batches)
+ * @param {number} [options.limit] - Maximum number of events to include (defaults to 50)
+ * @param {Object} [options.filters] - Additional filters to apply
+ * @returns {Object} Created batch with ID and events
+ */
+const createReadingBatch = (data, options) => {
+  const {
+    type = 'custom',
+    name,
+    clinicId,
+    limit = 50,
+    filters = {},
+    daysToLookBack = 30
+  } = options
+
+  const currentUserId = data.currentUser.id
+
+  // Generate a unique batch ID
+  const batchId = generateBatchId()
+
+  // Start with all eligible events from the last 30 days
+  let events = data.events.filter(event =>
+    eligibleForReading(event) &&
+    dayjs(event.timing.startTime).isAfter(dayjs().subtract(daysToLookBack, 'days').startOf('day'))
+  )
+
+  // For clinic-specific batches
+  if (type === 'clinic') {
+    if (!clinicId) {
+      throw new Error('Clinic ID is required for clinic-type batches')
+    }
+    events = filterEventsByClinic(events, clinicId)
+  } else {
+    // For all non-clinic batches, apply common filters:
+
+    // 1. By default, filter by events the user can read (unless explicitly overridden)
+    if (filters.userCanRead !== false) {
+      events = filterEventsByUserCanRead(events, currentUserId)
+    }
+
+    // 2. Apply the awaiting priors filter
+    if (type === 'awaiting_priors') {
+      // Only include events with requested images
+      events = events.filter(event => event.hasRequestedImages === "true")
+    } else if (!filters.includeAwaitingPriors) {
+      // By default, exclude events with requested images
+      events = events.filter(event => event.hasRequestedImages !== "true")
+    }
+
+    // 3. Apply symptoms filter if specified
+    if (filters.hasSymptoms) {
+      events = events.filter(event => event.currentSymptoms?.length > 0)
+    }
+  }
+
+  // Apply read type filters
+  switch (type) {
+    case 'first_reads':
+      events = filterEventsByNeedsFirstRead(events)
+      break
+
+    case 'second_reads':
+      events = filterEventsByNeedsSecondRead(events)
+      break
+
+    case 'all_reads':
+    case 'awaiting_priors':
+      events = filterEventsByNeedsAnyRead(events)
+      break
+  }
+
+  // Sort events (typically by date, oldest first)
+  events = [...events].sort((a, b) =>
+    new Date(a.timing.startTime) - new Date(b.timing.startTime)
+  )
+
+  // Apply limit
+  if (limit > 0 && events.length > limit) {
+    events = events.slice(0, limit)
+  }
+
+  // Create and store the batch
+  const batch = {
+    id: batchId,
+    name: name || getDefaultBatchName(type, clinicId, data),
+    type,
+    events,
+    eventIds: events.map(e => e.id),
+    clinicId,
+    createdAt: new Date().toISOString(),
+    skippedEvents: [],
+    filters: {
+      daysToLookBack,
+      ...filters
+    }
+  }
+
+  // Initialize the reading session batches object if it doesn't exist
+  if (!data.readingSessionBatches) {
+    data.readingSessionBatches = {}
+  }
+
+  // Store the batch
+  data.readingSessionBatches[batchId] = batch
+
+  return batch
+}
+
+/**
+ * Generate a default name for a batch based on its type
+ * @param {string} type - Batch type
+ * @param {string} clinicId - Clinic ID (for clinic batches)
+ * @param {Object} data - Session data
+ * @returns {string} Default batch name
+ */
+const getDefaultBatchName = (type, clinicId, data) => {
+  switch (type) {
+    case 'all_reads':
+      return 'All cases needing reads'
+    case 'first_reads':
+      return '1st reads batch'
+    case 'second_reads':
+      return '2nd reads batch'
+    case 'awaiting_priors':
+      return 'Awaiting priors batch'
+    case 'clinic': {
+      const clinic = data.clinics.find(c => c.id === clinicId)
+      if (!clinic) return 'Clinic batch'
+
+      const location = clinic.locationId ?
+        data.breastScreeningUnits
+          .find(bsu => bsu.id === clinic.breastScreeningUnitId)
+          ?.locations.find(l => l.id === clinic.locationId)?.name : ''
+
+      return `${location || 'Clinic'} - ${dayjs(clinic.date).format('D MMM YYYY')}`
+    }
+    default:
+      return 'Custom batch'
+  }
+}
+
+/**
+ * Generate a unique ID for a batch
+ * @returns {string} Unique batch ID
+ */
+const generateBatchId = () => {
+  return Math.random().toString(36).substring(2, 10)
+}
+
+/**
+ * Get a reading batch by ID
+ * @param {Object} data - Session data
+ * @param {string} batchId - Batch ID to retrieve
+ * @returns {Object|null} Batch object or null if not found
+ */
+const getReadingBatch = (data, batchId) => {
+  if (!data.readingSessionBatches || !data.readingSessionBatches[batchId]) {
+    return null
+  }
+
+  return data.readingSessionBatches[batchId]
+}
+
+/**
+ * Get the first event in a batch that a user can read
+ * @param {Object} data - Session data
+ * @param {string} batchId - Batch ID
+ * @param {string} [userId] - User ID (defaults to current user)
+ * @returns {Object|null} First readable event or null if none found
+ */
+const getFirstReadableEventInBatch = (data, batchId, userId = null) => {
+  const batch = getReadingBatch(data, batchId)
+  if (!batch) return null
+
+  const currentUserId = userId || data.currentUser.id
+
+  // Get all events for the batch
+  const batchEvents = batch.eventIds.map(eventId =>
+    data.events.find(e => e.id === eventId)
+  ).filter(Boolean)
+
+  // Find the first one the user can read
+  return batchEvents.find(event => canUserReadEvent(event, currentUserId)) || null
+}
+
+/**
+ * Mark an event as skipped in a batch
+ * @param {Object} data - Session data
+ * @param {string} batchId - Batch ID
+ * @param {string} eventId - Event ID to mark as skipped
+ * @returns {boolean} Whether the operation was successful
+ */
+const skipEventInBatch = (data, batchId, eventId) => {
+  const batch = getReadingBatch(data, batchId)
+  if (!batch) return false
+
+  // Check if event exists in this batch
+  if (!batch.eventIds.includes(eventId)) return false
+
+  // Check if already skipped
+  if (batch.skippedEvents.includes(eventId)) return true
+
+  // Add to skipped events
+  batch.skippedEvents.push(eventId)
+  return true
+}
+
+/**
+ * Get reading progress for a batch
+ * @param {Object} data - Session data
+ * @param {string} batchId - Batch ID
+ * @param {string} currentEventId - Current event ID
+ * @param {string} [userId] - User ID (defaults to current user)
+ * @returns {Object} Reading progress information
+ */
+const getBatchReadingProgress = (data, batchId, currentEventId, userId = null) => {
+  const batch = getReadingBatch(data, batchId)
+  if (!batch) return null
+
+  // Get all events for the batch
+  const batchEvents = batch.eventIds.map(eventId =>
+    data.events.find(e => e.id === eventId)
+  ).filter(Boolean)
+
+  // Use existing function for progress tracking
+  return getReadingProgress(
+    batchEvents,
+    currentEventId,
+    batch.skippedEvents,
+    userId || data.currentUser.id
+  )
+}
+
+
 
 module.exports = {
 
@@ -946,4 +1214,14 @@ module.exports = {
   needsArbitration,
   needsFirstRead,
   needsSecondRead,
+
+  // Batches
+  createReadingBatch,
+  getDefaultBatchName,
+  generateBatchId,
+  getReadingBatch,
+  getFirstReadableEventInBatch,
+  skipEventInBatch,
+  getBatchReadingProgress,
+
 }

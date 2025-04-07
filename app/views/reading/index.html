@@ -126,12 +126,50 @@
     </li>
   </ul>
 
+<h2>Start new reading batch</h2>
+
+<ul class="nhsuk-grid-row nhsuk-card-group">
+  <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+    {{ card({
+      heading: "Start reading",
+      headingClasses: "nhsuk-heading-s",
+      descriptionHtml: "Begin reading cases needing review (includes both 1st and 2nd reads)" ~ actionLink({
+        classes: "nhsuk-link--no-visited-state",
+        text: "Start batch (50 cases)",
+        href: "/reading/create-batch?type=all_reads"
+      })
+    }) }}
+  </li>
+  <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+    {{ card({
+      heading: "Custom batch",
+      headingClasses: "nhsuk-heading-s",
+      descriptionHtml: "Create a custom batch based on specific criteria" ~ actionLink({
+        classes: "nhsuk-link--no-visited-state",
+        text: "Start custom batch",
+        href: "/reading/create-custom-batch"
+      })
+    }) }}
+  </li>
+  <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+    {{ card({
+      heading: "Arbitration",
+      headingClasses: "nhsuk-heading-s",
+      descriptionHtml: clinicCardDescriptionHtml ~ actionLink({
+        classes: "nhsuk-link--no-visited-state",
+        text: "See cases",
+        href: "#"
+      })
+    }) }}
+  </li>
+</ul>
+
   <h2>Available clinics</h2>
 
   <p><a href="#">See previously read clinics</a></p>
 
   {% if incompleteClinics | length === 0 %}
-    <p>No clinics from the last 7 days available for reading.</p>
+    <p>No clinics available for reading.</p>
   {% else %}
     <table class="nhsuk-table">
       <thead class="nhsuk-table__head">

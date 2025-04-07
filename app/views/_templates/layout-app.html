@@ -88,6 +88,7 @@
         "titleText": "There is a problem",
         "errorList": flash.error
       }) }}
+      {{ flash.error | log("Flash error") }}
     {% endif %}
 
     {% if flash.success %}
