@@ -18,6 +18,7 @@ const {
   getReadingMetadata,
 } = require('../lib/utils/reading')
 const { snakeCase } = require('../lib/utils/strings')
+const dayjs = require('dayjs')
 
 module.exports = router => {
   // Set nav state
@@ -569,6 +570,87 @@ module.exports = router => {
       default:
         return res.redirect(`/reading/batch/${batchId}/events/${eventId}`)
     }
+  })
+
+  // Default route for reading history - redirect to all view
+  router.get('/reading/history', (req, res) => {
+    res.redirect('/reading/history/all')
+  })
+
+  // Route for viewing reading history with view parameter
+  router.get('/reading/history/:view', (req, res) => {
+    const data = req.session.data
+    const currentUserId = data.currentUser.id
+    const view = req.params.view || 'all'
+
+    // Get all recent readings across all events - last 30 days
+    const thirtyDaysAgo = dayjs().subtract(30, 'days').toISOString()
+
+    // Collect all readings from events
+    const allReadings = []
+
+    data.events.forEach(event => {
+      if (!event.imageReading?.reads) return
+
+      const eventReadings = Object.entries(event.imageReading.reads).map(([readerId, reading]) => {
+        // Determine if this is a first or second read
+        const readingsForEvent = Object.values(event.imageReading.reads)
+        const sortedReadings = [...readingsForEvent].sort((a, b) =>
+          new Date(a.timestamp) - new Date(b.timestamp)
+        )
+
+        const readOrder = sortedReadings.findIndex(r => r.readerId === readerId)
+
+        const readType = readOrder === 0 ? 'first' :
+                        readOrder === 1 ? 'second' :
+                        'arbitration'
+
+        // Get participant info
+        const participant = data.participants.find(p => p.id === event.participantId)
+
+        // Get batch ID if available
+        let batchId = null
+        if (data.readingSessionBatches) {
+          for (const [id, batch] of Object.entries(data.readingSessionBatches)) {
+            if (batch.eventIds.includes(event.id)) {
+              batchId = id
+              break
+            }
+          }
+        }
+
+        return {
+          eventId: event.id,
+          clinicId: event.clinicId,
+          batchId,
+          readerId: reading.readerId,
+          readType,
+          result: reading.result,
+          timestamp: reading.timestamp,
+          participant
+        }
+      })
+
+      allReadings.push(...eventReadings)
+    })
+
+    // Filter for recent readings
+    const recentReadings = allReadings
+      .filter(reading => reading.timestamp > thirtyDaysAgo)
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+
+    // Determine which readings to display based on view
+    let readings = []
+    if (view === 'mine') {
+      readings = recentReadings.filter(reading => reading.readerId === currentUserId)
+    } else {
+      readings = recentReadings
+    }
+
+    res.render('reading/history', {
+      readings,
+      view
+    })
   })
 
 }

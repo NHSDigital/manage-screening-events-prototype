@@ -1,0 +1,95 @@
+{# app/views/reading/history.html #}
+
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "Reading history" %}
+{% set back = {
+  href: "/reading",
+  text: "Back to reading"
+} %}
+
+{% set navActive = "reading" %}
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
+{% block pageContent %}
+  <h1>{{ pageHeading }}</h1>
+
+  {% set secondaryNavItems = [] %}
+
+  {% for item in [
+    { id: 'all', label: 'All readings' },
+    { id: 'mine', label: 'My readings' }
+  ] %}
+    {% set href -%}
+      /reading/history/{{ item.id }}
+    {% endset %}
+    {% set secondaryNavItems = secondaryNavItems | push({
+      text: item.label,
+      href: href | trim,
+      current: true if item.id == view
+    }) %}
+  {% endfor %}
+
+  {{ appSecondaryNavigation({
+    visuallyHiddenTitle: "Reading history views",
+    items: secondaryNavItems
+  }) }}
+
+  {% if readings | length === 0 %}
+    <p>No readings found.</p>
+  {% else %}
+    <table class="nhsuk-table">
+      <thead class="nhsuk-table__head">
+        <tr>
+          <th scope="col">Date and time</th>
+          <th scope="col">Participant</th>
+          {% if view == 'all' %}
+          <th scope="col">Reader</th>
+          {% endif %}
+          <th scope="col">Read type</th>
+          <th scope="col">Result</th>
+        </tr>
+      </thead>
+      <tbody class="nhsuk-table__body">
+        {% for reading in readings %}
+          <tr>
+            <td>
+              {{ reading.timestamp | formatDate }}<br>
+              <strong>{{ reading.timestamp | formatTime }}</strong>
+            </td>
+            <td>
+              {{ reading.participant | getFullName }}
+            </td>
+            {% if view == 'all' %}
+            <td>
+              {{ reading.readerId | getUsername({identifyCurrentUser: true}) }}
+            </td>
+            {% endif %}
+            <td>
+              {% if reading.readType == 'first' %}
+                First read
+              {% elif reading.readType == 'second' %}
+                Second read
+              {% elif reading.readType == 'arbitration' %}
+                Arbitration
+              {% else %}
+                Unknown
+              {% endif %}
+            </td>
+            <td>
+              {% if reading.result == "normal" %}
+                {{ "Normal" | toTag("green") }}
+              {% elif reading.result == "technical_recall" %}
+                {{ "Technical recall" | toTag({colour: "orange"}) }}
+              {% elif reading.result == "recall_for_assessment" %}
+                {{ "Recall for assessment" | toTag({colour: "red"}) }}
+              {% else %}
+                {{ reading.result | formatWords | sentenceCase | toTag }}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}
