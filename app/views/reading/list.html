@@ -101,6 +101,7 @@
     {% set eventsNeedingReading = groupedEvents["false"] %}
     {% set completedEvents = groupedEvents["true"] %}
 
+    {# Default order is true, false, but we want to reverse it #}
     {% for completeState in ['false', 'true'] %}
       {% if groupedEvents[completeState] %}
         <h2>
@@ -109,6 +110,7 @@
           {% else %}
             Completely read cases
           {% endif %}
+          ({{ groupedEvents[completeState] | length }})
         </h2>
 
         <table class="nhsuk-table">
