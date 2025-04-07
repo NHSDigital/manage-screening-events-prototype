@@ -938,6 +938,7 @@ const needsArbitration = (event) => {
  * @param {string} options.type - Type of batch ('all_reads', 'first_reads', 'second_reads', 'awaiting_priors', 'clinic', 'custom')
  * @param {string} [options.name] - Display name for the batch
  * @param {string} [options.clinicId] - Clinic ID (for clinic-specific batches)
+ * @param {string} [options.batchId] - Custom batch ID (if not provided, one will be generated)
  * @param {number} [options.limit] - Maximum number of events to include (defaults to 50)
  * @param {Object} [options.filters] - Additional filters to apply
  * @returns {Object} Created batch with ID and events
@@ -947,6 +948,7 @@ const createReadingBatch = (data, options) => {
     type = 'custom',
     name,
     clinicId,
+    batchId = null,  // Allow custom batch ID
     limit = 50,
     filters = {},
     daysToLookBack = 30
@@ -954,8 +956,8 @@ const createReadingBatch = (data, options) => {
 
   const currentUserId = data.currentUser.id
 
-  // Generate a unique batch ID
-  const batchId = generateBatchId()
+  // Use provided batchId or generate a new one
+  const finalBatchId = batchId || generateBatchId()
 
   // Start with all eligible events from the last 30 days
   let events = data.events.filter(event =>
@@ -1020,7 +1022,7 @@ const createReadingBatch = (data, options) => {
 
   // Create and store the batch
   const batch = {
-    id: batchId,
+    id: finalBatchId,
     name: name || getDefaultBatchName(type, clinicId, data),
     type,
     events,
@@ -1040,7 +1042,7 @@ const createReadingBatch = (data, options) => {
   }
 
   // Store the batch
-  data.readingSessionBatches[batchId] = batch
+  data.readingSessionBatches[finalBatchId] = batch
 
   return batch
 }
@@ -1098,6 +1100,24 @@ const getReadingBatch = (data, batchId) => {
   }
 
   return data.readingSessionBatches[batchId]
+}
+
+// Add a helper function to create batches from clinics
+const getOrCreateClinicBatch = (data, clinicId) => {
+  // Check if a batch already exists for this clinic
+  const existingBatch = (data.readingSessionBatches || {})[clinicId]
+
+  if (existingBatch && existingBatch.type === 'clinic' && existingBatch.clinicId === clinicId) {
+    return existingBatch
+  }
+
+  // Create a new batch for this clinic
+  return createReadingBatch(data, {
+    type: 'clinic',
+    clinicId,
+    batchId: clinicId, // Use clinic ID as batch ID
+    name: null // Will use default clinic name
+  })
 }
 
 /**
@@ -1220,6 +1240,7 @@ module.exports = {
   getDefaultBatchName,
   generateBatchId,
   getReadingBatch,
+  getOrCreateClinicBatch,
   getFirstReadableEventInBatch,
   skipEventInBatch,
   getBatchReadingProgress,

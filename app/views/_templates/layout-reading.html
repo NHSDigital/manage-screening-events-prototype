@@ -3,8 +3,8 @@
 
 {% set gridColumn = gridColumn or "nhsuk-grid-column-full" %}
 
-{% set isClinicContext = clinicId and not batchId %}
-{% set isBatchContext = batchId %}
+{% set isClinicContext = batch.clinicId %}
+{% set isBatchContext = not isClinicContext %}
 {# {% for clinic in clinics %}
           {% set location = clinic.location %}
           {% set stats = clinic.readingStatus %}
@@ -25,6 +25,7 @@
   {{ participant | log("Participant") }}
   {{ event | log("Event") }}
   {{ data.imageReadingTemp | log("ImageReadingTemp")}}
+  {{ batch | log("Batch")}}
   <div class="app-reading-status">
     <div class="nhsuk-width-container">
       <div class="app-reading-status__row">

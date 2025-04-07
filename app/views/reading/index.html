@@ -200,6 +200,12 @@
                 <br>
                 {{ clinic.clinicCode }}
               </a>
+              {% if stats.userReadableCount > 0 %}
+                <br>
+                <a href="/reading/clinics/{{ clinic.id }}/start" class="nhsuk-u-margin-top-3 nhsuk-u-margin-bottom-0">
+                  Start reading
+                </a>
+              {% endif %}
             </td>
             <td>
               {% set daysSinceClinic = clinic.date | daysSince %}
