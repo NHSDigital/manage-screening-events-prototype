@@ -97,119 +97,137 @@
       }) }}
     {% endif %}
 
-    <table class="nhsuk-table">
-      <thead>
-        <tr>
-          <th>Cases</th>
-          <th>First read</th>
-          <th>Second read</th>
-          <th>Outcome</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for event in events %}
-          {% set metadata = event.readingMetadata %}
-          <tr>
-            <td>
-              {% set readingHref -%}
-                /reading/clinics/{{ clinicId }}/events/{{ event.id }}
-              {%- endset %}
-              <a href="{{ readingHref if metadata.readCount < 2 else '#' }}">{{ event.participant | getFullName }}</a>
-              {% if event.currentSymptoms | length %}
-              <br>
-                {{ tag({
-                  text: "Has symptoms",
-                  classes: "nhsuk-tag--yellow"
-                })}}
-              {% endif %}
-              {% if (data.settings.reading.showRepeatsTag | falsify) and event.mammogramData.metadata.hasRepeat %}
-              <br>
-                {{ tag({
-                  text: "Has repeat",
-                  classes: "nhsuk-tag--yellow"
-                })}}
-              {% endif %}
-            </td>
-            {# First read column #}
-            <td>
-              {% set skipped = "Skipped" if data.readingSession.skippedEvents | includes(event.id) else false %}
-              {% set isBlind = data.settings.reading.blindReading | falsify %}
-              {% set isCurrentUserRead = false %}
-              {% if metadata.readCount >= 1 %}
-              {% set firstRead = metadata.reads[0] %}
-              {% set isCurrentUserRead = firstRead.readerId === data.currentUser.id %}
+    {% set groupedEvents = events | groupby("readingMetadata.secondReadComplete") %}
+    {% set eventsNeedingReading = groupedEvents["false"] %}
+    {% set completedEvents = groupedEvents["true"] %}
 
-                {% if isBlind and not isCurrentUserRead and metadata.readCount < 2 %}
-                  {{ "Completed (blind)" | toTag({colour: "blue"}) }}
-                {% else %}
+    {% for completeState in ['false', 'true'] %}
+      {% if groupedEvents[completeState] %}
+        <h2>
+          {% if completeState == 'false' %}
+            Cases needing reading
+          {% else %}
+            Completely read cases
+          {% endif %}
+        </h2>
+
+        <table class="nhsuk-table">
+          <thead>
+            <tr>
+              <th>Cases</th>
+              <th>First read</th>
+              <th>Second read</th>
+              <th>Outcome</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for event in groupedEvents[completeState] %}
+              {% set metadata = event.readingMetadata %}
+              {# {{metadata | log("metadata")}} #}
+              <tr>
+                <td>
+                  {% set readingHref -%}
+                    /reading/clinics/{{ clinicId }}/events/{{ event.id }}
+                  {%- endset %}
+                  <a href="{{ readingHref if metadata.readCount < 2 else '#' }}">{{ event.participant | getFullName }}</a>
+                  {% if event.currentSymptoms | length %}
+                  <br>
+                    {{ tag({
+                      text: "Has symptoms",
+                      classes: "nhsuk-tag--yellow"
+                    })}}
+                  {% endif %}
+                  {% if (data.settings.reading.showRepeatsTag | falsify) and event.mammogramData.metadata.hasRepeat %}
+                  <br>
+                    {{ tag({
+                      text: "Has repeat",
+                      classes: "nhsuk-tag--yellow"
+                    })}}
+                  {% endif %}
+                </td>
+                {# First read column #}
+                <td>
+                  {% set skipped = "Skipped" if data.readingSession.skippedEvents | includes(event.id) else false %}
+                  {% set isBlind = data.settings.reading.blindReading | falsify %}
+                  {% set isCurrentUserRead = false %}
+                  {% if metadata.readCount >= 1 %}
+                  {% set firstRead = metadata.reads[0] %}
+                  {% set isCurrentUserRead = firstRead.readerId === data.currentUser.id %}
+
+                    {% if isBlind and not isCurrentUserRead and metadata.readCount < 2 %}
+                      {{ "Completed (blind)" | toTag({colour: "blue"}) }}
+                    {% else %}
+                      {% if metadata.readCount >= 2 %}
+                        {{ firstRead.result | formatWords | sentenceCase | toTag({colour: "grey"}) }}
+                      {% else %}
+                        {{ firstRead.result | formatWords | sentenceCase | toTag }}
+                      {% endif %}
+
+                    {% endif %}
+
+                    <br>
+                    <span class="app-text-grey app-nowrap nhsuk-body-s">by {{ firstRead.readerId | getUsername({identifyCurrentUser: true}) }}</span>
+                  {% elif skipped %}
+                    {{ "Skipped" | toTag({color: "grey"}) }}
+                  {% else %}
+                    {{ "Not read" | toTag({color: "grey"}) }}
+                  {% endif %}
+                </td>
+                {# Second read column #}
+                <td>
+                  {% set isBlind = data.settings.reading.blindReading | falsify %}
+                  {% set isCurrentUserRead = false %}
+
                   {% if metadata.readCount >= 2 %}
-                    {{ firstRead.result | formatWords | sentenceCase | toTag({colour: "grey"}) }}
+                    {% set secondRead = metadata.reads[1] %}
+                    {% set isCurrentUserRead = secondRead.readerId === data.currentUser.id %}
+
+
+                    {{ secondRead.result | formatWords | sentenceCase | toTag({colour: "grey"}) }}
+
+
+                    <br>
+                    <span class="app-text-grey app-nowrap nhsuk-body-s">by {{ secondRead.readerId | getUsername({identifyCurrentUser: true}) }}</span>
+                  {% elif metadata.readCount == 1 %}
+                    {% if skipped %}
+                      {{ "Skipped" | toTag({color: "grey"}) }}
+                    {% else %}
+                      {{ "Not read" | toTag({colour: "blue"}) }}
+                    {% endif %}
                   {% else %}
-                    {{ firstRead.result | formatWords | sentenceCase | toTag }}
+                    {{ "Waiting for 1st read" | toTag({colour: "grey"}) }}
                   {% endif %}
-
-                {% endif %}
-
-                <br>
-                <span class="app-text-grey app-nowrap nhsuk-body-s">by {{ firstRead.readerId | getUsername({identifyCurrentUser: true}) }}</span>
-              {% elif skipped %}
-                {{ "Skipped" | toTag({color: "grey"}) }}
-              {% else %}
-                {{ "Not read" | toTag({color: "grey"}) }}
-              {% endif %}
-            </td>
-            {# Second read column #}
-            <td>
-              {% set isBlind = data.settings.reading.blindReading | falsify %}
-              {% set isCurrentUserRead = false %}
-
-              {% if metadata.readCount >= 2 %}
-                {% set secondRead = metadata.reads[1] %}
-                {% set isCurrentUserRead = secondRead.readerId === data.currentUser.id %}
-
-
-                {{ secondRead.result | formatWords | sentenceCase | toTag({colour: "grey"}) }}
-
-
-                <br>
-                <span class="app-text-grey app-nowrap nhsuk-body-s">by {{ secondRead.readerId | getUsername({identifyCurrentUser: true}) }}</span>
-              {% elif metadata.readCount == 1 %}
-                {% if skipped %}
-                  {{ "Skipped" | toTag({color: "grey"}) }}
-                {% else %}
-                  {{ "Not read" | toTag({colour: "blue"}) }}
-                {% endif %}
-              {% else %}
-                {{ "Waiting for 1st read" | toTag({colour: "grey"}) }}
-              {% endif %}
-            </td>
-            {# Outcome column #}
-            <td>
-              {% if metadata.readCount >= 2 %}
-                {% if metadata.hasDisagreement %}
-                  {{ "Arbitration" | toTag({colour: "orange"}) }}
-                {% else %}
-                  {% set result = metadata.reads[0].result %}
-                  {% if result == "normal" %}
-                    {{ "Normal" | toTag("green") }}
-                  {% elif result == "technical_recall" %}
-                    {{ "Technical recall" | toTag({colour: "orange"}) }}
-                  {% elif result == "recall_for_assessment" %}
-                    {{ "Recall for assessment" | toTag({colour: "red"}) }}
+                </td>
+                {# Outcome column #}
+                <td>
+                  {% if metadata.readCount >= 2 %}
+                    {% if metadata.hasDisagreement %}
+                      {{ "Arbitration" | toTag({colour: "orange"}) }}
+                    {% else %}
+                      {% set result = metadata.reads[0].result %}
+                      {% if result == "normal" %}
+                        {{ "Normal" | toTag("green") }}
+                      {% elif result == "technical_recall" %}
+                        {{ "Technical recall" | toTag({colour: "orange"}) }}
+                      {% elif result == "recall_for_assessment" %}
+                        {{ "Recall for assessment" | toTag({colour: "red"}) }}
+                      {% else %}
+                        {{ result | formatWords | sentenceCase | toTag }}
+                      {% endif %}
+                    {% endif %}
+                  {% elif metadata.readCount == 1 %}
+                    {{ "Waiting for 2nd read" | toTag({colour: "grey"}) }}
                   {% else %}
-                    {{ result | formatWords | sentenceCase | toTag }}
+                    {{ "Waiting for 1st read" | toTag({colour: "grey"}) }}
                   {% endif %}
-                {% endif %}
-              {% elif metadata.readCount == 1 %}
-                {{ "Waiting for 2nd read" | toTag({colour: "grey"}) }}
-              {% else %}
-                {{ "Waiting for 1st read" | toTag({colour: "grey"}) }}
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+      {% endif %}
+    {% endfor %}
   </div>
 </div>
 {% endblock %}
