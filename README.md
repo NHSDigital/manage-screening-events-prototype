@@ -1,6 +1,6 @@
 # NHS Screening event management prototype
 
-A prototype for managing breast screening clinics and participants, built using the [NHS.UK prototype kit](https://prototype-kit.service.manual.nhs.uk).
+A prototype for managing breast screening clinics and participants, built using the [NHS.UK prototype kit](https://prototype-kit.service-manual.nhs.uk).
 
 ## About this prototype
 
@@ -13,7 +13,7 @@ The prototype includes auto-generated example data to demonstrate the interactio
 
 ## Installation
 
-1. Follow the [NHS.UK prototype kit installation guide](https://prototype-kit.service.manual.nhs.uk/install/simple)
+1. Follow the [NHS.UK prototype kit installation guide](https://prototype-kit.service-manual.nhs.uk/install/simple)
 2. Clone this repository
 3. Run `npm install`
 4. Run `npm run watch`
