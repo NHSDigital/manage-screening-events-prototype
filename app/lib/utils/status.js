@@ -1,5 +1,7 @@
 // app/lib/utils/status.js
 
+const dayjs = require('dayjs')
+
 /**
  * Define status groups for easier checking
  * @type {Object}
@@ -71,10 +73,12 @@ const isActive = (input) => {
  * @param {string|Object} input - Status string or event object
  * @returns {boolean} Whether reading is needed
  */
-const eligibleForReading = (input) => {
-  const status = getStatus(input)
+const eligibleForReading = (event) => {
+  const status = getStatus(event)
   if (!status) return false
-  return isStatusInGroup(status, 'eligible_for_reading')
+  const cutoffDate = dayjs().subtract(30, 'days').startOf('day')
+  return isStatusInGroup(status, 'eligible_for_reading') &&
+    dayjs(event.timing.startTime).isAfter(cutoffDate)
 }
 
 /**

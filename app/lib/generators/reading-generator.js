@@ -23,12 +23,8 @@ const generateReadingData = (events, users) => {
 
   console.log(`Generating reading data using ${firstReader.firstName} ${firstReader.lastName}, ${secondReader.firstName} ${secondReader.lastName}, and ${thirdReader.firstName} ${thirdReader.lastName} as readers`)
 
-
-  // Get completed screening events from the last 30 days
-  const cutoffDate = dayjs().subtract(30, 'days').startOf('day')
   const recentEvents = events.filter(event =>
-    eligibleForReading(event) &&
-    dayjs(event.timing.startTime).isAfter(cutoffDate)
+    eligibleForReading(event)
   )
 
   // Sort by date (oldest first)
@@ -75,12 +71,21 @@ const generateReadingData = (events, users) => {
   // Track which events are updated for efficient lookup later
   const updatedEventIds = new Set()
 
+  // Function to generate a recent timestamp (within past 7 days)
+  const generateRecentTimestamp = (baseDate, minHours = 2, maxHours = 36) => {
+    const hoursAgo = Math.floor(Math.random() * (maxHours - minHours)) + minHours
+    return dayjs().subtract(hoursAgo, 'hours').toISOString()
+  }
+
   // TWO OLDEST CLINICS: Complete first and second reads
   if (clinics.length >= 2) {
     let count = 0
     for (let i = 0; i < 2 && i < clinics.length; i++) {
       const clinic = clinics[i]
       console.log(`Adding complete first and second reads to clinic ${clinic.id}`)
+
+      // Use the same base time for all reads in this clinic, then advance by 1 minute for each event
+      let baseReadTime = dayjs(generateRecentTimestamp(clinic.date, 48, 72))
 
       clinic.events.forEach(event => {
         // Find the event in our array
@@ -92,11 +97,12 @@ const generateReadingData = (events, users) => {
           updatedEvents[eventIndex].imageReading = { reads: {} }
         }
 
+        // Advance time by 1 minute for each read
+        baseReadTime = baseReadTime.add(1, 'minute')
+
         // First read (by second user)
         const firstResult = weighted.select(readResults)
-        const firstReadTime = dayjs(event.timing.startTime)
-          .add(Math.floor(Math.random() * 2) + 1, 'days')
-          .toISOString()
+        const firstReadTime = baseReadTime.toISOString()
 
         updatedEvents[eventIndex].imageReading.reads[secondReader.id] = {
           result: firstResult,
@@ -113,8 +119,9 @@ const generateReadingData = (events, users) => {
           secondResult = otherResults[Math.floor(Math.random() * otherResults.length)]
         }
 
-        const secondReadTime = dayjs(firstReadTime)
-          .add(Math.floor(Math.random() * 3) + 1, 'days')
+        // Add 15-30 minutes for second read
+        const secondReadTime = baseReadTime
+          .add(Math.floor(Math.random() * 16) + 15, 'minutes')
           .toISOString()
 
         updatedEvents[eventIndex].imageReading.reads[firstReader.id] = {
@@ -131,12 +138,15 @@ const generateReadingData = (events, users) => {
     console.log(`Added first and second reads to ${count} events in the 2 oldest clinics`)
   }
 
-  // NEXT FOUR OLDEST CLINICS: Complete first reads only
-  if (clinics.length >= 6) {
+  // NEXT TWO CLINICS: First user (current user) reads all first, but no second reads
+  if (clinics.length >= 4) {
     let count = 0
-    for (let i = 2; i < 6 && i < clinics.length; i++) {
+    for (let i = 2; i < 4 && i < clinics.length; i++) {
       const clinic = clinics[i]
-      console.log(`Adding complete first reads to clinic ${clinic.id}`)
+      console.log(`Adding first reads by current user to clinic ${clinic.id}`)
+
+      // Use the same base time for all reads in this clinic, then advance by 1 minute for each event
+      let baseReadTime = dayjs(generateRecentTimestamp(clinic.date, 12, 36))
 
       clinic.events.forEach(event => {
         // Skip if already updated
@@ -151,11 +161,56 @@ const generateReadingData = (events, users) => {
           updatedEvents[eventIndex].imageReading = { reads: {} }
         }
 
+        // Advance time by 1 minute for each read
+        baseReadTime = baseReadTime.add(1, 'minute')
+
+        // First read (by first user/current user)
+        const firstResult = weighted.select(readResults)
+        const firstReadTime = baseReadTime.toISOString()
+
+        updatedEvents[eventIndex].imageReading.reads[firstReader.id] = {
+          result: firstResult,
+          readerId: firstReader.id,
+          readerType: firstReader.role,
+          timestamp: firstReadTime
+        }
+
+        updatedEventIds.add(event.id)
+        count++
+      })
+    }
+    console.log(`Added first reads by current user to ${count} events in the next 2 clinics`)
+  }
+
+  // NEXT TWO CLINICS: Second user reads all first, waiting for first user (current user) to do second reads
+  if (clinics.length >= 6) {
+    let count = 0
+    for (let i = 4; i < 6 && i < clinics.length; i++) {
+      const clinic = clinics[i]
+      console.log(`Adding first reads by second user to clinic ${clinic.id}`)
+
+      // Use the same base time for all reads in this clinic, then advance by 1 minute for each event
+      let baseReadTime = dayjs(generateRecentTimestamp(clinic.date, 4, 24))
+
+      clinic.events.forEach(event => {
+        // Skip if already updated
+        if (updatedEventIds.has(event.id)) return
+
+        // Find the event in our array
+        const eventIndex = updatedEvents.findIndex(e => e.id === event.id)
+        if (eventIndex === -1) return
+
+        // Ensure the imageReading structure exists
+        if (!updatedEvents[eventIndex].imageReading) {
+          updatedEvents[eventIndex].imageReading = { reads: {} }
+        }
+
+        // Advance time by 1 minute for each read
+        baseReadTime = baseReadTime.add(1, 'minute')
+
         // First read (by second user)
         const firstResult = weighted.select(readResults)
-        const firstReadTime = dayjs(event.timing.startTime)
-          .add(Math.floor(Math.random() * 2) + 1, 'days')
-          .toISOString()
+        const firstReadTime = baseReadTime.toISOString()
 
         updatedEvents[eventIndex].imageReading.reads[secondReader.id] = {
           result: firstResult,
@@ -168,65 +223,20 @@ const generateReadingData = (events, users) => {
         count++
       })
     }
-    console.log(`Added first reads to ${count} events in the next 4 clinics`)
+    console.log(`Added first reads by second user to ${count} events in the next 2 clinics`)
   }
 
-  // ADD THIRD READER DATA TO CLINICS 2 AND 3 (partial second reads by third user)
-  if (clinics.length >= 4) {
-    let thirdReaderCount = 0
-
-    // Process clinics at index 2 and 3 (the first two of the 4 with first reads)
-    for (let i = 2; i < 4 && i < clinics.length; i++) {
-      const clinic = clinics[i]
-      console.log(`Adding partial second reads by third user to clinic ${clinic.id}`)
-
-      // Only add third reader to 50% of events in these clinics
-      const eventsToRead = clinic.events
-        .filter(event => updatedEventIds.has(event.id)) // Only events with first reads
-        .slice(0, Math.ceil(clinic.events.length / 2)) // Take first 50%
-
-      eventsToRead.forEach(event => {
-        // Find the event in our array
-        const eventIndex = updatedEvents.findIndex(e => e.id === event.id)
-        if (eventIndex === -1) return
-
-        // Get the first read result for this event
-        const firstRead = updatedEvents[eventIndex].imageReading.reads[secondReader.id]
-        if (!firstRead) return
-
-        // Second read by third user - 70% chance of agreement with first reader
-        let thirdResult = firstRead.result
-        if (Math.random() > 0.7) {
-          // Different result for disagreement
-          const otherResults = Object.keys(readResults).filter(r => r !== firstRead.result)
-          thirdResult = otherResults[Math.floor(Math.random() * otherResults.length)]
-        }
-
-        const thirdReadTime = dayjs(firstRead.timestamp)
-          .add(Math.floor(Math.random() * 2) + 1, 'days')
-          .toISOString()
-
-        updatedEvents[eventIndex].imageReading.reads[thirdReader.id] = {
-          result: thirdResult,
-          readerId: thirdReader.id,
-          readerType: thirdReader.role,
-          timestamp: thirdReadTime
-        }
-
-        thirdReaderCount++
-      })
-    }
-    console.log(`Added third reader data to ${thirdReaderCount} events in clinics 2 and 3`)
-  }
-
-  // NEXT TWO OLDEST CLINICS: 75% first read
+  // NEXT TWO OLDEST CLINICS: 75% first read by third user
   if (clinics.length >= 8) {
     let count = 0
     for (let i = 6; i < 8 && i < clinics.length; i++) {
       const clinic = clinics[i]
       console.log(`Adding partial first reads to clinic ${clinic.id}`)
 
-      // Only read 50% of events in these clinics
+      // Use the same base time for all reads in this clinic, then advance by 1 minute for each event
+      let baseReadTime = dayjs(generateRecentTimestamp(clinic.date, 1, 12))
+
+      // Only read 75% of events in these clinics
       const eventsToRead = clinic.events
         .filter(event => !updatedEventIds.has(event.id))
         .slice(0, Math.ceil(clinic.events.length * 0.75)) // Take first 75%
@@ -241,16 +251,17 @@ const generateReadingData = (events, users) => {
           updatedEvents[eventIndex].imageReading = { reads: {} }
         }
 
-        // First read (by second user)
-        const firstResult = weighted.select(readResults)
-        const firstReadTime = dayjs(event.timing.startTime)
-          .add(Math.floor(Math.random() * 2) + 1, 'days')
-          .toISOString()
+        // Advance time by 1 minute for each read
+        baseReadTime = baseReadTime.add(1, 'minute')
 
-        updatedEvents[eventIndex].imageReading.reads[secondReader.id] = {
+        // First read (by third user)
+        const firstResult = weighted.select(readResults)
+        const firstReadTime = baseReadTime.toISOString()
+
+        updatedEvents[eventIndex].imageReading.reads[thirdReader.id] = {
           result: firstResult,
-          readerId: secondReader.id,
-          readerType: secondReader.role,
+          readerId: thirdReader.id,
+          readerType: thirdReader.role,
           timestamp: firstReadTime
         }
 

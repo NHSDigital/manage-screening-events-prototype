@@ -586,6 +586,23 @@ const getReadingProgress = function(events, currentEventId, skippedEvents = [], 
 //   };
 // };
 
+// Add this to app/lib/utils/reading.js
+
+/**
+ * Sort events by screening date (oldest first)
+ * @param {Array} events - Array of events to sort
+ * @returns {Array} Sorted events array
+ */
+const sortEventsByScreeningDate = (events) => {
+  if (!events || !Array.isArray(events) || events.length === 0) {
+    return []
+  }
+
+  return [...events].sort((a, b) =>
+    new Date(a.timing.startTime) - new Date(b.timing.startTime)
+  )
+}
+
 /************************************************************************
 // Clinic stuff
 //***********************************************************************
@@ -604,16 +621,10 @@ const getFirstAvailableClinic = (data) => {
  */
 const getReadingClinics = (data, options = {}) => {
   const {
-    daysToLookBack = 30
   } = options
-
-  const cutoffDate = dayjs().subtract(daysToLookBack, 'days').startOf('day')
 
   return data.clinics
     .filter(clinic =>
-      // Only get clinics from last X days
-      dayjs(clinic.date).isAfter(cutoffDate) &&
-      // That have screenable events
       data.events.some(e => e.clinicId === clinic.id && eligibleForReading(e))
     )
     .map(clinic => {
@@ -950,8 +961,7 @@ const createReadingBatch = (data, options) => {
     clinicId,
     batchId = null,  // Allow custom batch ID
     limit = 50,
-    filters = {},
-    daysToLookBack = 30
+    filters = {}
   } = options
 
   const currentUserId = data.currentUser.id
@@ -961,8 +971,7 @@ const createReadingBatch = (data, options) => {
 
   // Start with all eligible events from the last 30 days
   let events = data.events.filter(event =>
-    eligibleForReading(event) &&
-    dayjs(event.timing.startTime).isAfter(dayjs().subtract(daysToLookBack, 'days').startOf('day'))
+    eligibleForReading(event)
   )
 
   // For clinic-specific batches
@@ -1031,7 +1040,6 @@ const createReadingBatch = (data, options) => {
     createdAt: new Date().toISOString(),
     skippedEvents: [],
     filters: {
-      daysToLookBack,
       ...filters
     }
   }
@@ -1205,6 +1213,7 @@ module.exports = {
   enhanceEventsWithReadingData,
   getReadingProgress,
   getReadingStatusForEvents,
+  sortEventsByScreeningDate,
 
   // Clinic stuff
   getFirstAvailableClinic,

@@ -17,8 +17,8 @@
   {% set secondaryNavItems = [] %}
 
   {% for item in [
-    { id: 'all', label: 'All readings' },
-    { id: 'mine', label: 'My readings' }
+    { id: 'mine', label: 'My readings' },
+    { id: 'all', label: 'All readings' }
   ] %}
     {% set href -%}
       /reading/history/{{ item.id }}
@@ -58,7 +58,15 @@
               <strong>{{ reading.timestamp | formatTime }}</strong>
             </td>
             <td>
-              {{ reading.participant | getFullName }}
+              {% if reading.batchId %}
+              <a href="/reading/batch/{{ reading.batchId or 'clinic' }}/events/{{ reading.eventId }}">
+                {{ reading.participant | getFullName }}
+              </a>
+              {% else %}
+                {{ reading.participant | getFullName }}
+              {% endif %}
+
+
             </td>
             {% if view == 'all' %}
             <td>

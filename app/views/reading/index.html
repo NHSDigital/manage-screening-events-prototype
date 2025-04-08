@@ -12,264 +12,195 @@
 {% block pageContent %}
   <h1>{{ pageHeading }}</h1>
 
-  {# {% if totalToRead > 0 %}
-    <p class="nhsuk-body">{{ totalToRead }} participants' images remaining to be read from clinics in the last 7 days</p>
-  {% else %}
-    <p class="nhsuk-body">All images from recent clinics have been read</p>
-  {% endif %} #}
+<h2>Start new reading session</h2>
 
-  <ul class="nhsuk-grid-row nhsuk-card-group">
-    <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+{% set allReadsEventsWithAwaitingPriors = data.events | filterEventsByEligibleForReading | filterEventsByNeedsAnyRead | sortEventsByScreeningDate %}
 
-      {% set clinic = incompleteClinics[0] %}
-      {{ clinic | log("First clinic") }}
+{% set allReadsEvents = allReadsEventsWithAwaitingPriors | where("hasRequestedImages", "false") %}
 
-      {% set clinicCardDescriptionHtml %}
+{% set firstReadsEvents = allReadsEvents | filterEventsByNeedsFirstRead %}
+{% set secondReadsEvents = allReadsEvents | filterEventsByNeedsSecondRead %}
+{% set awaitingPriorsEvents = allReadsEventsWithAwaitingPriors | where("hasRequestedImages", "true") %}
 
-        <ul class="nhsuk-list nhsuk-list--bullet nhsuk-body-s nhsuk-u-margin-bottom-3">
-          <li>
-            172 cases requiring a 1st read
-            {# {{ clinic.location.name }}
-            {% if clinic.location.type === 'mobile_unit' %}
-              at {{ clinic.siteName }}
-            {% endif %} #}
-          </li>
-          <li>
-            Oldest from
-            {{ clinic.date | formatDate | noWrap }} ({{ clinic.date | formatRelativeDate | sentenceCase }})
-          </li>
-          {# <li>
-            {{ clinic.readingStatus.total }} image {{ "record" if clinic.readingStatus.total == 1 else "records" }}
-          </li> #}
-        </ul>
-      {% endset %}
+{% set allReadsForUser = allReadsEvents | filterEventsByUserCanRead(data.currentUser.id) %}
+{% set firstReadsForUser = firstReadsEvents | filterEventsByUserCanRead(data.currentUser.id) %}
+{% set secondReadsForUser = secondReadsEvents | filterEventsByUserCanRead(data.currentUser.id) %}
+{% set awaitingPriorsForUser = awaitingPriorsEvents | filterEventsByUserCanRead(data.currentUser.id) %}
 
-      {# {% set firstUnreadEvent = data | getFirstUnreadEventOverall %} #}
-      {{ firstUnreadEvent | log("First unread event") }}
+{% set oldestAllRead = allReadsEvents[0].timing.startTime if allReadsEvents.length > 0 %}
+{% set oldestFirstRead = firstReadsEvents[0].timing.startTime if firstReadsEvents.length > 0 %}
+{% set oldestSecondRead = secondReadsEvents[0].timing.startTime if secondReadsEvents.length > 0 %}
+{% set oldestAwaitingPrior = awaitingPriorsEvents[0].timing.startTime if awaitingPriorsEvents.length > 0 %}
 
-      {% set clinicHref -%}
-        /reading/clinics/{{ firstUnreadEvent.clinicId }}/events/{{ firstUnreadEvent.id }}
-      {%- endset %}
+{# All reads card content #}
+{% set allReadsContent %}
+  <p>
+    {{ allReadsEvents | length }} cases to read
+    {# <br>
+  ({{ allReadsForUser | length }} available to you)<br> #}
+    {# Excludes those awaiting priors #}
+  </p>
 
-      {{ card({
-        heading: "1st reads",
-        headingClasses: "nhsuk-heading-s",
-        descriptionHtml: clinicCardDescriptionHtml ~ actionLink({
-          classes: "nhsuk-link--no-visited-state",
-          text: "Start 1st reading",
-          href: clinicHref
-        })
-      }) }}
+  {% if oldestAllRead %}
+    <p class="nhsuk-u-margin-bottom-1">Oldest from {{ oldestAllRead | formatRelativeDate }}</p>
+    {% set daysSinceOldest = oldestAllRead | daysSince %}
+    {% if daysSinceOldest > 10 %}
+      <div class="nhsuk-u-margin-bottom-2">
+        {% if daysSinceOldest > 13 %}
+          {{ tag({
+            text: "Late",
+            classes: "nhsuk-tag--red"
+          })}}
+        {% elseif daysSinceOldest > 10 %}
+          {{ tag({
+            text: "Urgent",
+            classes: "nhsuk-tag--orange"
+          })}}
+        {% endif %}
+      </div>
+    {% endif %}
 
-    </li>
-    <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+  {% endif %}
 
-      {% set clinic = incompleteClinics[2] %}
-      {{ clinic | log("Second clinic") }}
+  {{ actionLink({
+    classes: "nhsuk-link--no-visited-state nhsuk-u-margin-top-2",
+    text: "Start session (50 cases)",
+    href: "/reading/create-batch?type=all_reads"
+  }) }}
+{% endset %}
 
-      {% set clinicCardDescriptionHtml %}
-        <ul class="nhsuk-list nhsuk-list--bullet nhsuk-body-s nhsuk-u-margin-bottom-3">
-          <li>
-            52 cases requiring 2nd read
-          </li>
-          {# <li>
-            {{ clinic.location.name }}
-            {% if clinic.location.type === 'mobile_unit' %}
-              at {{ clinic.siteName }}
-            {% endif %}
-          </li> #}
-          <li>
-            Oldest from {{ clinic.date | formatDate | noWrap }} ({{ clinic.date | formatRelativeDate | sentenceCase }})
-          </li>
-          {# <li>
-            {{ clinic.readingStatus.total }} image {{ "record" if clinic.readingStatus.total == 1 else "records" }}
-          </li> #}
-        </ul>
-      {% endset %}
+{# First reads card content #}
+{% set firstReadsContent %}
+<p>{{ firstReadsEvents | length }} cases needing reds
+  {# <br>({{ firstReadsForUser | length }} available to you) #}
+</p>
+{% if oldestFirstRead %}
+  <p>Oldest {{ oldestFirstRead | formatRelativeDate }}</p>
+{% endif %}
+{{ actionLink({
+  classes: "nhsuk-link--no-visited-state nhsuk-u-margin-top-2",
+  text: "Start first reads (50 cases)",
+  href: "/reading/create-batch?type=first_reads"
+}) }}
+{% endset %}
 
-      {# {% set firstUnreadEvent = data | getFirstUnreadEventOverall %} #}
-      {{ firstUnreadEvent | log("First unread event") }}
+{# Second reads card content #}
+{% set secondReadsContent %}
+<p>{{ secondReadsEvents | length }} cases needing second read<br>
+({{ secondReadsForUser | length }} available to you)</p>
+{% if oldestSecondRead %}
+  <p>Oldest {{ oldestSecondRead | formatRelativeDate }}</p>
+{% endif %}
+{{ actionLink({
+  classes: "nhsuk-link--no-visited-state nhsuk-u-margin-top-2",
+  text: "Start second reads (50 cases)",
+  href: "/reading/create-batch?type=second_reads"
+}) }}
+{% endset %}
 
-      {% set clinicHref -%}
-        /reading/clinics/{{ firstUnreadEvent.clinicId }}/events/{{ firstUnreadEvent.id }}
-      {%- endset %}
+{# Awaiting priors card content #}
+{% set awaitingPriorsContent %}
+  <p>{{ awaitingPriorsEvents | length }} cases awaiting priors
+    <br>
+  ({{ awaitingPriorsForUser | length }} available to you)
+  </p>
+  {% if oldestAwaitingPrior %}
+    <p>Oldest case: {{ oldestAwaitingPrior | formatDate }} ({{ oldestAwaitingPrior | formatRelativeDate }})</p>
+  {% endif %}
+  {{ actionLink({
+    classes: "nhsuk-link--no-visited-state nhsuk-u-margin-top-2",
+    text: "View awaiting priors cases",
+    href: "/reading/create-batch?type=awaiting_priors&limit=1000&name=Awaiting priors cases&redirect=list"
+  }) }}
+{% endset %}
 
-      {{ card({
-        heading: "2nd reads",
-        headingClasses: "nhsuk-heading-s",
-        descriptionHtml: clinicCardDescriptionHtml ~ actionLink({
-          classes: "nhsuk-link--no-visited-state",
-          text: "Start 2nd reading",
-          href: clinicHref
-        })
-      }) }}
+{# Custom session card content #}
+{% set customSessionContent %}
+<p>Choose what cases to read</p>
+{{ actionLink({
+  classes: "nhsuk-link--no-visited-state nhsuk-u-margin-top-2",
+  text: "Start custom session",
+  href: "/reading/create-custom-batch"
+}) }}
+{% endset %}
 
-    </li>
-    <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+{# Arbitration card content #}
+{% set arbitrationContent %}
+<p>53 cases need arbitration</p>
+{{ actionLink({
+  classes: "nhsuk-link--no-visited-state nhsuk-u-margin-top-2",
+  text: "See cases",
+  href: "#"
+}) }}
+{% endset %}
 
-      {% set clinicCardDescriptionHtml %}
-        <p class="nhsuk-body-s nhsuk-u-margin-bottom-3">
-          16 cases require a final decision
-        </p>
-      {% endset %}
-
-      {{ card({
-        heading: "Arbitration",
-        headingClasses: "nhsuk-heading-s",
-        descriptionHtml: clinicCardDescriptionHtml ~ actionLink({
-          classes: "nhsuk-link--no-visited-state",
-          text: "See cases",
-          href: "#"
-        })
-      }) }}
-
-    </li>
-  </ul>
-
-<h2>Start new reading batch</h2>
+{# Reading history card content #}
+{% set readingHistoryContent %}
+<p>View your reading history and all recently read cases</p>
+{{ actionLink({
+  classes: "nhsuk-link--no-visited-state nhsuk-u-margin-top-2",
+  text: "View history",
+  href: "/reading/history"
+}) }}
+{% endset %}
 
 <ul class="nhsuk-grid-row nhsuk-card-group">
   <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
     {{ card({
       heading: "Start reading",
       headingClasses: "nhsuk-heading-s",
-      descriptionHtml: "Begin reading cases needing review (includes both 1st and 2nd reads)" ~ actionLink({
-        classes: "nhsuk-link--no-visited-state",
-        text: "Start batch (50 cases)",
-        href: "/reading/create-batch?type=all_reads"
-      })
+      descriptionHtml: allReadsContent
     }) }}
   </li>
+
   <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
     {{ card({
-      heading: "Custom batch",
+      heading: "Custom session",
       headingClasses: "nhsuk-heading-s",
-      descriptionHtml: "Create a custom batch based on specific criteria" ~ actionLink({
-        classes: "nhsuk-link--no-visited-state",
-        text: "Start custom batch",
-        href: "/reading/create-custom-batch"
-      })
+      descriptionHtml: customSessionContent
     }) }}
   </li>
+
   <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
     {{ card({
       heading: "Arbitration",
       headingClasses: "nhsuk-heading-s",
-      descriptionHtml: clinicCardDescriptionHtml ~ actionLink({
-        classes: "nhsuk-link--no-visited-state",
-        text: "See cases",
-        href: "#"
-      })
+      descriptionHtml: arbitrationContent
     }) }}
   </li>
+
+
 </ul>
 
-  <h2>Reading history</h2>
-  <p>
-    <a href="/reading/history" class="nhsuk-link">View recent reading history</a>
-  </p>
+<h2>Other options</h2>
+<ul class="nhsuk-grid-row nhsuk-card-group">
+  <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+    {{ card({
+      heading: "View by clinic",
+      headingClasses: "nhsuk-heading-s",
+      clickable: true,
+      href: "/reading/clinics"
+    }) }}
+  </li>
+  <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+    {{ card({
+      heading: "Reading history",
+      headingClasses: "nhsuk-heading-s",
+      _descriptionHtml: readingHistoryContent,
+      clickable: true,
+      href: "/reading/history"
+    }) }}
+  </li>
+  <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+    {{ card({
+      heading: (awaitingPriorsEvents | length) ~ " awaiting priors",
+      headingClasses: "nhsuk-heading-s",
+      clickable: true,
+      href: "/reading/create-batch?type=awaiting_priors&limit=1000&name=Awaiting priors cases&redirect=list"
+    }) }}
+  </li>
 
-  <h2>Available clinics</h2>
+</ul>
 
-  <p><a href="#">See previously read clinics</a></p>
 
-  {% if incompleteClinics | length === 0 %}
-    <p>No clinics available for reading.</p>
-  {% else %}
-    <table class="nhsuk-table">
-      <thead class="nhsuk-table__head">
-        <tr>
-          <th scope="col" class="nhsuk-u-width-one-half">Clinic</th>
-          <th scope="col">Date</th>
-          <th scope="col">Cases</th>
-          <th scope="col">1st read</th>
-          <th scope="col">2nd read</th>
-          <th scope="col">Status</th>
-        </tr>
-      </thead>
-      <tbody class="nhsuk-table__body">
-        {% for clinic in incompleteClinics %}
-          {% set location = clinic.location %}
-          {% set stats = clinic.readingStatus %}
-
-          <tr>
-            <td>
-              <a href="/reading/clinics/{{ clinic.id }}" class="nhsuk-link">
-                {% if location.type === 'mobile_unit' %}
-                  {{ location.name }} at {{ clinic.siteName }}
-                {% else %}
-                  {{ location.name }}
-                {% endif %}
-                {# <br> #}
-                ({{ clinic.sessionType }})
-                <br>
-                {{ clinic.clinicCode }}
-              </a>
-              {% if stats.userReadableCount > 0 %}
-                <br>
-                <a href="/reading/clinics/{{ clinic.id }}/start" class="nhsuk-u-margin-top-3 nhsuk-u-margin-bottom-0">
-                  Start reading
-                </a>
-              {% endif %}
-            </td>
-            <td>
-              {% set daysSinceClinic = clinic.date | daysSince %}
-              {% if daysSinceClinic > 13 %}
-                {{ tag({
-                  text: "Late",
-                  classes: "nhsuk-tag--red"
-                })}}
-              {% elseif daysSinceClinic > 10 %}
-                {{ tag({
-                  text: "Urgent",
-                  classes: "nhsuk-tag--orange"
-                })}}
-              {% endif %}
-              {{ clinic.date | formatDate | noWrap }}<br>
-              {{ clinic.date | formatRelativeDate | sentenceCase | asHint }}
-
-            </td>
-            {# Total cases #}
-            <td>
-              {{ stats.total }}
-            </td>
-            {# First read #}
-            <td>
-              {% if showRemaining %}
-                {{ stats.firstReadRemaining }}
-              {% else %}
-                {{ stats.firstReadCount }}
-              {% endif %}
-{#
-              {% if stats.firstReadRemaining > 0 %}
-                <br>
-                <span class="app-text-grey app-nowrap">
-                  ({{ stats.firstReadRemaining }} remaining)
-                </span>
-              {% endif %} #}
-            </td>
-            <td>
-              {% if showRemaining %}
-                {{ stats.secondReadReady }}
-              {% else %}
-                {{ stats.secondReadCount }}
-              {% endif %}
-
-              {# {{ stats.secondReadCount }}
-              {% if stats.firstReadCount > stats.secondReadCount %}
-                <br>
-                <span class="app-text-grey app-nowrap">
-                  ({{ stats.secondReadRemaining }} remaining)
-                </span>
-              {% endif %} #}
-            </td>
-            {# Reading status #}
-            <td>
-              {{ stats.status | toTag }}
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% endif %}
 {% endblock %}

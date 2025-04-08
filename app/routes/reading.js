@@ -34,6 +34,49 @@ module.exports = router => {
     res.render('reading/index', { clinics })
   })
 
+  // Dedicated route for clinics list
+  router.get('/reading/clinics', (req, res) => {
+    res.redirect('/reading/clinics/mine')
+  })
+
+  // Dedicated routes for clinics list with specific views
+  router.get('/reading/clinics/mine', (req, res) => {
+    handleClinicsView(req, res, 'mine')
+  })
+
+  router.get('/reading/clinics/all', (req, res) => {
+    handleClinicsView(req, res, 'all')
+  })
+
+  // Helper function to handle both views
+  function handleClinicsView(req, res, view) {
+    const data = req.session.data
+
+    // Get all reading clinics
+    const clinics = getReadingClinics(req.session.data)
+
+    // Filter incomplete clinics
+    const incompleteClinics = clinics.filter(clinic =>
+      clinic.readingStatus.status !== 'complete'
+    )
+
+    // Filter clinics based on view
+    let clinicsToDisplay = incompleteClinics
+
+    if (view === 'mine') {
+      // Show only clinics where the current user can read something
+      clinicsToDisplay = incompleteClinics.filter(clinic =>
+        clinic.readingStatus.userReadableCount > 0
+      )
+    }
+
+    res.render('reading/clinics', {
+      clinics,
+      incompleteClinics,
+      clinicsToDisplay,
+      view
+    })
+  }
   // Reading routes middleware
   // router.use('/reading/clinics/:clinicId/events/:eventId', (req, res, next) => {
   //   const data = req.session.data
@@ -315,7 +358,7 @@ module.exports = router => {
     const currentUserId = data.currentUser.id
 
     // Get batch creation options from query params
-    const { type, clinicId, limit, name } = req.query
+    const { type, clinicId, limit, name, redirect } = req.query
 
     // Create filters from query params
     const filters = {}
@@ -339,6 +382,13 @@ module.exports = router => {
         limit: limit ? parseInt(limit) : 50,
         filters
       })
+
+      // Check if the request includes the redirect parameter
+      if (redirect === 'list') {
+        // Redirect to batch view instead of starting reading
+        res.redirect(`/reading/batch/${batch.id}`)
+        return
+      }
 
       // Redirect to batch view or first event if available
       const firstReadableEvent = getFirstReadableEventInBatch(data, batch.id, currentUserId)
@@ -574,7 +624,7 @@ module.exports = router => {
 
   // Default route for reading history - redirect to all view
   router.get('/reading/history', (req, res) => {
-    res.redirect('/reading/history/all')
+    res.redirect('/reading/history/mine')
   })
 
   // Route for viewing reading history with view parameter
