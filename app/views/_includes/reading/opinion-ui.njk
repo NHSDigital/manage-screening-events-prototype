@@ -20,6 +20,46 @@
     </h1>
   </div>
   <div class="nhsuk-grid-column-one-third app-header-with-status__status-tag">
+
+    {% set eventAge = event.timing.startTime | daysSince %}
+
+    {% if eventAge > 6 %}
+      <div class="nhsuk-u-margin-bottom-2">
+        {% if eventAge > 9 %}
+          {{ tag({
+            text: "Urgent",
+            classes: "nhsuk-tag--red"
+          })}}
+        {% elseif eventAge > 6 %}
+          {{ tag({
+            text: "Due soon",
+            classes: "nhsuk-tag--orange"
+          })}}
+        {% endif %}
+      </div>
+    {% endif %}
+
+
+
+    {# Work out if *this* is a first or second read. Have to compare the read counts and whether the current user has read #}
+    {% set readCount = event.readingMetadata.readCount %}
+
+    {% if existingResult %}
+      {% if readCount == 1 %}
+        {{ "First read" | toTag }}
+      {% else %}
+        {{ "Second read" | toTag }}
+      {% endif %}
+    {% else %}
+    {% if readCount == 0 %}
+        {{ "First read" | toTag }}
+      {% else %}
+        {{ "Second read" | toTag }}
+      {% endif %}
+    {% endif %}
+
+
+
     {% set requestedWithDateHtml %}
       {{ "Images requested" | toTag | safe }}<br>
       Requested 10 Feb 2025

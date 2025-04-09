@@ -14,6 +14,8 @@
 {% block pageContent %}
   <h1>{{ pageHeading }}</h1>
 
+  {{ readingStatus | log("Reading status")}}
+
   {% set secondaryNavItems = [] %}
 
   {% for item in [
@@ -47,7 +49,7 @@
           <th scope="col">Cases</th>
           <th scope="col">1st read</th>
           <th scope="col">2nd read</th>
-          <th scope="col">Status</th>
+          {# <th scope="col">Status</th> #}
         </tr>
       </thead>
       <tbody class="nhsuk-table__body">
@@ -57,12 +59,16 @@
 
           <tr>
             <td>
-              {% if stats.userReadableCount > 0 %}
+
+              {% set currentUserHasRead = stats.userReadCount > 0 %}
+              {% set currentUserCanRead = stats.userReadableCount > 0 %}
+
+              {% if currentUserCanRead %}
                 <a href="/reading/clinics/{{ clinic.id }}/start" class="nhsuk-link">
-                  Start reading
+                  {{ "Resume reading" if currentUserHasRead else "Start reading" }}
                 </a>
               {% elif stats.userReadCount > 0 %}
-                {{ 'Already read' | toTag({colour: 'grey'}) }}
+                {{ 'You have read this' | toTag({colour: 'grey'}) }}
               {% else %}
                 <span class="app-text-grey">No cases for you to read</span>
               {% endif %}
@@ -80,16 +86,16 @@
             </td>
             <td>
               {% set daysSinceClinic = clinic.date | daysSince %}
-              {% if daysSinceClinic > 13 %}
-                {{ tag({
-                  text: "Late",
-                  classes: "nhsuk-tag--red"
-                })}}
-              {% elseif daysSinceClinic > 10 %}
+              {% if daysSinceClinic > 9 %}
                 {{ tag({
                   text: "Urgent",
+                  classes: "nhsuk-tag--red"
+                })}}<br>
+              {% elseif daysSinceClinic > 6 %}
+                {{ tag({
+                  text: "Due soon",
                   classes: "nhsuk-tag--orange"
-                })}}
+                })}}<br>
               {% endif %}
               {{ clinic.date | formatDate | noWrap }}<br>
               {{ clinic.date | formatRelativeDate | sentenceCase | asHint }}
@@ -115,9 +121,9 @@
               {% endif %}
             </td>
             {# Reading status #}
-            <td>
+            {# <td>
               {{ stats.status | toTag }}
-            </td>
+            </td> #}
           </tr>
         {% endfor %}
       </tbody>

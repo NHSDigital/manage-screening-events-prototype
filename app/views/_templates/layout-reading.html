@@ -148,13 +148,13 @@
             {% if event | canUserReadEvent %}
               {{ appForwardLink({
                 href: "/reading/batch/" ~ batchId ~ "/events/" ~ eventId ~ "/skip",
-                text: "Skip to next unread"
+                text: "Skip to next"
               }) }}
             {% else %}
             {# We already have a reading so don't need to skip #}
               {{ appForwardLink({
                 href: "/reading/batch/" ~ batchId ~ "/events/" ~ progress.nextUserReadableId,
-                text: "Next unread"
+                text: "Next to read"
               }) }}
             {% endif %}
 

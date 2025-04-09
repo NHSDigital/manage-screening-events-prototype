@@ -14,59 +14,91 @@
 
 <h2>Start new reading session</h2>
 
+{# Awaiting priors not automatically filtered #}
 {% set allReadsEventsWithAwaitingPriors = data.events | filterEventsByEligibleForReading | filterEventsByNeedsAnyRead | sortEventsByScreeningDate %}
 
+{# Remove awaiting priors #}
 {% set allReadsEvents = allReadsEventsWithAwaitingPriors | where("hasRequestedImages", "false") %}
+
+{% set recentEvents = allReadsEvents | filterEventsByDayRange(0, 7) %}
+{{ recentEvents | log("Recent events")}}
+{% set moderateAgeEvents = allReadsEvents | filterEventsByDayRange(7, 10) %}
+{# {% set olderEvents = allReadsEvents | filterEventsByDayRange(10, 13) %} #}
+{% set criticalEvents = allReadsEvents | filterEventsByDayRange(10) %}
+
+
 
 {% set firstReadsEvents = allReadsEvents | filterEventsByNeedsFirstRead %}
 {% set secondReadsEvents = allReadsEvents | filterEventsByNeedsSecondRead %}
 {% set awaitingPriorsEvents = allReadsEventsWithAwaitingPriors | where("hasRequestedImages", "true") %}
 
+{# Filter for current user - currently not used #}
 {% set allReadsForUser = allReadsEvents | filterEventsByUserCanRead(data.currentUser.id) %}
 {% set firstReadsForUser = firstReadsEvents | filterEventsByUserCanRead(data.currentUser.id) %}
 {% set secondReadsForUser = secondReadsEvents | filterEventsByUserCanRead(data.currentUser.id) %}
 {% set awaitingPriorsForUser = awaitingPriorsEvents | filterEventsByUserCanRead(data.currentUser.id) %}
 
+{# Get oldest #}
 {% set oldestAllRead = allReadsEvents[0].timing.startTime if allReadsEvents.length > 0 %}
 {% set oldestFirstRead = firstReadsEvents[0].timing.startTime if firstReadsEvents.length > 0 %}
 {% set oldestSecondRead = secondReadsEvents[0].timing.startTime if secondReadsEvents.length > 0 %}
 {% set oldestAwaitingPrior = awaitingPriorsEvents[0].timing.startTime if awaitingPriorsEvents.length > 0 %}
 
+{% macro customActionLink(params) %}
+  <div class="nhsuk-action-link">
+    <a class="nhsuk-action-link__link{{ " " + params.classes if params.classes }}" href="{{ params.href }}">
+      <svg class="nhsuk-icon nhsuk-icon__arrow-right-circle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="36" height="36">
+        <path d="M0 0h24v24H0z" fill="none"></path>
+        <path d="M12 2a10 10 0 0 0-9.95 9h11.64L9.74 7.05a1 1 0 0 1 1.41-1.41l5.66 5.65a1 1 0 0 1 0 1.42l-5.66 5.65a1 1 0 0 1-1.41 0 1 1 0 0 1 0-1.41L13.69 13H2.05A10 10 0 1 0 12 2z"></path>
+      </svg>
+      <span class="nhsuk-action-link__text">
+        {% if params.html %}
+          {{ params.html | safe}}
+        {% else %}
+          {{ params.text }}
+        {% endif %}
+      </span>
+    </a>
+  </div>
+{% endmacro %}
+
 {# All reads card content #}
 {% set allReadsContent %}
-  <p>
-    {{ allReadsEvents | length }} cases to read
-    {# <br>
-  ({{ allReadsForUser | length }} available to you)<br> #}
-    {# Excludes those awaiting priors #}
+
+{% set allReadCount = allReadsEvents | length %}
+
+{% set hasPriortyTags = moderateAgeEvents or criticalEvents %}
+  <p class="{{ "nhsuk-u-margin-bottom-2" if hasPriortyTags }}">
+    {{ allReadCount }} cases needing reading
   </p>
 
-  {% if oldestAllRead %}
-    <p class="nhsuk-u-margin-bottom-1">Oldest from {{ oldestAllRead | formatRelativeDate }}</p>
-    {% set daysSinceOldest = oldestAllRead | daysSince %}
-    {% if daysSinceOldest > 10 %}
-      <div class="nhsuk-u-margin-bottom-2">
-        {% if daysSinceOldest > 13 %}
-          {{ tag({
-            text: "Late",
-            classes: "nhsuk-tag--red"
-          })}}
-        {% elseif daysSinceOldest > 10 %}
-          {{ tag({
-            text: "Urgent",
-            classes: "nhsuk-tag--orange"
-          })}}
-        {% endif %}
-      </div>
-    {% endif %}
-
+  {% if hasPriortyTags %}
+    <div class="nhsuk-u-margin-bottom-4">
+      {% if criticalEvents | length %}
+        {{ ((criticalEvents | length) ~ " urgent cases") | toTag({colour: "red"}) }}
+      {% endif %}
+      {% if moderateAgeEvents | length %}
+        {{ ((moderateAgeEvents | length) ~ " cases due soon") | toTag({colour: "orange"}) }}
+      {% endif %}
+    </div>
   {% endif %}
 
-  {{ actionLink({
+  {% set maxCases = allReadCount if allReadCount < 50 else 50 %}
+
+  {% set actionLinkText %}
+    Start session<br>
+    <span class="nhsuk-u-font-size-19">
+      ({{ maxCases }} cases)
+    </span>
+  {% endset %}
+
+  {{ customActionLink({
     classes: "nhsuk-link--no-visited-state nhsuk-u-margin-top-2",
     text: "Start session (50 cases)",
+    html: actionLinkText,
     href: "/reading/create-batch?type=all_reads"
   }) }}
+
 {% endset %}
 
 {# First reads card content #}
@@ -96,22 +128,6 @@
   text: "Start second reads (50 cases)",
   href: "/reading/create-batch?type=second_reads"
 }) }}
-{% endset %}
-
-{# Awaiting priors card content #}
-{% set awaitingPriorsContent %}
-  <p>{{ awaitingPriorsEvents | length }} cases awaiting priors
-    <br>
-  ({{ awaitingPriorsForUser | length }} available to you)
-  </p>
-  {% if oldestAwaitingPrior %}
-    <p>Oldest case: {{ oldestAwaitingPrior | formatDate }} ({{ oldestAwaitingPrior | formatRelativeDate }})</p>
-  {% endif %}
-  {{ actionLink({
-    classes: "nhsuk-link--no-visited-state nhsuk-u-margin-top-2",
-    text: "View awaiting priors cases",
-    href: "/reading/create-batch?type=awaiting_priors&limit=1000&name=Awaiting priors cases&redirect=list"
-  }) }}
 {% endset %}
 
 {# Custom session card content #}
@@ -147,7 +163,7 @@
 <ul class="nhsuk-grid-row nhsuk-card-group">
   <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
     {{ card({
-      heading: "Start reading",
+      heading: "Start reading oldest cases",
       headingClasses: "nhsuk-heading-s",
       descriptionHtml: allReadsContent
     }) }}
@@ -155,7 +171,7 @@
 
   <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
     {{ card({
-      heading: "Custom session",
+      heading: "Custom reading session",
       headingClasses: "nhsuk-heading-s",
       descriptionHtml: customSessionContent
     }) }}
@@ -193,10 +209,10 @@
   </li>
   <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
     {{ card({
-      heading: (awaitingPriorsEvents | length) ~ " awaiting priors",
+      heading: (awaitingPriorsEvents | length) ~ " Awaiting priors",
       headingClasses: "nhsuk-heading-s",
       clickable: true,
-      href: "/reading/create-batch?type=awaiting_priors&limit=1000&name=Awaiting priors cases&redirect=list"
+      href: "/reading/create-batch?type=awaiting_priors&limit=1000&name=Cases awaiting priors&redirect=list"
     }) }}
   </li>
 

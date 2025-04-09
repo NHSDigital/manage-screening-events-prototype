@@ -258,6 +258,29 @@ const getWeekDates = (dateString) => {
   })
 }
 
+/**
+ * Check if a date is within specified age range
+ * @param {string} dateString - ISO date string to check
+ * @param {number} minDays - Minimum days old (inclusive)
+ * @param {number} [maxDays=null] - Maximum days old (inclusive), if null, no upper bound
+ * @param {string|dayjs} [compareDate=null] - Optional reference date (defaults to today)
+ * @returns {boolean} True if date is within specified age range
+ */
+const isWithinDayRange = (dateString, minDays, maxDays = null, compareDate = null) => {
+  if (!dateString) return false
+
+  const date = dayjs(dateString).startOf('day')
+  const reference = compareDate ? dayjs(compareDate).startOf('day') : dayjs().startOf('day')
+
+  // Calculate days difference
+  const daysDifference = reference.diff(date, 'day')
+
+  // Check if within range
+  const isOlderThanMin = daysDifference >= minDays
+  const isYoungerThanMax = maxDays === null || daysDifference <= maxDays
+
+  return isOlderThanMin && isYoungerThanMax
+}
 
 module.exports = {
   formatDate,
@@ -278,4 +301,5 @@ module.exports = {
   // Export dayjs instance for direct use if needed
   dayjs,
   daysSince,
+  isWithinDayRange,
 }

@@ -2,10 +2,19 @@
 
 {% extends 'layout-app.html' %}
 
+{% set isClinicContext = batch.clinicId %}
+
 {% set back = {
   href: "/reading",
   text: "Back to reading"
 } %}
+
+{% if isClinicContext %}
+  {% set back = {
+    href: "/reading/clinics",
+    text: "Back to clinics"
+  } %}
+{% endif %}
 
 {% set pageHeading %}
   {{ batch.name }}
@@ -14,10 +23,13 @@
 {% set gridColumn = "none" %}
 
 {% block pageContent %}
+
+{{ batch | log("Batch")}}
+
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-full">
     <div class="app-header-with-status">
-      <span class="nhsuk-caption-l">Image reading batch</span>
+      <span class="nhsuk-caption-l">Image reading</span>
       <h1 class="nhsuk-heading-l">
         {{ pageHeading }}
       </h1>
@@ -33,15 +45,9 @@
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-full">
 
-    {% set currentUserHasRead = false %}
-    {% for event in events %}
-      {% if event | userHasReadEvent(data.currentUser.id) %}
-        {% set currentUserHasRead = true %}
-      {% endif %}
-    {% endfor %}
+    {% set currentUserHasRead = readingStatus.userReadCount > 0 %}
 
     {% if firstUserReadableEvent %}
-
       {# Reading progress #}
       {% set insetTextHtml %}
         <p>Reading status:</p>
@@ -103,6 +109,13 @@
     {# Display categories in the desired order #}
     {% set categories = [
       {
+        title: "Cases",
+        events: events
+      }
+
+    ] %}
+
+          {# {
         title: "Cases you can read",
         events: userCanReadEvents,
         empty_message: "No cases available for you to read"
@@ -115,23 +128,22 @@
         title: "Completed first and second reads",
         events: completelyReadEvents,
         empty_message: "No completely read cases yet"
-      }
-    ] %}
+      } #}
 
     {% for category in categories %}
       {% if category.events | length %}
         <h2>{{ category.title }} ({{ category.events | length }})</h2>
       {% endif %}
 
-
       {% if category.events | length > 0 %}
         <table class="nhsuk-table">
           <thead>
             <tr>
-              <th>Case</th>
-              <th>First read</th>
-              <th>Second read</th>
-              <th>Outcome</th>
+              <th scope="col">Case</th>
+              <th scope="col">Screened</th>
+              <th scope="col">Read type</th>
+              {# <th scope="col">Reader</th> #}
+              <th scope="col">Opinion</th>
             </tr>
           </thead>
           <tbody>
@@ -143,96 +155,89 @@
                     /reading/batch/{{ batch.id }}/events/{{ event.id }}
                   {%- endset %}
                   <a href="{{ readingHref if metadata.readCount < 2 or category.title === 'Cases you can read' else '#' }}">{{ event.participant | getFullName }}</a>
-                  <br>
-                  <span class="app-text-grey app-nowrap nhsuk-body-s nhsuk-u-margin-bottom-2">
-                    Screened {{ event.timing.startTime | formatRelativeDate }}
-                  </span>
+
                   {% if event.currentSymptoms | length %}
+                  <br>
                     {{ tag({
                       text: "Has symptoms",
                       classes: "nhsuk-tag--yellow"
                     })}}
                   {% endif %}
                   {% if (data.settings.reading.showRepeatsTag | falsify) and event.mammogramData.metadata.hasRepeat %}
-                  <br>
                     {{ tag({
                       text: "Has repeat",
                       classes: "nhsuk-tag--yellow"
                     })}}
                   {% endif %}
                 </td>
-                {# First read column #}
+                <td>
+                  {% set daysSinceScreening = event.timing.startTime | daysSince %}
+                  {% if daysSinceScreening > 9 %}
+                    {{ tag({
+                      text: "Urgent",
+                      classes: "nhsuk-tag--red"
+                    })}}<br>
+                  {% elseif daysSinceScreening > 6 %}
+                    {{ tag({
+                      text: "Due soon",
+                      classes: "nhsuk-tag--orange"
+                    })}}<br>
+                  {% endif %}
+                  {{ event.timing.startTime | formatDate }}<br>
+                  <span class="app-text-grey app-nowrap nhsuk-body-s">
+                    {{ event.timing.startTime | formatRelativeDate }}
+                  </span>
+                </td>
+                <td>
+
+                  {% set readCount = metadata.readCount %}
+                  {% if event | userHasReadEvent %}
+                    {% if readCount == 1 %}
+                      First read
+                    {% else %}
+                      Second read
+                    {% endif %}
+                  {% else %}
+                    {% if readCount == 0 %}
+                      First read
+                    {% else %}
+                      Second read
+                    {% endif %}
+                  {% endif %}
+                </td>
+                {# <td>
+                  {% if metadata.readCount >= 1 %}
+                    {% if metadata.readCount > 1 %}
+                      {% set readType = "second" %}
+                      {% set readIndex = 1 %}
+                    {% else %}
+                      {% set readType = "first" %}
+                      {% set readIndex = 0 %}
+                    {% endif %}
+                    {% set read = metadata.reads[readIndex] %}
+                    {{ read.readerId | getUsername({identifyCurrentUser: true}) }}
+                  {% endif %}
+                </td> #}
                 <td>
                   {% set skipped = "Skipped" if batch.skippedEvents | includes(event.id) else false %}
-                  {% set isBlind = data.settings.reading.blindReading | falsify %}
-                  {% set isCurrentUserRead = false %}
-                  {% if metadata.readCount >= 1 %}
-                    {% set firstRead = metadata.reads[0] %}
-                    {% set isCurrentUserRead = firstRead.readerId === data.currentUser.id %}
-
-                    {% if isBlind and not isCurrentUserRead and metadata.readCount < 2 %}
-                      {{ "Completed (blind)" | toTag({colour: "blue"}) }}
+                  {% if event | userHasReadEvent %}
+                    {% set read = event | getReadForUser %}
+                    {% if read.result == "normal" %}
+                      {{ "Normal" | toTag("green") }}
+                    {% elif read.result == "technical_recall" %}
+                      {{ "Technical recall" | toTag({colour: "orange"}) }}
+                    {% elif read.result == "recall_for_assessment" %}
+                      {{ "Recall for assessment" | toTag({colour: "red"}) }}
                     {% else %}
-                      {% if metadata.readCount >= 2 %}
-                        {{ firstRead.result | formatWords | sentenceCase | toTag({colour: "grey"}) }}
-                      {% else %}
-                        {{ firstRead.result | formatWords | sentenceCase | toTag }}
-                      {% endif %}
+                      {{ read.result | formatWords | sentenceCase | toTag }}
                     {% endif %}
-
-                    <br>
-                    <span class="app-text-grey app-nowrap nhsuk-body-s">by {{ firstRead.readerId | getUsername({identifyCurrentUser: true}) }}</span>
-                  {% elif skipped %}
+                  {% elseif skipped %}
                     {{ "Skipped" | toTag({colour: "grey"}) }}
                   {% else %}
                     {{ "Not read" | toTag({colour: "grey"}) }}
                   {% endif %}
-                </td>
-                {# Second read column #}
-                <td>
-                  {% set isBlind = data.settings.reading.blindReading | falsify %}
-                  {% set isCurrentUserRead = false %}
 
-                  {% if metadata.readCount >= 2 %}
-                    {% set secondRead = metadata.reads[1] %}
-                    {% set isCurrentUserRead = secondRead.readerId === data.currentUser.id %}
 
-                    {{ secondRead.result | formatWords | sentenceCase | toTag({colour: "grey"}) }}
-
-                    <br>
-                    <span class="app-text-grey app-nowrap nhsuk-body-s">by {{ secondRead.readerId | getUsername({identifyCurrentUser: true}) }}</span>
-                  {% elif metadata.readCount == 1 %}
-                    {% if skipped %}
-                      {{ "Skipped" | toTag({colour: "grey"}) }}
-                    {% else %}
-                      {{ "Not read" | toTag({colour: "grey"}) }}
-                    {% endif %}
-                  {% else %}
-                    {{ "Waiting for 1st read" | toTag({colour: "grey"}) }}
-                  {% endif %}
-                </td>
-                {# Outcome column #}
-                <td>
-                  {% if metadata.readCount >= 2 %}
-                    {% if metadata.hasDisagreement %}
-                      {{ "Arbitration" | toTag({colour: "orange"}) }}
-                    {% else %}
-                      {% set result = metadata.reads[0].result %}
-                      {% if result == "normal" %}
-                        {{ "Normal" | toTag("green") }}
-                      {% elif result == "technical_recall" %}
-                        {{ "Technical recall" | toTag({colour: "orange"}) }}
-                      {% elif result == "recall_for_assessment" %}
-                        {{ "Recall for assessment" | toTag({colour: "red"}) }}
-                      {% else %}
-                        {{ result | formatWords | sentenceCase | toTag }}
-                      {% endif %}
-                    {% endif %}
-                  {% elif metadata.readCount == 1 %}
-                    {{ "Waiting for 2nd read" | toTag({colour: "grey"}) }}
-                  {% else %}
-                    {{ "Waiting for 1st read" | toTag({colour: "grey"}) }}
-                  {% endif %}
                 </td>
               </tr>
             {% endfor %}

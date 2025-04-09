@@ -462,22 +462,27 @@ module.exports = router => {
     // Get the batch
     const batch = getReadingBatch(data, batchId)
     if (!batch) {
-      req.flash('error', 'Batch not found')
+      // req.flash('error', 'Batch not found')
+      console.log('Batch not found')
       return res.redirect('/reading')
     }
 
     // Check if event exists in this batch
     if (!batch.eventIds.includes(eventId)) {
-      req.flash('error', 'Event not found in this batch')
+      // req.flash('error', 'Event not found in this batch')
+      console.log(`Event ${batchId} not found in this batch`)
       return res.redirect(`/reading/batch/${batchId}`)
     }
 
     // Get the event data
     const event = data.events.find(e => e.id === eventId)
     if (!event) {
-      req.flash('error', 'Event not found')
+      // req.flash('error', 'Event not found')
+      console.log(`Event ${eventId} not found`)
       return res.redirect(`/reading/batch/${batchId}`)
     }
+
+    event.readingMetadata = getReadingMetadata(event)
 
     // Get participant and clinic data
     const participant = data.participants.find(p => p.id === event.participantId)

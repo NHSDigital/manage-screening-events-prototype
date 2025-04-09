@@ -29,7 +29,16 @@ const getUsername = function(userId, options={}) {
   else return `${user.firstName} ${user.lastName}`;
 }
 
+/**
+ *
+ * @returns {Object} The context data
+ */
+const getContext = function() {
+  return this.ctx;
+}
+
 module.exports = {
   log,
   getUsername,
+  getContext,
 }

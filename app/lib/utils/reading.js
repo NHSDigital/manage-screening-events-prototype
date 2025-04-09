@@ -2,7 +2,7 @@
 
 const dayjs = require('dayjs')
 const { eligibleForReading, getStatusTagColour } = require('./status')
-
+const { isWithinDayRange } = require('./dates')
 
 // /**
 //  * Get first unread event in a clinic
@@ -780,6 +780,21 @@ const filterEventsByClinic = (events, clinicId) => {
   return events.filter(event => event.clinicId === clinicId);
 };
 
+/**
+ * Filter events that are within a specific day range
+ * @param {Array} events - Events to filter
+ * @param {number} minDays - Minimum days old (inclusive)
+ * @param {number} [maxDays=null] - Maximum days old (inclusive), if null, no upper bound
+ * @returns {Array} Events within the specified day range
+ */
+const filterEventsByDayRange = (events, minDays, maxDays = null) => {
+  if (!events || !Array.isArray(events)) return []
+
+  return events.filter(event =>
+    isWithinDayRange(event.timing.startTime, minDays, maxDays)
+  )
+}
+
 /************************************************************************
 // Selector functions
 //***********************************************************************
@@ -1229,6 +1244,7 @@ module.exports = {
   filterEventsByUserCanRead,
   filterEventsByUserCanReadOrHasRead,
   filterEventsByClinic,
+  filterEventsByDayRange,
   // Selector functions
   getFirstEvent,
   getNextEvent,
