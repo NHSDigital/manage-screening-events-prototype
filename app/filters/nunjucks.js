@@ -8,9 +8,12 @@ const log = (a, description = null) => {
 }
 
 /**
- * Get user name by user ID
+ * Get user name by user ID with format options
  * @param {string} userId - ID of the user
- * @returns {string} User's name
+ * @param {Object} options - Display options
+ * @param {boolean} [options.identifyCurrentUser=false] - Whether to add "(you)" for current user
+ * @param {string} [options.format='full'] - Name format: 'full', 'short', or 'initial'
+ * @returns {string} User's name in requested format
  */
 const getUsername = function(userId, options={}) {
   if (!userId) return '';
@@ -21,12 +24,28 @@ const getUsername = function(userId, options={}) {
   const user = users.find(u => u.id === userId);
   if (!user) return userId;
 
-  const currentUser = this.ctx.data.currentUser;
-  if (options.identifyCurrentUser && user.id === currentUser.id) {
-    return `${user.firstName} ${user.lastName} (you)`;
+  // Format options: full (default), short (initial + surname), initial (just initials)
+  const format = options.format || 'full';
+
+  let formattedName;
+  switch (format) {
+    case 'short':
+      formattedName = `${user.firstName.charAt(0)}. ${user.lastName}`;
+      break;
+    case 'initial':
+      formattedName = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`;
+      break;
+    case 'full':
+    default:
+      formattedName = `${user.firstName} ${user.lastName}`;
   }
 
-  else return `${user.firstName} ${user.lastName}`;
+  const currentUser = this.ctx.data.currentUser;
+  if (options.identifyCurrentUser && user.id === currentUser.id) {
+    return `${formattedName} (you)`;
+  }
+
+  return formattedName;
 }
 
 /**

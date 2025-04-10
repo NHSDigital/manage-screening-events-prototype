@@ -47,7 +47,14 @@
           <th scope="col">Reader</th>
           {% endif %}
           <th scope="col">Read type</th>
-          <th scope="col">Opinion</th>
+
+          <th scope="col">
+            {% if view === 'mine' %}
+              Your opinion
+            {% else %}
+              Opinon
+            {% endif %}
+          </th>
         </tr>
       </thead>
       <tbody class="nhsuk-table__body">
@@ -70,7 +77,10 @@
             </td>
             {% if view == 'all' %}
             <td>
-              {{ reading.readerId | getUsername({identifyCurrentUser: true}) }}
+              {{ reading.readerId | getUsername({
+                format: 'short',
+                identifyCurrentUser: true
+              }) }}
             </td>
             {% endif %}
             <td>

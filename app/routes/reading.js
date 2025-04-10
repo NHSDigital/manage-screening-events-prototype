@@ -407,8 +407,18 @@ module.exports = router => {
 
   // Route for viewing a batch
   router.get('/reading/batch/:batchId', (req, res) => {
+    // Default to "your-reads" view
+    res.redirect(`/reading/batch/${req.params.batchId}/your-reads`)
+  })
+
+  // Route for viewing a batch with specific view
+  router.get('/reading/batch/:batchId/:view', (req, res) => {
     const data = req.session.data
-    const { batchId } = req.params
+    const { batchId, view } = req.params
+    const validViews = ['your-reads', 'all-reads']
+
+    // Validate view parameter
+    const selectedView = validViews.includes(view) ? view : 'your-reads'
 
     // Get the batch
     const batch = getReadingBatch(data, batchId)
@@ -450,9 +460,58 @@ module.exports = router => {
       events: enhancedEvents,
       readingStatus,
       firstUserReadableEvent,
-      clinic
+      clinic,
+      view: selectedView
     })
   })
+  // Route for viewing a batch
+  // router.get('/reading/batch/:batchId', (req, res) => {
+  //   const data = req.session.data
+  //   const { batchId } = req.params
+
+  //   // Get the batch
+  //   const batch = getReadingBatch(data, batchId)
+  //   if (!batch) {
+  //     // req.flash('error', 'Batch not found')
+  //     return res.redirect('/reading')
+  //   }
+
+  //   // Get enhanced events with reading metadata
+  //   const enhancedEvents = batch.eventIds
+  //     .map(eventId => data.events.find(e => e.id === eventId))
+  //     .filter(Boolean)
+  //     .map(event => {
+  //       // Add participant data and reading metadata
+  //       const participant = data.participants.find(p => p.id === event.participantId)
+  //       const metadata = getReadingMetadata(event)
+
+  //       return {
+  //         ...event,
+  //         participant,
+  //         readingMetadata: metadata
+  //       }
+  //     })
+
+  //   // Get reading status for the batch
+  //   const readingStatus = getReadingStatusForEvents(enhancedEvents, data.currentUser.id)
+
+  //   // Find first event user can read
+  //   const firstUserReadableEvent = getFirstUserReadableEvent(enhancedEvents, data.currentUser.id)
+
+  //   // Get clinic data if this is a clinic batch
+  //   let clinic = null
+  //   if (batch.clinicId) {
+  //     clinic = data.clinics.find(c => c.id === batch.clinicId)
+  //   }
+
+  //   res.render('reading/batch', {
+  //     batch,
+  //     events: enhancedEvents,
+  //     readingStatus,
+  //     firstUserReadableEvent,
+  //     clinic
+  //   })
+  // })
 
   // Add middleware for batch-based events similar to the clinic-based ones
   router.use('/reading/batch/:batchId/events/:eventId', (req, res, next) => {
