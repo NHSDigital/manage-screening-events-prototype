@@ -49,7 +49,7 @@
     items: secondaryNavItems
   }) }}
 
-  {{ filteredClinics | log }}
+  {{ filteredClinics | log("Filtered clinics") }}
 
   {% if filteredClinics | length === 0 %}
     <p>No clinics found.</p>
