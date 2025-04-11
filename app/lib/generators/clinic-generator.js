@@ -102,10 +102,12 @@ const determineClinicStatus = (date) => {
   if (clinicDate.isBefore(today)) {
     return 'closed'
   }
-  if (clinicDate.isAfter(today)) {
-    return 'scheduled'
+  if (clinicDate.isSame(today, 'day')) {
+    return 'in_progress'
   }
-  return 'in_progress' // it's today
+
+  return 'scheduled'
+
 }
 
 const generateMobileSiteName = () => {
@@ -151,7 +153,11 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes, overr
   // Check if clinic is for today
   const today = dayjs().startOf('day')
   const clinicDate = dayjs(date).startOf('day')
-  const isToday = clinicDate.isSame(today)
+  const isToday = clinicDate.isSame(today, 'day')
+
+  if (isToday) {
+    console.log(`Generating clinic for today: ${clinicDate.format('YYYY-MM-DD')}, date: ${date}`)
+  }
 
   // Calculate total slots based on capacity
   const totalSlots = slots.length * (isToday && clinicType !== 'assessment' ? 2 : 1)
@@ -159,7 +165,7 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes, overr
   return {
     id: generateId(),
     clinicCode: generateClinicCode(),
-    date: date.toISOString().split('T')[0],
+    date: clinicDate.format('YYYY-MM-DD'),
     breastScreeningUnitId: breastScreeningUnit.id,
     locationType: location.type,
     clinicType,

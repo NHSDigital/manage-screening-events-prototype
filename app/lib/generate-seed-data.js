@@ -14,6 +14,8 @@ const { generateParticipant } = require('./generators/participant-generator')
 const { generateClinicsForBSU } = require('./generators/clinic-generator')
 const { generateEvent } = require('./generators/event-generator')
 const { getCurrentRiskLevel } = require('./utils/participants')
+const { generateReadingData } = require('./generators/reading-generator')
+
 const riskLevels = require('../data/risk-levels')
 
 // Load existing data
@@ -251,27 +253,43 @@ const generateData = async () => {
   console.log('Generating clinics and events...')
   const today = dayjs().startOf('day')
 
-  // Define snapshots from newest to oldest
-  const snapshots = [
+  let snapshots = [
     // Current period
     generateSnapshotPeriod(
       today.subtract(config.clinics.daysBeforeToday, 'days'),
       config.clinics.daysToGenerate
-    ),
-    // Historical periods
-    generateSnapshotPeriod(
-      today.subtract(3, 'year').add(1, 'month'),
-      config.clinics.daysToGenerate
-    ),
-    generateSnapshotPeriod(
-      today.subtract(6, 'year').add(2, 'month'),
-      config.clinics.daysToGenerate
-    ),
-    generateSnapshotPeriod(
-      today.subtract(9, 'year').add(3, 'month'),
-      config.clinics.daysToGenerate
-    ),
+    )
   ]
+
+  // Generate historical periods
+  const historicPeriods = config?.clinics?.historicPeriodCount || 0
+
+  for (let index = 0; index < historicPeriods; index++) {
+    snapshots.push(
+      generateSnapshotPeriod(
+        today.subtract(index + 3, 'year'),
+        5
+        )
+      )
+  }
+
+  // Define snapshots from newest to oldest
+  // const snapshots = [
+
+  //   // Historical periods
+  //   generateSnapshotPeriod(
+  //     today.subtract(3, 'year').add(1, 'month'),
+  //     config.clinics.daysToGenerate
+  //   ),
+  //   generateSnapshotPeriod(
+  //     today.subtract(6, 'year').add(2, 'month'),
+  //     config.clinics.daysToGenerate
+  //   ),
+  //   generateSnapshotPeriod(
+  //     today.subtract(9, 'year').add(3, 'month'),
+  //     config.clinics.daysToGenerate
+  //   ),
+  // ]
 
   // Generate all data in batches per BSU
   const allData = breastScreeningUnits.map(unit => {
@@ -331,6 +349,9 @@ const generateData = async () => {
     return new Date(a.timing.startTime) - new Date(b.timing.startTime)
   })
 
+  console.log('Generating sample reading data...')
+  const eventsWithReadingData = generateReadingData(sortedEvents, require('../data/users'))
+
 
   // breastScreeningUnits.forEach(unit => {
   //   snapshots.forEach(date => {
@@ -355,7 +376,7 @@ const generateData = async () => {
       slots: clinic.slots.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime)),
     })),
   })
-  writeData('events.json', { events: sortedEvents })
+  writeData('events.json', { events: eventsWithReadingData })
   writeData('generation-info.json', {
     generatedAt: new Date().toISOString(),
     stats: {

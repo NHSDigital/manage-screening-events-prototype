@@ -259,34 +259,9 @@ module.exports = router => {
 
     req.flash('success', { wrapWithHeading: successMessage})
 
-    res.redirect(`/clinics/${clinicId}/`)
+    res.redirect(`/clinics/${clinicId}`)
 
     // res.redirect(`/clinics/${clinicId}/events/${eventId}/screening-complete`)
   })
-
-  router.get('/events/image-reading/result-complete', (req, res) => {
-    let participantName = "Jane Smith"
-
-    const successMessage = `
-    ${participantName} has been marked as normal. <a href="#" class="app-nowrap">Undo reading</a>`
-
-    req.flash('success', { wrapWithHeading: successMessage})
-
-    res.redirect(`/events/image-reading/result`)
-
-  })
-
-  router.get('/events/image-reading/result-recall', (req, res) => {
-    let participantName = "Jane Smith"
-
-    const successMessage = `
-    ${participantName} has been sent for recall. <a href="#" class="app-nowrap">Undo reading</a>`
-
-    req.flash('success', { wrapWithHeading: successMessage})
-
-    res.redirect(`/events/image-reading/result`)
-
-  })
-
 
 }

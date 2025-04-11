@@ -34,12 +34,17 @@ module.exports = {
     targetAttendancePercent: 100, // 100% of original capacity (not overbooking)
 
     // Date range for generating data
-    daysToGenerate: 5,
-    daysBeforeToday: 2,
+    daysToGenerate: 16,
+    daysBeforeToday: 12,
+    historicPeriodCount: 1, // Number of historic periods to generate
 
     simulatedTime: '11:30', // 24h format
   },
-
+  reading: {
+    blindReading: 'true', // Enable blind reading
+    urgentThreshold: 10, // 10 days and over
+    priorityThreshold: 7, // 7 days and over
+  },
   screening: {
     outcomes: {
       screening: {

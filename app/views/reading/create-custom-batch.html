@@ -1,0 +1,112 @@
+{# app/views/reading/create-custom-batch.html #}
+
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "Create custom reading batch" %}
+{% set back = {
+  href: "/reading",
+  text: "Back to reading"
+} %}
+
+{% set formAction = "/reading/create-batch" %}
+{% set formMethod = "GET" %}
+
+{% block pageContent %}
+
+  <h1>{{ pageHeading }}</h1>
+
+  {{ radios({
+    idPrefix: "type",
+    name: "type",
+    fieldset: {
+      legend: {
+        text: "What type of reads?",
+        classes: "nhsuk-fieldset__legend--m"
+      }
+    },
+    items: [
+      {
+        value: "all_reads",
+        text: "All reads (1st and 2nd reads)",
+        checked: true
+      },
+      {
+        divider: "or"
+      },
+      {
+        value: "first_reads",
+        text: "First reads only"
+      },
+      {
+        value: "second_reads",
+        text: "Second reads only"
+      },
+      {
+        value: "awaiting_priors",
+        text: "Only cases awaiting priors"
+      }
+    ]
+  }) }}
+
+  {{ radios({
+    idPrefix: "limit",
+    name: "limit",
+    fieldset: {
+      legend: {
+        text: "Batch size",
+        classes: "nhsuk-fieldset__legend--m"
+      }
+    },
+    items: [
+      {
+        value: "25",
+        text: "25 cases"
+      },
+      {
+        value: "50",
+        text: "50 cases",
+        checked: true
+      },
+      {
+        value: "100",
+        text: "100 cases"
+      }
+    ]
+  }) }}
+
+  {{ checkboxes({
+    idPrefix: "filters",
+    name: "filters",
+    fieldset: {
+      legend: {
+        text: "Additional filters",
+        classes: "nhsuk-fieldset__legend--m"
+      }
+    },
+    items: [
+      {
+        value: "hasSymptoms",
+        text: "Only cases with symptoms"
+      },
+      {
+        value: "includeAwaitingPriors",
+        text: "Include awaiting priors cases"
+      }
+    ]
+  }) }}
+
+  {{ input({
+    label: {
+      text: "Give your batch a name (optional)",
+      classes: "nhsuk-label--m"
+    },
+    id: "batch-name",
+    name: "name",
+    classes: "nhsuk-input--width-20"
+  }) }}
+
+  {{ button({
+    text: "Create batch"
+  }) }}
+
+{% endblock %}

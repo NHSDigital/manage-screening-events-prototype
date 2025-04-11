@@ -1,10 +1,8 @@
-{% set existingResult = event.reads[0].result %}
+{% set existingRead = event | getReadForUser %}
+{{ event | log("Existing Read")}}
+{% set existingResult = existingRead.result %}
+{% set hasSymptoms = event.currentSymptoms | length > 0 %}
 
-
-{# {% set opionionHeading = "Review images for " + participant | getFullName %}
-{% if existingResult %}
-  {% set opionionHeading = "Update review for " + participant | getFullName %}
-{% endif %} #}
 
 {% set opionionHeading = "Review images" %}
 {% if existingResult %}
@@ -22,6 +20,40 @@
     </h1>
   </div>
   <div class="nhsuk-grid-column-one-third app-header-with-status__status-tag">
+
+    {% set eventAge = event.timing.startTime | daysSince %}
+
+    {% if eventAge >= data.config.reading.priorityThreshold %}
+      <div class="nhsuk-u-margin-bottom-2">
+        {% if eventAge >= data.config.reading.urgentThreshold %}
+          {{ "Urgent" | toTag }}
+        {% elseif eventAge >= data.config.reading.priorityThreshold %}
+          {{ "Due soon" | toTag }}
+        {% endif %}
+      </div>
+    {% endif %}
+
+
+
+    {# Work out if *this* is a first or second read. Have to compare the read counts and whether the current user has read #}
+    {% set readCount = event.readingMetadata.readCount %}
+
+    {% if existingResult %}
+      {% if readCount == 1 %}
+        {{ "First read" | toTag }}
+      {% else %}
+        {{ "Second read" | toTag }}
+      {% endif %}
+    {% else %}
+    {% if readCount == 0 %}
+        {{ "First read" | toTag }}
+      {% else %}
+        {{ "Second read" | toTag }}
+      {% endif %}
+    {% endif %}
+
+
+
     {% set requestedWithDateHtml %}
       {{ "Images requested" | toTag | safe }}<br>
       Requested 10 Feb 2025
@@ -42,47 +74,42 @@
 
 <form action="./assessment-answer" method="POST">
 
-
 {# Temporary ui to support changing an answer #}
 {% if existingResult %}
-<div class="nhsuk-grid-row">
-<div class="nhsuk-grid-column-two-thirds">
-  {# Show radios when updating an existing result #}
-  {{ radios({
-    idPrefix: "result",
-    name: "result",
-    fieldset: {
-      legend: {
-        text: questionText,
-        classes: "nhsuk-fieldset__legend--m",
-        isPageHeading: false
-      }
-    },
-    items: [
-      {
-        value: "normal",
-        text: "Normal",
-        checked: existingResult == "normal"
-      },
-      {
-        value: "technical_recall",
-        text: "Technical recall",
-        checked: existingResult == "technical_recall"
-      },
-      {
-        value: "recall_for_assessment",
-        text: "Recall for assessment",
-        checked: existingResult == "recall_for_assessment"
-      }
-    ],
-    value: data.result or existingResult
-  }) }}
+  <div class="nhsuk-grid-row">
+    <div class="nhsuk-grid-column-two-thirds">
+      {# Show radios when updating an existing result #}
+      {{ radios({
+        name: "imageReadingTemp[updatedResult]",
+        fieldset: {
+          legend: {
+            text: questionText,
+            classes: "nhsuk-fieldset__legend--m",
+            isPageHeading: false
+          }
+        },
+        items: [
+          {
+            value: "normal",
+            text: "Normal"
+          },
+          {
+            value: "technical_recall",
+            text: "Technical recall"
+          },
+          {
+            value: "recall_for_assessment",
+            text: "Recall for assessment"
+          }
+        ],
+        value: existingResult or data.imageReadingTemp.result
+      } | decorateAttributes(data, "imageReadingTemp.result" )) }}
 
-  {{ button({
-    text: "Update opinion"
-  }) }}
-</div>
-</div>
+      {{ button({
+        text: "Update opinion"
+      }) }}
+    </div>
+  </div>
 {% else %}
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-two-thirds">
@@ -94,15 +121,20 @@
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-one-third">
     <div class="form-group">
-      {{ button({
-        text: "Normal" if not hasSymptoms else "Normal, and add details",
-        value: "normal",
-        name: "result",
-        classes: "app-button-full-width nhsuk-u-margin-bottom-3"
-      }) }}
+      {% if hasSymptoms %}
+        {{ button({
+          text: "Normal, and add details",
+          href: "./normal-details",
+          classes: "app-button-full-width nhsuk-u-margin-bottom-3"
+        }) }}
+      {% else %}
+        {{ button({
+          text: "Normal",
+          value: "normal",
+          name: "result",
+          classes: "app-button-full-width nhsuk-u-margin-bottom-3"
+        }) }}
 
-      {# Go to page to collect a comment and mark features #}
-      {% if not hasSymptoms %}
         <p class="nhsuk-u-margin-bottom-0">
           <a href="./normal-details" class="nhsuk-link--no-visited-state">
             Normal, but add details
@@ -117,8 +149,7 @@
       {{ button({
         text: "Technical recall",
         classes: "nhsuk-button--secondary app-button-full-width",
-        value: "technical_recall",
-        name: "result"
+        href: "./recall-reason"
       }) }}
     </div>
   </div>
@@ -127,8 +158,7 @@
       {{ button({
         "text": "Recall for assessment",
         "classes": "nhsuk-button--warning app-button-full-width",
-        "value": "recall_for_assessment",
-        name: "result"
+        href: "./recall-for-assessment-details"
       }) }}
     </div>
   </div>

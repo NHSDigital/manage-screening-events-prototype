@@ -1,7 +1,7 @@
 
 {% extends "layout.html" %}
 
-{% set bodyClasses = "app-dark-mode" if data.darkMode == 'true' %}
+{% set bodyClasses = "app-dark-mode" if data.settings.darkMode == 'true' %}
 
 {% block beforeContent %}
 {% if not hideBackLink %}
@@ -40,8 +40,8 @@
       },
       {
         url: "/clinics",
-        label: "Clinics",
-        current: true if navActive == "clinics"
+        label: "Screening",
+        current: true if navActive == "screening"
       },
       {
         url: "/reading",
@@ -88,6 +88,7 @@
         "titleText": "There is a problem",
         "errorList": flash.error
       }) }}
+      {{ flash.error | log("Flash error") }}
     {% endif %}
 
     {% if flash.success %}

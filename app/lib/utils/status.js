@@ -1,5 +1,7 @@
 // app/lib/utils/status.js
 
+const dayjs = require('dayjs')
+
 /**
  * Define status groups for easier checking
  * @type {Object}
@@ -8,7 +10,7 @@ const STATUS_GROUPS = {
   completed: ['event_complete', 'event_partially_screened'],
   final: ['event_complete', 'event_partially_screened', 'event_did_not_attend', 'event_attended_not_screened', 'event_cancelled'],
   active: ['event_scheduled', 'event_checked_in'],
-  needs_reading: ['event_complete', 'event_partially_screened'],
+  eligible_for_reading: ['event_complete', 'event_partially_screened'],
 }
 
 /**
@@ -67,14 +69,16 @@ const isActive = (input) => {
 }
 
 /**
- * Check if a status indicates reading is needed
+ * Check if a status indicates reading is eligible
  * @param {string|Object} input - Status string or event object
  * @returns {boolean} Whether reading is needed
  */
-const needsReading = (input) => {
-  const status = getStatus(input)
+const eligibleForReading = (event) => {
+  const status = getStatus(event)
   if (!status) return false
-  return isStatusInGroup(status, 'needs_reading')
+  const cutoffDate = dayjs().subtract(30, 'days').startOf('day')
+  return isStatusInGroup(status, 'eligible_for_reading') &&
+    dayjs(event.timing.startTime).isAfter(cutoffDate)
 }
 
 /**
@@ -114,6 +118,39 @@ const getStatusTagColour = (status) => {
     requested: 'orange',
     images_requested: 'orange',
     not_in_pacs: 'grey',
+
+    // Metadata
+    has_symptoms: 'yellow',
+    has_repeat: 'yellow',
+
+    // Reading statuses
+    waiting_for_1st_read: 'grey',
+    waiting_for_2nd_read: 'grey',
+    not_started: 'grey',
+    skipped: 'grey',
+    not_read: 'grey',
+    complete: 'green',
+    partial_first_read: 'blue',
+    first_read_complete: 'yellow',
+    partial_second_read: 'blue',
+    mixed_reads: 'yellow',
+    mixed_with_arbitration: 'yellow',
+
+
+    no_events: 'grey',
+
+    // Outcomes
+    normal: 'green',
+    recall_for_assessment: 'red',
+    technical_recall: 'grey',
+    arbitration: 'orange',
+    'completed_(blind)': 'grey',
+
+    first_read: 'blue',
+    second_read: 'blue',
+
+    urgent: 'red',
+    due_soon: 'orange',
 
   }
   return colourMap[status.toLowerCase()] || ''
@@ -161,7 +198,7 @@ module.exports = {
   isCompleted,
   isFinal,
   isActive,
-  needsReading,
+  eligibleForReading,
   getStatusTagColour,
   getStatusText,
   filterEventsByStatus,

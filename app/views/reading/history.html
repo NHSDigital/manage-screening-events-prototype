@@ -1,0 +1,105 @@
+{# app/views/reading/history.html #}
+
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "Reading history" %}
+{% set back = {
+  href: "/reading",
+  text: "Back to reading"
+} %}
+
+{% set navActive = "reading" %}
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
+{% block pageContent %}
+  <h1>{{ pageHeading }}</h1>
+
+  {% set secondaryNavItems = [] %}
+
+  {% for item in [
+    { id: 'mine', label: 'My readings' },
+    { id: 'all', label: 'All readings' }
+  ] %}
+    {% set href -%}
+      /reading/history/{{ item.id }}
+    {% endset %}
+    {% set secondaryNavItems = secondaryNavItems | push({
+      text: item.label,
+      href: href | trim,
+      current: true if item.id == view
+    }) %}
+  {% endfor %}
+
+  {{ appSecondaryNavigation({
+    visuallyHiddenTitle: "Reading history views",
+    items: secondaryNavItems
+  }) }}
+
+  {% if readings | length === 0 %}
+    <p>No readings found.</p>
+  {% else %}
+    <table class="nhsuk-table">
+      <thead class="nhsuk-table__head">
+        <tr>
+          <th scope="col">Date and time</th>
+          <th scope="col">Participant</th>
+          {% if view == 'all' %}
+          <th scope="col">Reader</th>
+          {% endif %}
+          <th scope="col">Read type</th>
+
+          <th scope="col">
+            {% if view === 'mine' %}
+              Your opinion
+            {% else %}
+              Opinon
+            {% endif %}
+          </th>
+        </tr>
+      </thead>
+      <tbody class="nhsuk-table__body">
+        {% for reading in readings %}
+          <tr>
+            <td>
+              {{ reading.timestamp | formatDate }}<br>
+              <strong>{{ reading.timestamp | formatTime }}</strong>
+            </td>
+            <td>
+              {% if reading.batchId %}
+              <a href="/reading/batch/{{ reading.batchId or 'clinic' }}/events/{{ reading.eventId }}">
+                {{ reading.participant | getFullName }}
+              </a>
+              {% else %}
+                {{ reading.participant | getFullName }}
+              {% endif %}
+
+
+            </td>
+            {% if view == 'all' %}
+            <td>
+              {{ reading.readerId | getUsername({
+                format: 'short',
+                identifyCurrentUser: true
+              }) }}
+            </td>
+            {% endif %}
+            <td>
+              {% if reading.readType == 'first' %}
+                First read
+              {% elif reading.readType == 'second' %}
+                Second read
+              {% elif reading.readType == 'arbitration' %}
+                Arbitration
+              {% else %}
+                Unknown
+              {% endif %}
+            </td>
+            <td>
+              {{ reading.result | toTag }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% endblock %}
