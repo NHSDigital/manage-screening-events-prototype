@@ -38,40 +38,35 @@
     {{ ['Mole', 'Scar', 'Wart', 'Lump'] | randomItem }} ({{ [3,4,5,6] | randomItem }}mm) on {{ ['left upper outer', 'right upper inner ', 'left lower outer', 'right lower inner'] | randomItem }} breast
   {% endset %}
 
-  {{ summaryList({
-    rows: [
-      {
-        key: {
-          text: "Last known mammogram"
-        },
-        value: {
-          text: lastMammogramText
-        }
-      },
-      {
-        key: {
-          text: "Breast features"
-        },
-        value: {
-          text: breastFeatureText
-        }
-      } if hasBreastFeature,
-      {
-        key: {
-          text: "Hormone replacement therapy (HRT)"
-        },
-        value: {
-          html: "Taken since December " + [2022, 2023, 2024] | randomItem
-        }
-      } if hasHrt
-    ]
-  }) }}
+  {% if hasBreastFeature or hasHrt %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Breast features"
+          },
+          value: {
+            text: breastFeatureText
+          }
+        } if hasBreastFeature,
+        {
+          key: {
+            text: "Hormone replacement therapy (HRT)"
+          },
+          value: {
+            html: "Taken since December " + [2022, 2023, 2024] | randomItem
+          }
+        } if hasHrt
+      ]
+    }) }}
+  {% else %}
+    <p>
+      No relevant medical information to show.
+    </p>
 
+  {% endif %}
 
-  {% set symptomsHtml %}
-    {% set symptoms = event.currentSymptoms %}
-    {% include "summary-lists/symptoms.njk" %}
-  {% endset %}
+  <p><a href="#">View participant record</a></p>
 
   {# {{ card({
     heading: "Symptoms",
