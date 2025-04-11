@@ -86,16 +86,13 @@
             </td>
             <td>
               {% set daysSinceClinic = clinic.date | daysSince %}
-              {% if daysSinceClinic > 9 %}
-                {{ tag({
-                  text: "Urgent",
-                  classes: "nhsuk-tag--red"
-                })}}<br>
-              {% elseif daysSinceClinic > 6 %}
-                {{ tag({
-                  text: "Due soon",
-                  classes: "nhsuk-tag--orange"
-                })}}<br>
+
+              {% if daysSinceClinic >= data.config.reading.urgentThreshold %}
+                {{ "Urgent" | toTag }}
+                <br>
+              {% elseif daysSinceClinic >= data.config.reading.priorityThreshold %}
+                {{ "Due soon" | toTag }}
+                <br>
               {% endif %}
               {{ clinic.date | formatDate | noWrap }}<br>
               {{ clinic.date | formatRelativeDate | sentenceCase | asHint }}

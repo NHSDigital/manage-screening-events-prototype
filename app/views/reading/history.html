@@ -95,15 +95,7 @@
               {% endif %}
             </td>
             <td>
-              {% if reading.result == "normal" %}
-                {{ "Normal" | toTag("green") }}
-              {% elif reading.result == "technical_recall" %}
-                {{ "Technical recall" | toTag({colour: "orange"}) }}
-              {% elif reading.result == "recall_for_assessment" %}
-                {{ "Recall for assessment" | toTag({colour: "red"}) }}
-              {% else %}
-                {{ reading.result | formatWords | sentenceCase | toTag }}
-              {% endif %}
+              {{ reading.result | toTag }}
             </td>
           </tr>
         {% endfor %}

@@ -119,16 +119,38 @@ const getStatusTagColour = (status) => {
     images_requested: 'orange',
     not_in_pacs: 'grey',
 
+    // Metadata
+    has_symptoms: 'yellow',
+    has_repeat: 'yellow',
+
     // Reading statuses
+    waiting_for_1st_read: 'grey',
+    waiting_for_2nd_read: 'grey',
     not_started: 'grey',
+    skipped: 'grey',
+    not_read: 'grey',
+    complete: 'green',
     partial_first_read: 'blue',
     first_read_complete: 'yellow',
     partial_second_read: 'blue',
     mixed_reads: 'yellow',
     mixed_with_arbitration: 'yellow',
-    needs_arbitration: 'orange',
-    complete: 'green',
+
+
     no_events: 'grey',
+
+    // Outcomes
+    normal: 'green',
+    recall_for_assessment: 'red',
+    technical_recall: 'grey',
+    arbitration: 'orange',
+    'completed_(blind)': 'grey',
+
+    first_read: 'blue',
+    second_read: 'blue',
+
+    urgent: 'red',
+    due_soon: 'orange',
 
   }
   return colourMap[status.toLowerCase()] || ''

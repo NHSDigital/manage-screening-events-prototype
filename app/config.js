@@ -42,6 +42,8 @@ module.exports = {
   },
   reading: {
     blindReading: 'true', // Enable blind reading
+    urgentThreshold: 10, // 10 days and over
+    priorityThreshold: 7, // 7 days and over
   },
   screening: {
     outcomes: {

@@ -138,30 +138,19 @@
 
                 {% if event.currentSymptoms | length %}
                 <br>
-                  {{ tag({
-                    text: "Has symptoms",
-                    classes: "nhsuk-tag--yellow"
-                  })}}
+                  {{ "Has symptoms" | toTag }}
                 {% endif %}
                 {% if (data.settings.reading.showRepeatsTag | falsify) and event.mammogramData.metadata.hasRepeat %}
-                  {{ tag({
-                    text: "Has repeat",
-                    classes: "nhsuk-tag--yellow"
-                  })}}
+                  {{ "Has repeat" | toTag }}
                 {% endif %}
               </td>
               <td>
                 {% set daysSinceScreening = event.timing.startTime | daysSince %}
-                {% if daysSinceScreening > 9 %}
-                  {{ tag({
-                    text: "Urgent",
-                    classes: "nhsuk-tag--red"
-                  })}}<br>
-                {% elseif daysSinceScreening > 6 %}
-                  {{ tag({
-                    text: "Due soon",
-                    classes: "nhsuk-tag--orange"
-                  })}}<br>
+                {% if daysSinceScreening >= data.config.reading.urgentThreshold %}
+                  {{ "Urgent" | toTag }}<br>
+                {% elseif daysSinceScreening >= data.config.reading.priorityThreshold %}
+                  {{ "Due soon" | toTag }}
+                  <br>
                 {% endif %}
                 {{ event.timing.startTime | formatDate }}<br>
                 <span class="app-text-grey app-nowrap nhsuk-body-s">
@@ -185,22 +174,15 @@
                 {% endif %}
               </td>
               <td>
-                {% set skipped = "Skipped" if batch.skippedEvents | includes(event.id) else false %}
                 {% if event | userHasReadEvent %}
                   {% set read = event | getReadForUser %}
-                  {% if read.result == "normal" %}
-                    {{ "Normal" | toTag("green") }}
-                  {% elif read.result == "technical_recall" %}
-                    {{ "Technical recall" | toTag({colour: "orange"}) }}
-                  {% elif read.result == "recall_for_assessment" %}
-                    {{ "Recall for assessment" | toTag({colour: "red"}) }}
-                  {% else %}
-                    {{ read.result | formatWords | sentenceCase | toTag }}
+                  {% if read.result %}
+                    {{ read.result | toTag }}
                   {% endif %}
-                {% elseif skipped %}
-                  {{ "Skipped" | toTag({colour: "grey"}) }}
+                {% elseif batch.skippedEvents | includes(event.id) %}
+                  {{ "Skipped" | toTag }}
                 {% else %}
-                  {{ "Not read" | toTag({colour: "grey"}) }}
+                  {{ "Not read" | toTag }}
                 {% endif %}
               </td>
             </tr>
@@ -234,30 +216,20 @@
 
                 {% if event.currentSymptoms | length %}
                 <br>
-                  {{ tag({
-                    text: "Has symptoms",
-                    classes: "nhsuk-tag--yellow"
-                  })}}
+                  {{ "Has symptoms" | toTag }}
                 {% endif %}
                 {% if (data.settings.reading.showRepeatsTag | falsify) and event.mammogramData.metadata.hasRepeat %}
-                  {{ tag({
-                    text: "Has repeat",
-                    classes: "nhsuk-tag--yellow"
-                  })}}
+                  {{ "Has repeat" | toTag }}
                 {% endif %}
               </td>
               <td>
                 {% set daysSinceScreening = event.timing.startTime | daysSince %}
-                {% if daysSinceScreening > 9 %}
-                  {{ tag({
-                    text: "Urgent",
-                    classes: "nhsuk-tag--red"
-                  })}}<br>
-                {% elseif daysSinceScreening > 6 %}
-                  {{ tag({
-                    text: "Due soon",
-                    classes: "nhsuk-tag--orange"
-                  })}}<br>
+                {% if daysSinceScreening >= data.config.reading.urgentThreshold %}
+                  {{ "Urgent" | toTag }}
+                  <br>
+                {% elseif daysSinceScreening >= data.config.reading.priorityThreshold %}
+                  {{ "Due soon" | toTag }}
+                  <br>
                 {% endif %}
                 {{ event.timing.startTime | formatDate }}<br>
                 <span class="app-text-grey app-nowrap nhsuk-body-s">
@@ -266,21 +238,18 @@
               </td>
               {# First read column #}
               <td>
-                {% set skipped = "Skipped" if batch.skippedEvents | includes(event.id) else false %}
                 {% set isBlind = data.settings.reading.blindReading | falsify %}
                 {% set isCurrentUserRead = false %}
+
                 {% if metadata.readCount >= 1 %}
                   {% set firstRead = metadata.reads[0] %}
                   {% set isCurrentUserRead = firstRead.readerId === data.currentUser.id %}
 
                   {% if isBlind and not isCurrentUserRead and metadata.readCount < 2 %}
-                    {{ "Completed (blind)" | toTag({colour: "blue"}) }}
+                    {{ "Completed (blind)" | toTag }}
                   {% else %}
-                    {% if metadata.readCount >= 2 %}
-                      {{ firstRead.result | formatWords | sentenceCase | toTag({colour: "grey"}) }}
-                    {% else %}
-                      {{ firstRead.result | formatWords | sentenceCase | toTag }}
-                    {% endif %}
+                    {# Override default colour and make sure it's always grey #}
+                    {{ firstRead.result | toTag({colour: "grey"}) }}
                   {% endif %}
 
                   <br>
@@ -288,10 +257,10 @@
                     format: 'short',
                     identifyCurrentUser: true
                   }) }}</span>
-                {% elif skipped %}
-                  {{ "Skipped" | toTag({colour: "grey"}) }}
+                {% elif batch.skippedEvents | includes(event.id) %}
+                  {{ "Skipped" | toTag }}
                 {% else %}
-                  {{ "Not read" | toTag({colour: "grey"}) }}
+                  {{ "Not read" | toTag }}
                 {% endif %}
               </td>
               {# Second read column #}
@@ -302,45 +271,36 @@
                 {% if metadata.readCount >= 2 %}
                   {% set secondRead = metadata.reads[1] %}
                   {% set isCurrentUserRead = secondRead.readerId === data.currentUser.id %}
-
-                  {{ secondRead.result | formatWords | sentenceCase | toTag({colour: "grey"}) }}
-
+                  {# Force tags to grey #}
+                  {{ secondRead.result | toTag({colour: "grey"}) }}
                   <br>
                   <span class="app-text-grey app-nowrap nhsuk-body-s">by {{ secondRead.readerId | getUsername({
                     format: 'short',
                     identifyCurrentUser: true
                   }) }}</span>
                 {% elif metadata.readCount == 1 %}
-                  {% if skipped %}
-                    {{ "Skipped" | toTag({colour: "grey"}) }}
+                  {% if batch.skippedEvents | includes(event.id) %}
+                    {{ "Skipped" | toTag }}
                   {% else %}
-                    {{ "Not read" | toTag({colour: "grey"}) }}
+                    {{ "Not read" | toTag }}
                   {% endif %}
                 {% else %}
-                  {{ "Waiting for 1st read" | toTag({colour: "grey"}) }}
+                  {{ "Waiting for 1st read" | toTag }}
                 {% endif %}
               </td>
               {# Outcome column #}
               <td>
                 {% if metadata.readCount >= 2 %}
                   {% if metadata.hasDisagreement %}
-                    {{ "Arbitration" | toTag({colour: "orange"}) }}
+                    {{ "Arbitration" | toTag }}
                   {% else %}
                     {% set result = metadata.reads[0].result %}
-                    {% if result == "normal" %}
-                      {{ "Normal" | toTag("green") }}
-                    {% elif result == "technical_recall" %}
-                      {{ "Technical recall" | toTag({colour: "orange"}) }}
-                    {% elif result == "recall_for_assessment" %}
-                      {{ "Recall for assessment" | toTag({colour: "red"}) }}
-                    {% else %}
-                      {{ result | formatWords | sentenceCase | toTag }}
-                    {% endif %}
+                    {{ result | toTag }}
                   {% endif %}
                 {% elif metadata.readCount == 1 %}
-                  {{ "Waiting for 2nd read" | toTag({colour: "grey"}) }}
+                  {{ "Waiting for 2nd read" | toTag }}
                 {% else %}
-                  {{ "Waiting for 1st read" | toTag({colour: "grey"}) }}
+                  {{ "Waiting for 1st read" | toTag }}
                 {% endif %}
               </td>
             </tr>

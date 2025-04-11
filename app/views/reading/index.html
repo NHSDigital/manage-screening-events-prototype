@@ -7,8 +7,6 @@
 {% set gridColumn = "nhsuk-grid-column-full" %}
 {% set showRemaining = data.settings.reading.showRemaining | falsify %}
 
-{% set incompleteClinics = clinics | removeWhere('readingStatus.status', 'complete') %}
-
 {% block pageContent %}
   <h1>{{ pageHeading }}</h1>
 
@@ -20,11 +18,10 @@
 {# Remove awaiting priors #}
 {% set allReadsEvents = allReadsEventsWithAwaitingPriors | where("hasRequestedImages", "false") %}
 
-{% set recentEvents = allReadsEvents | filterEventsByDayRange(0, 7) %}
-{{ recentEvents | log("Recent events")}}
-{% set moderateAgeEvents = allReadsEvents | filterEventsByDayRange(7, 10) %}
-{# {% set olderEvents = allReadsEvents | filterEventsByDayRange(10, 13) %} #}
-{% set criticalEvents = allReadsEvents | filterEventsByDayRange(10) %}
+{% set recentEvents = allReadsEvents | filterEventsByDayRange(0, data.config.priorityThreshold) %}
+
+{% set priorityEvents = allReadsEvents | filterEventsByDayRange(data.config.priorityThreshold, 10) %}
+{% set urgentEvents = allReadsEvents | filterEventsByDayRange(data.config.reading.urgentThreshold) %}
 
 
 
@@ -49,18 +46,18 @@
 
   {% set allReadCount = allReadsEvents | length %}
 
-  {% set hasPriortyTags = moderateAgeEvents or criticalEvents %}
+  {% set hasPriortyTags = priorityEvents or urgentEvents %}
   <p class="{{ "nhsuk-u-margin-bottom-2" if hasPriortyTags }}">
     {{ allReadCount }} cases needing reading
   </p>
 
   {% if hasPriortyTags %}
     <div class="nhsuk-u-margin-bottom-4">
-      {% if criticalEvents | length %}
-        {{ ((criticalEvents | length) ~ " urgent cases") | toTag({colour: "red"}) }}
+      {% if urgentEvents | length %}
+        {{ ((urgentEvents | length) ~ " urgent cases") | toTag({colour: "red"}) }}
       {% endif %}
-      {% if moderateAgeEvents | length %}
-        {{ ((moderateAgeEvents | length) ~ " cases due soon") | toTag({colour: "orange"}) }}
+      {% if priorityEvents | length %}
+        {{ ((priorityEvents | length) ~ " cases due soon") | toTag({colour: "orange"}) }}
       {% endif %}
     </div>
   {% endif %}

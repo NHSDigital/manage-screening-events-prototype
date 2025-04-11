@@ -114,23 +114,28 @@ const formatDateTime = (dateString, format = 'D MMMM YYYY, HH:mm') => {
  */
 const formatRelativeDate = (dateString, withoutSuffix = false) => {
   if (!dateString) return ''
+
+  // Use the same calculation as daysSince for consistency
+  const daysDiff = daysSince(dateString)
+
+  // Special cases for today, yesterday, tomorrow
   const date = dayjs(dateString).startOf('day')
   const now = dayjs().startOf('day')
 
   if (date.isToday()) return 'today'
-  if (date.isTomorrow()) return 'tomorrow'
   if (date.isYesterday()) return 'yesterday'
+  if (date.isTomorrow()) return 'tomorrow'
 
-  // Calculate days difference for near dates
-  const daysDiff = date.diff(now, 'day')
-  if (daysDiff > 0 && daysDiff <= 6) {
-    return `in ${daysDiff} day${daysDiff > 1 ? 's' : ''}`
-  }
+  // Calculate near future/past dates using same logic as daysSince
   if (daysDiff < 0 && daysDiff >= -6) {
-    return `${Math.abs(daysDiff)} day${Math.abs(daysDiff) > 1 ? 's' : ''} ago`
+    return `in ${Math.abs(daysDiff)} day${Math.abs(daysDiff) > 1 ? 's' : ''}`
+  }
+  if (daysDiff > 0 && daysDiff <= 6) {
+    return `${daysDiff} day${daysDiff > 1 ? 's' : ''} ago`
   }
 
-  return date.fromNow(withoutSuffix)
+  // Avoiding date.fromNow() as it seems to use the time of day and not just the date
+  return date.from(now, withoutSuffix)
 }
 
 /**

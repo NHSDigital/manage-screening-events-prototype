@@ -23,18 +23,12 @@
 
     {% set eventAge = event.timing.startTime | daysSince %}
 
-    {% if eventAge > 6 %}
+    {% if eventAge >= data.config.reading.priorityThreshold %}
       <div class="nhsuk-u-margin-bottom-2">
-        {% if eventAge > 9 %}
-          {{ tag({
-            text: "Urgent",
-            classes: "nhsuk-tag--red"
-          })}}
-        {% elseif eventAge > 6 %}
-          {{ tag({
-            text: "Due soon",
-            classes: "nhsuk-tag--orange"
-          })}}
+        {% if eventAge >= data.config.reading.urgentThreshold %}
+          {{ "Urgent" | toTag }}
+        {% elseif eventAge >= data.config.reading.priorityThreshold %}
+          {{ "Due soon" | toTag }}
         {% endif %}
       </div>
     {% endif %}
