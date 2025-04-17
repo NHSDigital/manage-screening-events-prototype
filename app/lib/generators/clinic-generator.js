@@ -43,9 +43,9 @@ const generateTimeSlots = (date, sessionTimes, clinicType) => {
   const isToday = clinicDate.isSame(today)
 
   const slots = []
-  const startTime = new Date(`${date.toISOString().split('T')[0]}T${sessionTimes.startTime}`)
-  const endTime = new Date(`${date.toISOString().split('T')[0]}T${sessionTimes.endTime}`)
-
+  const dateStr = dayjs(date).format('YYYY-MM-DD')
+  const startTime = dayjs(`${dateStr}T${sessionTimes.startTime}`).toDate()
+  const endTime = dayjs(`${dateStr}T${sessionTimes.endTime}`).toDate()
   const currentTime = new Date(startTime)
 
   // Calculate how many slots should be double-booked

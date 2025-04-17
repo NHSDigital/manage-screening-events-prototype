@@ -9,8 +9,8 @@ const config = require('../../config')
  * @param {Array} clinics - Array of all clinics
  */
 const getTodaysClinics = (clinics) => {
-  const today = new Date().toISOString().split('T')[0]
-  return clinics.filter(c => c.date === today)
+  const today = dayjs().startOf('day')
+  return clinics.filter(c => dayjs(c.date).isSame(today, 'day'))
 }
 
 /**

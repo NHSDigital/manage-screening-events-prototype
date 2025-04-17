@@ -38,7 +38,7 @@ module.exports = {
     daysBeforeToday: 12,
     historicPeriodCount: 1, // Number of historic periods to generate
 
-    simulatedTime: '11:30', // 24h format
+    simulatedTime: '10:30', // 24h format
   },
   reading: {
     blindReading: 'true', // Enable blind reading
