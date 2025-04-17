@@ -25,11 +25,67 @@
   {% set animateImages = true %}
   {% include "fake-images.njk" %}
 
+  <div class="app-button-group nhsuk-u-margin-bottom-0">
+    {{ button({
+      text: "Re-scan PACS for image updates",
+      classes: "nhsuk-button--secondary"
+    }) }}
 
-  <hr class="nhsuk-section-break nhsuk-section-break--l nhsuk-section-break--visible">
+    <a class="nhsuk-link app-link--error" href="#">There is a problem with the images</a>
+  </div>
+
+  <hr class="nhsuk-section-break nhsuk-section-break--l nhsuk-section-break--visible nhsuk-u-margin-top-3">
 
   <div class="nhsuk-grid-row">
     <div class="nhsuk-grid-column-two-thirds">
+
+
+      {# {% set notImportedCorrectlyHtml %}
+
+        {{ input({
+          label: {
+            text: "How many images were taken?"
+          },
+          id: "imageCount",
+          name: "imageCount",
+          classes: "nhsuk-input--width-5"
+        }) }}
+
+        {{ input({
+          label: {
+            text: "Describe the issue"
+          },
+          id: "issueComment",
+          name: "issueComment"
+        }) }}
+
+      {% endset %}
+
+      {{ radios({
+        idPrefix: "imagesImportedCorrectly",
+        name: "imagesImportedCorrectly",
+        fieldset: {
+          legend: {
+            text: "Have all images imported correctly?",
+            classes: "nhsuk-fieldset__legend--m",
+            isPageHeading: false
+          }
+        },
+        items: [
+          {
+            value: "yes",
+            text: "Yes, " + imageCount + " images were taken"
+          },
+          {
+            value: "yesPartial",
+            text: "No, there is an issue and rescanning has not fixed it",
+            conditional: {
+              html: notImportedCorrectlyHtml
+            }
+          }
+        ]
+      }) }} #}
+
       {% set reasonHtml %}
         {{ textarea({
           name: "partialMammographyReason",
@@ -53,7 +109,7 @@
         items: [
           {
             value: "yes",
-            text: "Yes"
+            text: "Yes (" + imageCount + " images)"
           },
           {
             value: "yesPartial",
