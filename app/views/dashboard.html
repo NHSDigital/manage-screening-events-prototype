@@ -30,6 +30,15 @@
     }) }}
   </li>
   <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
+    {{ card({
+      clickable: true,
+      heading: "Image reading",
+      headingClasses: "nhsuk-heading-m",
+      href: "/reading",
+      descriptionHtml: false
+    }) }}
+  </li>
+  <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
 
     {% set participantCardDescriptionHtml %}
       <p>72k participants registered</p>
@@ -42,15 +51,7 @@
       descriptionHtml: participantCardDescriptionHtml
     }) }}
   </li>
-  <li class="nhsuk-grid-column-one-third nhsuk-card-group__item">
-    {{ card({
-      clickable: true,
-      heading: "Messages",
-      headingClasses: "nhsuk-heading-m",
-      href: "#",
-      descriptionHtml: false
-    }) }}
-  </li>
+
 </ul>
 
 

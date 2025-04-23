@@ -55,6 +55,9 @@
               Opinon
             {% endif %}
           </th>
+          <th scope="col">
+            Outcome
+          </th>
         </tr>
       </thead>
       <tbody class="nhsuk-table__body">
@@ -96,6 +99,23 @@
             </td>
             <td>
               {{ reading.result | toTag }}
+            </td>
+            <td>
+              {% set event = data.events | find('id', reading.eventId) %}
+              {% set metadata = event | getReadingMetadata %}
+              {{ metadata | log("metadata")}}
+              {% if metadata.readCount >= 2 %}
+                {% if metadata.hasDisagreement %}
+                  {{ "Arbitration" | toTag }}
+                {% else %}
+                  {% set result = metadata.reads[0].result %}
+                  {{ result | toTag }}
+                {% endif %}
+              {% elif metadata.readCount == 1 %}
+                {{ "Waiting for 2nd read" | toTag }}
+              {% else %}
+                {{ "Waiting for 1st read" | toTag }}
+              {% endif %}
             </td>
           </tr>
         {% endfor %}
