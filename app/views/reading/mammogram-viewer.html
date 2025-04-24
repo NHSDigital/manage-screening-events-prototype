@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mammogram Viewer</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: "Frutiger W01", Arial, sans-serif;
+      overflow: hidden;
+    }
+    .viewer-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+    }
+    .participant-bar {
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.8);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      text-align: center;
+    }
+    .participant-name {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .images-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      height: 100%;
+      width: 100%;
+      gap: 4px;
+      padding-top: 60px; /* Space for the participant bar */
+    }
+    .image-cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #111;
+      overflow: hidden;
+      position: relative;
+    }
+    .image-cell img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    /* Flip the left breast images (shown on right side) */
+    .image-cell.left-breast img {
+      transform: scaleX(-1);
+    }
+    .image-caption {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="participant-bar">
+      <h1 id="participant-name" class="participant-name">
+        {% if name %}
+          {{ name }}
+        {% else %}
+          Waiting for participant data...
+        {% endif %}
+      </h1>
+    </div>
+
+    <div class="images-container">
+      <!-- Right breast CC, top left - NOT FLIPPED -->
+      <div class="image-cell">
+        <img id="rcc-image" src="/images/mammograms/nci-vol-9405-150.jpg" alt="Right craniocaudal (RCC)">
+        <div class="image-caption">Right craniocaudal (RCC)</div>
+      </div>
+
+      <!-- Left breast CC, top right - FLIPPED -->
+      <div class="image-cell left-breast">
+        <img id="lcc-image" src="/images/mammograms/nci-vol-9405-150.jpg" alt="Left craniocaudal (LCC)">
+        <div class="image-caption">Left craniocaudal (LCC)</div>
+      </div>
+
+      <!-- Right breast MLO, bottom left - NOT FLIPPED -->
+      <div class="image-cell">
+        <img id="rmlo-image" src="/images/mammograms/nci-vol-9407-150.jpg" alt="Right mediolateral oblique (RMLO)">
+        <div class="image-caption">Right mediolateral oblique (RMLO)</div>
+      </div>
+
+      <!-- Left breast MLO, bottom right - FLIPPED -->
+      <div class="image-cell left-breast">
+        <img id="lmlo-image" src="/images/mammograms/nci-vol-9407-150.jpg" alt="Left mediolateral oblique (LMLO)">
+        <div class="image-caption">Left mediolateral oblique (LMLO)</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Generate a random number between min and max
+    function randomBetween(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    // Apply random transforms to an image element
+    function randomizeImage(imgElement, isLeftBreast) {
+      // Generate random transformations
+      const scale = randomBetween(0.95, 1.05);
+      const rotate = randomBetween(-2, 2);
+      const translateX = randomBetween(-10, 10);
+      const translateY = randomBetween(-10, 10);
+      const brightness = randomBetween(0.9, 1.1);
+      const contrast = randomBetween(0.9, 1.1);
+
+      // Apply transformations - scaleX only for left breast
+      const baseTransform = `scale(${scale}) rotate(${rotate}deg) translate(${translateX}px, ${translateY}px)`;
+      imgElement.style.transform = isLeftBreast ? `scaleX(-1) ${baseTransform}` : baseTransform;
+      imgElement.style.filter = `brightness(${brightness}) contrast(${contrast})`;
+    }
+
+    // Apply random transformations to all images
+    function randomizeAllImages() {
+      randomizeImage(document.getElementById('rcc-image'), false); // right breast
+      randomizeImage(document.getElementById('lcc-image'), true);  // left breast
+      randomizeImage(document.getElementById('rmlo-image'), false); // right breast
+      randomizeImage(document.getElementById('lmlo-image'), true);  // left breast
+    }
+
+    // Export randomization functions to window so they can be called from parent
+    window.randomizeAllImages = randomizeAllImages;
+
+    // Simple seedrandom implementation
+    Math.seedrandom = function(seed) {
+      let s = seed || 1;
+      return function() {
+        s = Math.sin(s) * 10000;
+        return s - Math.floor(s);
+      };
+    };
+
+    // Simple page script - get name from URL if present
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const name = urlParams.get('name');
+
+      if (name) {
+        const nameElement = document.getElementById('participant-name');
+        if (nameElement) {
+          nameElement.textContent = decodeURIComponent(name);
+        }
+        document.title = 'Mammogram: ' + decodeURIComponent(name);
+
+        // Generate a deterministic "random" seed based on the participant name
+        // This ensures the same person always gets the same image adjustments
+        const nameSeed = name.split('').reduce((sum, char, i) => sum + char.charCodeAt(0) * (i + 1), 0);
+
+        // Set random function based on name
+        Math.random = Math.seedrandom(nameSeed);
+
+        // Apply randomization to images
+        randomizeAllImages();
+      }
+
+      // Let parent window know this window is still open
+      window.addEventListener('beforeunload', function() {
+        try {
+          if (window.opener && window.opener.MammogramViewer) {
+            // Clear the stored reference when this window closes
+            window.opener.mammogramWindow = null;
+            localStorage.removeItem('mammogramViewerOpen');
+          }
+        } catch (e) {
+          console.error('Error notifying parent of close:', e);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

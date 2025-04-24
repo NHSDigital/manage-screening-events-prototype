@@ -311,3 +311,55 @@
   </div>
 </div>
 {% endblock %}
+
+{% block bodyEnd %}
+  {{ super() }}
+  <script src="/js/mammogram-viewer.js"></script>
+  <script>
+    // Explicitly indicate this is not a reading page
+    window.isReadingPage = false;
+
+    // Function to ensure the mammogram viewer is closed
+    function ensureViewerClosed() {
+      if (window.MammogramViewer) {
+        // Only close if not already closed
+        if (window.MammogramViewer.isOpen()) {
+          window.MammogramViewer.close();
+        }
+      }
+    }
+
+    // Close mammogram viewer when batch page loads, but only once
+    let hasClosedViewer = false;
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!hasClosedViewer) {
+        ensureViewerClosed();
+        hasClosedViewer = true;
+      }
+    });
+
+    // Attach close logic to link clicks directly instead of using visibility events
+    document.addEventListener('click', function(e) {
+      // Don't try to close for every click, only when clicking links to events
+      let linkElement = e.target;
+      while (linkElement && linkElement.tagName !== 'A' && linkElement !== document.body) {
+        linkElement = linkElement.parentElement;
+      }
+
+      if (linkElement && linkElement.tagName === 'A' && linkElement.href.includes('/events/')) {
+        // This is a link to an event page, don't close the viewer
+        return;
+      }
+
+      // Avoid closing when moving to event pages
+      if (linkElement && linkElement.tagName === 'A' &&
+          !linkElement.href.includes('/events/') &&
+          window.location.pathname.includes('/batch/')) {
+        // Only close if actually open
+        if (window.MammogramViewer && window.MammogramViewer.isOpen()) {
+          setTimeout(ensureViewerClosed, 50);
+        }
+      }
+    });
+  </script>
+{% endblock %}
