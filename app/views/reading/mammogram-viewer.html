@@ -62,12 +62,25 @@
     }
     .image-caption {
       position: absolute;
-      bottom: 10px;
+      top: 10px;  /* Changed from bottom to top */
       left: 10px;
       background: rgba(0, 0, 0, 0.7);
       padding: 4px 8px;
       border-radius: 3px;
       font-size: 14px;
+      z-index: 5; /* Ensure it's above the image */
+    }
+    #close-button {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      padding: 5px 10px;
+      background: #f00;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -81,6 +94,7 @@
           Waiting for participant data...
         {% endif %}
       </h1>
+      <button id="close-button" onclick="window.close()">Close</button>
     </div>
 
     <div class="images-container">
@@ -111,6 +125,33 @@
   </div>
 
   <script>
+    // Flag to prevent focus stealing
+    let allowFocusChange = false;
+
+    // Initialize timestamp for polling
+    let lastCheckTime = Date.now();
+
+    // Flag to detect if parent is still checking
+    let parentIsWatching = true;
+
+    // Track the timestamp from URL to detect refreshes
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageLoadTime = urlParams.get('ts') || Date.now();
+
+    // Prevent this window from stealing focus
+    window.addEventListener('focus', function(e) {
+      if (!allowFocusChange) {
+        try {
+          // Try to give focus back to parent
+          if (window.opener && !window.opener.closed) {
+            window.opener.focus();
+          }
+        } catch (err) {
+          console.log("Error returning focus:", err);
+        }
+      }
+    });
+
     // Generate a random number between min and max
     function randomBetween(min, max) {
       return min + Math.random() * (max - min);
@@ -152,22 +193,45 @@
       };
     };
 
-    // Check if parent window is still open
-    function checkParentWindow() {
+    // Aggressive self-closing check
+    function checkShouldClose() {
+      console.log("Checking if viewer should close");
+
+      // Method 1: Check parent window existence
       try {
         if (!window.opener || window.opener.closed) {
-          // If parent is gone, close this window
-          console.log("Parent window gone, closing viewer");
+          console.log("Parent gone, closing");
           window.close();
+          return;
+        }
+
+        // Update parent watching flag
+        parentIsWatching = true;
+        lastCheckTime = Date.now();
+
+        // Method 2: Check parent reading context
+        try {
+          if (window.opener.inReadingContext === false) {
+            console.log("Parent left reading context, closing");
+            window.close();
+            return;
+          }
+        } catch (e) {
+          console.log("Could not access parent reading context", e);
         }
       } catch (e) {
-        // If we can't access opener due to security, stay open
+        // If we can't access opener at all
         console.log("Cannot access parent window:", e);
       }
     }
 
-    // Check parent window periodically
-    setInterval(checkParentWindow, 1000);
+    // Handler for parent message
+    function handleMessage(event) {
+      if (event.data === 'please-close') {
+        console.log("Received close message from parent");
+        window.close();
+      }
+    }
 
     // Simple page script - get name from URL if present
     document.addEventListener('DOMContentLoaded', function() {
@@ -192,18 +256,20 @@
         randomizeAllImages();
       }
 
-      // Let parent window know this window is still open
-      window.addEventListener('beforeunload', function() {
-        try {
-          if (window.opener && window.opener.MammogramViewer) {
-            // Clear the stored reference when this window closes
-            window.opener.mammogramWindow = null;
-            localStorage.removeItem('mammogramViewerOpen');
-          }
-        } catch (e) {
-          console.error('Error notifying parent of close:', e);
+      // Start the self-closing check
+      setInterval(checkShouldClose, 1000);
+
+      // Listen for messages from parent
+      window.addEventListener('message', handleMessage);
+
+      // Secondary watchdog timer - close if parent hasn't checked on us
+      setInterval(function() {
+        const timeSinceLastCheck = Date.now() - lastCheckTime;
+        if (timeSinceLastCheck > 10000) { // 10 seconds
+          console.log("Parent hasn't checked on us in 10 seconds, closing");
+          window.close();
         }
-      });
+      }, 2000);
     });
   </script>
 </body>

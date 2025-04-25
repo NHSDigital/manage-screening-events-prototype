@@ -3,36 +3,78 @@
 // Single global variable to store the window reference
 let mammogramWindow = null;
 
-// Track what was the last page that had a viewer open
-let lastViewerPage = '';
+// Track what was the last event ID that had a viewer open
+let currentEventId = '';
 
-// Check for viewer flag on page load - only run once
+// Track the current participant name to detect if we truly need to update
+let currentParticipantName = '';
+
+// Track if we're in a reading context - export to make it visible to the viewer
+window.inReadingContext = false;
+
+// Check for viewer flag on page load
 document.addEventListener('DOMContentLoaded', function() {
   // Check if this page should show the viewer
-  const shouldShowViewer = document.querySelector('meta[name="mammogram-viewer"]')?.getAttribute('content') === 'show';
+  const viewerMeta = document.querySelector('meta[name="mammogram-viewer"]');
+  const shouldShowViewer = viewerMeta?.getAttribute('content') === 'show';
   const participantName = document.querySelector('meta[name="participant-name"]')?.getAttribute('content');
+  const eventId = document.querySelector('meta[name="event-id"]')?.getAttribute('content');
 
-  // Debug
-  console.log("Mammogram viewer check:", shouldShowViewer ? "SHOW" : "HIDE");
+  console.log("Mammogram viewer check:", shouldShowViewer ? "SHOW" : "HIDE", "Event ID:", eventId);
 
+  // Update our reading context status - this is checked by the viewer window
+  window.inReadingContext = shouldShowViewer;
+
+  // If we're in a reading context with metadata present
   if (shouldShowViewer && participantName) {
-    // We're on a page that should show the viewer
-    lastViewerPage = window.location.pathname;
-    MammogramViewer.open(participantName);
-  } else {
-    // We're on a page that should NOT show the viewer - ensure it's closed
-    // BUT - don't close if we're just moving between pages in the same reading context
+    // Very strict checks to prevent unnecessary updates:
+    // 1. Do we already have the same event open?
+    // 2. Is the window reference still valid?
+    // 3. Is it the same participant as before?
 
-    // Check if we're still in a reading context by examining the URL
-    const currentPath = window.location.pathname;
-    const isStillInReading = currentPath.includes('/reading/batch/') &&
-                             currentPath.includes('/events/');
+    const isSameEvent = eventId && eventId === currentEventId;
+    const isSameParticipant = participantName === currentParticipantName;
+    const hasValidWindow = mammogramWindow && !mammogramWindow.closed;
 
-    // If we're no longer in a reading context, close the viewer
-    if (!isStillInReading) {
-      MammogramViewer.close();
-      lastViewerPage = '';
+    if (hasValidWindow && isSameEvent && isSameParticipant) {
+      console.log("Same event and participant, not touching the viewer at all");
+      // Same event and participant with valid window - do absolutely nothing
+      return;
     }
+
+    // Only update tracking variables when there's an actual change
+    if (!isSameEvent) {
+      console.log("New event detected, updating from", currentEventId, "to", eventId);
+      currentEventId = eventId || '';
+    }
+
+    if (!isSameParticipant) {
+      console.log("New participant detected:", participantName);
+      currentParticipantName = participantName;
+    }
+
+    // Only open/update when we truly need to (new event, new participant, or no window)
+    if (!hasValidWindow || !isSameEvent || !isSameParticipant) {
+      MammogramViewer.open(participantName);
+    }
+  } else {
+    // We're on a page that should NOT show the viewer
+    console.log("Not in reading context - marking for close");
+    // Just set the flag - the viewer will see this and self-close
+    window.inReadingContext = false;
+
+    // Try to send a message to the viewer window
+    if (mammogramWindow && !mammogramWindow.closed) {
+      try {
+        mammogramWindow.postMessage('please-close', '*');
+      } catch (e) {
+        console.error("Error posting close message:", e);
+      }
+    }
+
+    // Reset tracking variables
+    currentEventId = '';
+    currentParticipantName = '';
   }
 });
 
@@ -53,7 +95,7 @@ const MammogramViewer = {
 
     // Create window if it doesn't exist
     if (!mammogramWindow) {
-      const url = `/reading/mammogram-viewer?name=${encodeURIComponent(participantName)}`;
+      const url = `/reading/mammogram-viewer?name=${encodeURIComponent(participantName)}&ts=${Date.now()}`;
       // Portrait orientation
       mammogramWindow = window.open(url, 'mammogramViewer', 'width=700,height=900');
 
@@ -62,6 +104,11 @@ const MammogramViewer = {
         try {
           localStorage.setItem('mammogramViewerOpen', 'true');
           console.log("Mammogram viewer opened");
+
+          // Keep focus on the main window
+          setTimeout(function() {
+            window.focus();
+          }, 100);
         } catch (e) {
           console.error('Error marking viewer as open:', e);
         }
@@ -73,7 +120,7 @@ const MammogramViewer = {
         if (nameElement) {
           nameElement.textContent = participantName;
           mammogramWindow.document.title = 'Mammogram: ' + participantName;
-          console.log("Mammogram viewer updated");
+          console.log("Mammogram viewer updated for:", participantName);
 
           // Re-randomize the images when switching participants
           if (typeof mammogramWindow.randomizeAllImages === 'function') {
@@ -84,6 +131,9 @@ const MammogramViewer = {
             // Apply randomization
             mammogramWindow.randomizeAllImages();
           }
+
+          // Keep focus on the main window
+          window.focus();
         }
       } catch (e) {
         console.error('Could not update viewer window, opening new one', e);
@@ -93,84 +143,47 @@ const MammogramViewer = {
         } catch (err) {}
 
         localStorage.removeItem('mammogramViewerOpen');
-        mammogramWindow = window.open(`/reading/mammogram-viewer?name=${encodeURIComponent(participantName)}`,
+        mammogramWindow = window.open(`/reading/mammogram-viewer?name=${encodeURIComponent(participantName)}&ts=${Date.now()}`,
           'mammogramViewer', 'width=700,height=900');
 
         if (mammogramWindow) {
           localStorage.setItem('mammogramViewerOpen', 'true');
           console.log("Mammogram viewer reopened");
+
+          // Keep focus on the main window
+          setTimeout(function() {
+            window.focus();
+          }, 100);
         }
       }
     }
-
-    // Force focus back to parent window to prevent focus stealing
-    setTimeout(function() {
-      window.focus();
-    }, 100);
 
     return mammogramWindow;
   },
 
-  // Close the viewer window - but only if it actually exists
+  // No longer trying to directly close - just signal intent
   close: function() {
-    // First check if we need to close anything
-    let needsClosing = false;
+    console.log("Signaling viewer to close");
+    window.inReadingContext = false;
 
-    // Method 1: Check our direct reference
+    // Try to send a message to the viewer
     if (mammogramWindow && !mammogramWindow.closed) {
-      needsClosing = true;
+      try {
+        mammogramWindow.postMessage('please-close', '*');
+      } catch (e) {
+        console.error("Error posting close message:", e);
+      }
     }
 
-    // Method 2: Check localStorage flag
-    try {
-      if (localStorage.getItem('mammogramViewerOpen') === 'true') {
-        needsClosing = true;
-      }
-    } catch (e) {}
-
-    // Only proceed if we actually need to close something
-    if (needsClosing) {
-      console.log("Closing mammogram viewer");
-
-      // Try to use the stored reference first
-      if (mammogramWindow) {
-        try {
-          mammogramWindow.close();
-          mammogramWindow = null;
-        } catch (e) {
-          console.error('Error closing viewer window:', e);
-        }
-      }
-
-      // Clean up localStorage flag
-      try {
-        localStorage.removeItem('mammogramViewerOpen');
-      } catch (e) {
-        console.error('Error clearing viewer flag:', e);
-      }
-
-      // If we don't have a direct reference but the flag was set, try to find and close by name
-      try {
-        const viewerWindow = window.open('', 'mammogramViewer', 'noopener');
-        if (viewerWindow && viewerWindow !== window) {
-          viewerWindow.close();
-        }
-      } catch (e) {
-        console.error('Error in backup window closing:', e);
-      }
-    }
+    // Clean up our references
+    mammogramWindow = null;
+    localStorage.removeItem('mammogramViewerOpen');
   },
 
   // Check if viewer is open
   isOpen: function() {
-    // Method 1: Check our direct reference
-    if (mammogramWindow && !mammogramWindow.closed) {
-      return true;
-    }
-
-    // Method 2: Check localStorage flag
     try {
-      return localStorage.getItem('mammogramViewerOpen') === 'true';
+      return mammogramWindow && !mammogramWindow.closed;
     } catch (e) {
       return false;
     }

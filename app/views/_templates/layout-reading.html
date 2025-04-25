@@ -71,7 +71,6 @@
         <div class="app-reading-status__row">
           <div class="app-reading-status__participant">
             <div class="app-reading-status__detail">
-              {# <strong>Participant:</strong> #}
               <strong>{{ participant | getFullName }}</strong>
               {% if participant | getAge %}
                 <span>({{ participant | getAge }} years)</span>
@@ -187,5 +186,6 @@
   <!-- Meta tags to control mammogram viewer -->
   <meta name="mammogram-viewer" content="show">
   <meta name="participant-name" content="{{ participant | getFullName }}">
+  <meta name="event-id" content="{{ eventId }}">
   {% endif %}
 {% endblock %}
