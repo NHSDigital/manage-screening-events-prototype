@@ -180,38 +180,12 @@
   {% endif %}
 {% endblock pageNavigation %}
 
-{% block bodyEnd %}
+
+{% block head %}
   {{ super() }}
-  <script src="/js/mammogram-viewer.js"></script>
   {% if participant %}
-  <script>
-    // Set a flag on the page to indicate we're in a reading context
-    window.isReadingPage = true;
-
-    // Open mammogram viewer on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      // Give time for scripts to load
-      setTimeout(function() {
-        if (window.MammogramViewer) {
-          // Get participant name
-          const participantName = "{{ participant | getFullName }}";
-          // Open viewer window
-          window.MammogramViewer.open(participantName);
-          // Force focus back to this window
-          window.focus();
-        }
-      }, 200);
-    });
-
-    // When moving between participants, make sure main window stays focused
-    window.addEventListener('focus', function() {
-      clearTimeout(window._focusTimer);
-      window._focusTimer = setTimeout(function() {
-        if (window.MammogramViewer && window.MammogramViewer.isOpen()) {
-          window.focus();
-        }
-      }, 100);
-    });
-  </script>
+  <!-- Meta tags to control mammogram viewer -->
+  <meta name="mammogram-viewer" content="show">
+  <meta name="participant-name" content="{{ participant | getFullName }}">
   {% endif %}
 {% endblock %}

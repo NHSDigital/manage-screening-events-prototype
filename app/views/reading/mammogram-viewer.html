@@ -152,6 +152,23 @@
       };
     };
 
+    // Check if parent window is still open
+    function checkParentWindow() {
+      try {
+        if (!window.opener || window.opener.closed) {
+          // If parent is gone, close this window
+          console.log("Parent window gone, closing viewer");
+          window.close();
+        }
+      } catch (e) {
+        // If we can't access opener due to security, stay open
+        console.log("Cannot access parent window:", e);
+      }
+    }
+
+    // Check parent window periodically
+    setInterval(checkParentWindow, 1000);
+
     // Simple page script - get name from URL if present
     document.addEventListener('DOMContentLoaded', function() {
       const urlParams = new URLSearchParams(window.location.search);
