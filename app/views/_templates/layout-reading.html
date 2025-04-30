@@ -179,15 +179,14 @@
   {% endif %}
 {% endblock pageNavigation %}
 
-
-{% block head %}
-  {{ super() }}
-  {% if participant %}
-    {% if data.settings.reading.showPacsViewer | falsify %}
-      <!-- Meta tags to control mammogram viewer -->
-      <meta name="mammogram-viewer" content="show">
-      <meta name="participant-name" content="{{ participant | getFullName }}">
-      <meta name="event-id" content="{{ eventId }}">
-    {% endif %}
+{% block mammogramViewer %}
+  {% if participant and data.settings.reading.showPacsViewer | falsify %}
+    <!-- Meta tags to control mammogram viewer -->
+    <meta name="mammogram-viewer" content="show">
+    <meta name="participant-name" content="{{ participant | getFullName }}">
+    <meta name="event-id" content="{{ eventId }}">
+  {% else %}
+    <!-- Default: mammogram viewer should be hidden -->
+    <meta name="mammogram-viewer" content="hide">
   {% endif %}
 {% endblock %}
