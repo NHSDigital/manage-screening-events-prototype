@@ -5,4 +5,6 @@
 {% endif %}
 
 <!-- Add any custom scripts -->
-<script src="/js/mammogram-viewer.js"></script>
+{% if data.settings.reading.showPacsViewer | falsify %}
+  <script src="/js/mammogram-viewer.js"></script>
+{% endif %}

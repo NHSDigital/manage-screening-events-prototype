@@ -183,9 +183,11 @@
 {% block head %}
   {{ super() }}
   {% if participant %}
-  <!-- Meta tags to control mammogram viewer -->
-  <meta name="mammogram-viewer" content="show">
-  <meta name="participant-name" content="{{ participant | getFullName }}">
-  <meta name="event-id" content="{{ eventId }}">
+    {% if data.settings.reading.showPacsViewer | falsify %}
+      <!-- Meta tags to control mammogram viewer -->
+      <meta name="mammogram-viewer" content="show">
+      <meta name="participant-name" content="{{ participant | getFullName }}">
+      <meta name="event-id" content="{{ eventId }}">
+    {% endif %}
   {% endif %}
 {% endblock %}

@@ -59,6 +59,7 @@ const defaultSettings = {
     confirmNormal: 'false',
     showRemaining: 'true',
     showRepeatsTag: 'false',
+    showPacsViewer: 'true',
   },
 }
 

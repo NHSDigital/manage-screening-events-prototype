@@ -71,12 +71,12 @@ function forceCloseViewer() {
   } catch (e) {}
 
   // Try to grab any window with that name and close it
-  try {
-    const viewerWindow = window.open('', 'mammogramViewer', 'noopener');
-    if (viewerWindow && viewerWindow !== window) {
-      viewerWindow.close();
-    }
-  } catch (e) {}
+  // try {
+  //   const viewerWindow = window.open('', 'mammogramViewer', 'noopener');
+  //   if (viewerWindow && viewerWindow !== window) {
+  //     viewerWindow.close();
+  //   }
+  // } catch (e) {}
 
   // Last resort - add a message asking user to close manually
   if (mammogramWindow && !mammogramWindow.closed) {
