@@ -71,7 +71,6 @@
         <div class="app-reading-status__row">
           <div class="app-reading-status__participant">
             <div class="app-reading-status__detail">
-              {# <strong>Participant:</strong> #}
               <strong>{{ participant | getFullName }}</strong>
               {% if participant | getAge %}
                 <span>({{ participant | getAge }} years)</span>
@@ -179,3 +178,15 @@
 
   {% endif %}
 {% endblock pageNavigation %}
+
+{% block mammogramViewer %}
+  {% if participant and data.settings.reading.showPacsViewer | falsify %}
+    <!-- Meta tags to control mammogram viewer -->
+    <meta name="mammogram-viewer" content="show">
+    <meta name="participant-name" content="{{ participant | getFullName }}">
+    <meta name="event-id" content="{{ eventId }}">
+  {% else %}
+    <!-- Default: mammogram viewer should be hidden -->
+    <meta name="mammogram-viewer" content="hide">
+  {% endif %}
+{% endblock %}

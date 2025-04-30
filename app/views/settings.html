@@ -67,6 +67,11 @@
       <a class="nhsuk-link--no-visited-state" href="./settings?settings[reading][showRepeatsTag]={{'true' if data.settings.reading.showRepeatsTag !== 'true' else 'false'}}&clearQuery=true">{{ 'Show' if data.settings.reading.showRepeatsTag=='false' else 'Disable'}} repeats tag</a>
     </p>
 
+    {# Show PACS Viewer #}
+    <p>
+      <a class="nhsuk-link--no-visited-state" href="./settings?settings[reading][showPacsViewer]={{'true' if data.settings.reading.showPacsViewer !== 'true' else 'false'}}&clearQuery=true">{{ 'Show' if data.settings.reading.showPacsViewer=='false' else 'Hide'}} PACS viewer</a>
+    </p>
+
     <h2>Generated data</h2>
 
     <dl class="nhsuk-summary-list">

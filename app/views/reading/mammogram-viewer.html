@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mammogram Viewer</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: "Frutiger W01", Arial, sans-serif;
+      overflow: hidden;
+    }
+    .viewer-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+    }
+    .participant-bar {
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.8);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      text-align: center;
+    }
+    .participant-name {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .images-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      height: 100vh;
+      width: 100%;
+      gap: 4px;
+      padding-top: 60px; /* Space for the participant bar */
+      box-sizing: border-box;
+    }
+    .image-cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #111;
+      overflow: hidden;
+      position: relative;
+      max-height: calc((100vh - 64px) / 2);
+    }
+    .image-cell img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    /* Flip the left breast images (shown on right side) */
+    .image-cell.left-breast img {
+      transform: scaleX(-1);
+    }
+    .image-caption {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 14px;
+      z-index: 5;
+    }
+    #close-button {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      padding: 5px 10px;
+      background: #f00;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="participant-bar">
+      <h1 id="participant-name" class="participant-name">
+        {% if name %}
+          {{ name }}
+        {% else %}
+          Waiting for participant data...
+        {% endif %}
+      </h1>
+      <button id="close-button" onclick="window.close()">Close</button>
+    </div>
+
+    <div class="images-container">
+      <!-- Right breast CC, top left - NOT FLIPPED -->
+      <div class="image-cell">
+        <img id="rcc-image" src="/images/mammograms/nci-vol-9405-150.jpg" alt="Right craniocaudal (RCC)">
+        <div class="image-caption">Right craniocaudal (RCC)</div>
+      </div>
+
+      <!-- Left breast CC, top right - FLIPPED -->
+      <div class="image-cell left-breast">
+        <img id="lcc-image" src="/images/mammograms/nci-vol-9405-150.jpg" alt="Left craniocaudal (LCC)">
+        <div class="image-caption">Left craniocaudal (LCC)</div>
+      </div>
+
+      <!-- Right breast MLO, bottom left - NOT FLIPPED -->
+      <div class="image-cell">
+        <img id="rmlo-image" src="/images/mammograms/nci-vol-9407-150.jpg" alt="Right mediolateral oblique (RMLO)">
+        <div class="image-caption">Right mediolateral oblique (RMLO)</div>
+      </div>
+
+      <!-- Left breast MLO, bottom right - FLIPPED -->
+      <div class="image-cell left-breast">
+        <img id="lmlo-image" src="/images/mammograms/nci-vol-9407-150.jpg" alt="Left mediolateral oblique (LMLO)">
+        <div class="image-caption">Left mediolateral oblique (LMLO)</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Store the URL parameters (to detect page refresh)
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTs = urlParams.get('ts') || Date.now();
+
+    // How often to check parent window status (ms)
+    const CHECK_INTERVAL = 1000;
+
+    // How long to wait for a response before self-closing (ms)
+    const MAX_WAIT_TIME = 8000;
+
+    // Track last time we heard from parent
+    let lastParentContact = Date.now();
+
+    // Flag to prevent focus stealing
+    let allowFocusChange = false;
+
+    // Prevent this window from stealing focus
+    window.addEventListener('focus', function(e) {
+      if (!allowFocusChange) {
+        try {
+          // Try to give focus back to parent
+          if (window.opener && !window.opener.closed) {
+            window.opener.focus();
+          }
+        } catch (err) {
+          console.log("Error returning focus:", err);
+        }
+      }
+    });
+
+    // Try to set this window type as a popup explicitly
+    try {
+      if (window.chrome && window.chrome.windows) {
+        // For Chrome - if we're in an extension context
+        window.chrome.windows.getCurrent(function(win) {
+          window.chrome.windows.update(win.id, {type: 'popup'});
+        });
+      }
+    } catch (e) {
+      // Ignore errors - this is just a best effort
+    }
+
+    // Generate a random number between min and max
+    function randomBetween(min, max) {
+      return min + Math.random() * (max - min);
+    }
+
+    // Apply random transforms to an image element
+    function randomizeImage(imgElement, isLeftBreast) {
+      // Generate random transformations
+      const scale = randomBetween(0.95, 1.05);
+      const rotate = randomBetween(-2, 2);
+      const translateX = randomBetween(-10, 10);
+      const translateY = randomBetween(-10, 10);
+      const brightness = randomBetween(0.9, 1.1);
+      const contrast = randomBetween(0.9, 1.1);
+
+      // Apply transformations - scaleX only for left breast
+      const baseTransform = `scale(${scale}) rotate(${rotate}deg) translate(${translateX}px, ${translateY}px)`;
+      imgElement.style.transform = isLeftBreast ? `scaleX(-1) ${baseTransform}` : baseTransform;
+      imgElement.style.filter = `brightness(${brightness}) contrast(${contrast})`;
+    }
+
+    // Apply random transformations to all images
+    function randomizeAllImages() {
+      randomizeImage(document.getElementById('rcc-image'), false); // right breast
+      randomizeImage(document.getElementById('lcc-image'), true);  // left breast
+      randomizeImage(document.getElementById('rmlo-image'), false); // right breast
+      randomizeImage(document.getElementById('lmlo-image'), true);  // left breast
+    }
+
+    // Export randomization functions to window so they can be called from parent
+    window.randomizeAllImages = randomizeAllImages;
+
+    // Simple seedrandom implementation
+    Math.seedrandom = function(seed) {
+      let s = seed || 1;
+      return function() {
+        s = Math.sin(s) * 10000;
+        return s - Math.floor(s);
+      };
+    };
+
+    // Check if we should close based on parent window status
+    function checkShouldClose() {
+      try {
+        // Check if parent window exists and is accessible
+        if (!window.opener || window.opener.closed) {
+          console.log("Parent window closed or inaccessible");
+
+          // Only close after a timeout to handle page refreshes
+          const timeSinceLastContact = Date.now() - lastParentContact;
+          if (timeSinceLastContact > MAX_WAIT_TIME) {
+            console.log("Parent gone for too long, closing");
+            window.close();
+          }
+          return;
+        }
+
+        // Reset contact time
+        lastParentContact = Date.now();
+
+        // Check reading context flag
+        try {
+          if (window.opener.inReadingContext === false) {
+            console.log("Parent left reading context, closing");
+            window.close();
+          }
+        } catch (e) {
+          console.log("Could not access parent reading context:", e);
+        }
+
+        // Send alive signal to parent
+        try {
+          window.opener.postMessage('viewer-alive', '*');
+        } catch (e) {
+          console.log("Could not send alive signal:", e);
+        }
+      } catch (e) {
+        console.log("Error checking parent window:", e);
+      }
+    }
+
+    // Handle messages from parent window
+    function handleMessage(event) {
+      // Reset contact time on any message from parent
+      lastParentContact = Date.now();
+
+      if (event.data === 'please-close') {
+        console.log("Received close message from parent");
+        window.close();
+      } else if (event.data === 'check-alive') {
+        // Respond to parent's ping
+        try {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage('viewer-alive', '*');
+          }
+        } catch (e) {
+          console.log("Error responding to ping:", e);
+        }
+      } else if (typeof event.data === 'object' && event.data.type === 'update-participant') {
+        // Update participant name without stealing focus
+        const nameElement = document.getElementById('participant-name');
+        if (nameElement && event.data.name) {
+          console.log("Received postMessage update with name:", event.data.name);
+
+          // Update the name
+          nameElement.textContent = event.data.name;
+          document.title = 'Mammogram: ' + event.data.name;
+
+          // Update seed and randomize images
+          const nameSeed = event.data.name.split('').reduce((sum, char, i) =>
+            sum + char.charCodeAt(0) * (i + 1), 0);
+
+          Math.random = Math.seedrandom(nameSeed);
+          randomizeAllImages();
+
+          // Explicitly return focus to opener
+          try {
+            if (window.opener && !window.opener.closed) {
+              window.opener.focus();
+            }
+          } catch (e) {
+            console.log("Error returning focus to parent:", e);
+          }
+        }
+      }
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const name = urlParams.get('name');
+
+      if (name) {
+        const nameElement = document.getElementById('participant-name');
+        if (nameElement) {
+          nameElement.textContent = decodeURIComponent(name);
+        }
+        document.title = 'Mammogram: ' + decodeURIComponent(name);
+
+        // Generate a deterministic seed based on participant name
+        const nameSeed = name.split('').reduce((sum, char, i) =>
+          sum + char.charCodeAt(0) * (i + 1), 0);
+
+        // Set random function based on name
+        Math.random = Math.seedrandom(nameSeed);
+
+        // Apply randomization to images
+        randomizeAllImages();
+      }
+
+      // Start periodic parent check
+      setInterval(checkShouldClose, CHECK_INTERVAL);
+
+      // Listen for messages from parent
+      window.addEventListener('message', handleMessage);
+
+      // Send initial alive signal
+      try {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage('viewer-alive', '*');
+        }
+      } catch (e) {
+        console.log("Error sending initial alive signal:", e);
+      }
+    });
+
+    // Detect unload of parent window
+    window.addEventListener('storage', function(e) {
+      // Look for specific localStorage changes that might indicate page refresh
+      if (e.key === 'pageRefreshing' && e.newValue === 'true') {
+        console.log("Parent page refreshing detected via storage");
+        // Extend our timeout to handle parent page refresh
+        lastParentContact = Date.now();
+      }
+    });
+  </script>
+</body>
+</html>
