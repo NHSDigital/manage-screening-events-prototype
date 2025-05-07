@@ -261,7 +261,7 @@ module.exports = router => {
           href: '#appointmentStoppedReason-1'})
 
       }
-      if (notScreenedReason.includes("other")){
+      if (notScreenedReason?.includes("other")){
         if (!otherReasonDetails) {
           req.flash('error', {
             text: 'Explain why this appointment cannot proceed',
