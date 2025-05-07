@@ -28,6 +28,8 @@
     {{ pageHeading }}
   </h1>
 
+
+
   {% set medicalInformationCardHtml %}
     {{ summaryList({
       rows: [
@@ -163,6 +165,31 @@
 
   {% set valueHtml = 'None' %}
 
+  {% set hrtHtml %}
+    {% if data.eventTemp.hrt %}
+      {% if data.eventTemp.hrt.hrtQuestion == 'yes' %}
+        <p>
+          Currently taking HRT
+        </p>
+        <p>
+          Duration taken: {{ data.eventTemp.hrt.hrtDuration }}
+        </p>
+      {% elseif data.eventTemp.hrt.hrtQuestion == 'no-recently-stopped' %}
+        <p>
+          Recently stopped taking HRT
+        </p>
+        Stopped: {{ data.eventTemp.hrt.hrtDurationSinceStopped }} ago<br>
+        Duration taken: {{ data.eventTemp.hrt.hrtDurationBeforeStopping }}
+      {% elseif data.eventTemp.hrt.hrtQuestion == 'no' %}
+        Not taking HRT
+      {% else %}
+        No information provided
+      {% endif %}
+    {% else %}
+      {{ valueHtml }}
+    {% endif %}
+  {% endset %}
+
   {% set medicalInformationCardHtml %}
     {# {{ taskList({
       idPrefix: "your-health",
@@ -259,12 +286,12 @@
             text: "Hormone replacement therapy (HRT)"
           },
           value: {
-            html: valueHtml
+            html: hrtHtml
           },
           actions: {
             items: [
               {
-                href: "#",
+                href: "./medical-information/hormone-replacement-therapy",
                 text: "Change",
                 visuallyHiddenText: "hormone replacement therapy (HRT)"
               }
