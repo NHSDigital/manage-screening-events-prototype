@@ -36,16 +36,20 @@
 {% endset %}
 
 {% set lastMammogramHtml %}
-  {% set mostRecentClinic = data | getParticipantMostRecentClinic(participant.id) %}
+  {# Temporarily hardcode until we can investigate bug with date #}
+  {{ "2022-03-23" | formatDate }}
+  ({{ "2022-03-23" | formatDate | formatRelativeDate | asHint }})</br>
+  West Sussex BSU
+  {# {% set mostRecentClinic = data | getParticipantMostRecentClinic(participant.id) %}
   {% if mostRecentClinic %}
     {{ mostRecentClinic | log }}
     {{ mostRecentClinic.event.timing.startTime | formatDate }} ({{ mostRecentClinic.event.timing.startTime | formatDate | formatRelativeDate | asHint }})</br>
     {{ mostRecentClinic.location.name }}</br>
     {{ mostRecentClinic.event.type | sentenceCase }}
-    {# {{ mostRecentClinic | log("Most recent clinic")}} #}
+
   {% else %}
       {{ "Not known" | asHint }}
-  {% endif %}
+  {% endif %} #}
 {% endset %}
 
 {{ summaryList({
