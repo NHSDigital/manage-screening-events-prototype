@@ -36,6 +36,7 @@
 {% endset %}
 
 {% set lastMammogramHtml %}
+
   {# Temporarily hardcode until we can investigate bug with date #}
   {{ "2022-03-23" | formatDate }}
   ({{ "2022-03-23" | formatDate | formatRelativeDate | asHint }})</br>
