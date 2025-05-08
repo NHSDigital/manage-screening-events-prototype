@@ -31,11 +31,11 @@
   {% macro makeCheckboxConditionalItem(params) %}
     {{ input({
       label: {
-        text: "Provide details"
+        text: "Provide details" +  ( " (optional)" if params.value !== "other" else "")
       },
       id: params.value + "Details",
       name: params.value + "Details"
-    }) }}
+    } | populateErrors) }}
   {% endmacro %}
 
   {% set checkboxItems = [] %}
@@ -63,8 +63,8 @@
   {% endfor %}
 
   {{ checkboxes({
-    idPrefix: "appointment-stopped-reason",
-    name: "appointment-stopped-reason",
+    idPrefix: "appointmentStoppedReason",
+    name: "appointmentStoppedReason",
     fieldset: {
       legend: {
         text: "Why has this appointment been stopped?",
@@ -72,11 +72,12 @@
         isPageHeading: false
       }
     },
+    values: data.appointmentStoppedReason,
     hint: {
       text: "Select all that apply"
     },
     items: checkboxItems
-  }) }}
+  } | populateErrors ) }}
 
   {{ radios({
     idPrefix: "appointmentReschedule",
@@ -88,6 +89,7 @@
         isPageHeading: false
       }
     },
+    value: data.appointmentReschedule,
     items: [
       {
         value: "yes",
@@ -98,7 +100,7 @@
         text: "No"
       }
     ]
-  }) }}
+  } | populateErrors ) }}
 
 
   {{ button({

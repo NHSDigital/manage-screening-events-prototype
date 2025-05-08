@@ -23,6 +23,7 @@ module.exports = [
       config: {
         defaultRiskLevel: 'routine',
         repeatViews: ['RMLO'],
+        missingViews: [], // ensure all views are present
         scheduling: {
           whenRelativeToToday: 0,
           status: 'event_scheduled',

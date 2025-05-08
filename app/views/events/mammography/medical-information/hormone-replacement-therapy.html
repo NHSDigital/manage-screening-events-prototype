@@ -1,0 +1,111 @@
+
+{% extends 'layout-app.html' %}
+
+
+{% set pageHeading = "Hormone replacement therapy (HRT)" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './../record-medical-information' %}
+
+{# {% set back = {
+  href: "/clinics/" + clinicId,
+  text: "Back to clinic"
+} %}
+ #}
+
+
+
+
+{% block pageContent %}
+
+  {{ participant | log }}
+
+  {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
+
+  {# <h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">
+      {{ participant | getFullName }}
+    </span>
+    {{ pageHeading }}
+  </h1> #}
+
+  {{ data | log }}
+
+  {% set currentlyTakingHtml %}
+
+    {{ input({
+      label: {
+        text: "How long have they been taking HRT?"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      hint: {
+        text: "For example, 2 years, 6 months"
+      }
+    } | decorateAttributes(data, "eventTemp.hrt.hrtDuration" )) }}
+
+  {% endset %}
+
+  {% set recentlyStoppedHtml %}
+
+  {{ input({
+    label: {
+      text: "How long since they stopped taking HRT?"
+    },
+    classes: "nhsuk-u-width-two-thirds",
+    hint: {
+      text: "For example, 3 months"
+    }
+  } | decorateAttributes(data, "eventTemp.hrt.hrtDurationSinceStopped" )) }}
+
+  {{ input({
+    label: {
+      text: "How long did they take HRT for?"
+    },
+    classes: "nhsuk-u-width-two-thirds",
+    hint: {
+      text: "For example, 5 years"
+    }
+  } | decorateAttributes(data, "eventTemp.hrt.hrtDurationBeforeStopping" )) }}
+
+{% endset %}
+
+  {{ radios({
+    fieldset: {
+      legend: {
+        text: pageHeading,
+        classes: "nhsuk-fieldset__legend--l",
+        isPageHeading: true
+      }
+    },
+    items: [
+    {
+      value: "yes",
+      text: "Yes, currently taking HRT",
+      conditional: {
+        html: currentlyTakingHtml
+      }
+    },
+    {
+      value: "no-recently-stopped",
+      text: "No, but recently stopped taking HRT",
+      conditional: {
+        html: recentlyStoppedHtml
+      }
+    },
+    {
+      value: "no",
+      text: "No"
+    }
+  ]
+  } | decorateAttributes(data, "eventTemp.hrt.hrtQuestion" )) }}
+
+
+  {{ button({
+    text: "Continue"
+  }) }}
+
+  {% include "screening-cannot-proceed-link.njk" %}
+
+{% endblock %}
+

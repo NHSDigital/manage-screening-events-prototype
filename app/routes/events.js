@@ -83,6 +83,13 @@ module.exports = router => {
     next()
   })
 
+  // Clear temporary data when opening a new event
+  router.get('/clinics/:clinicId/events/:eventId/start', (req, res) => {
+    delete req.session.data.eventTemp
+    console.log('Cleared eventTemp data')
+    res.redirect(`/clinics/${req.params.clinicId}/events/${req.params.eventId}`)
+  })
+
   // Event within clinic context
   router.get('/clinics/:clinicId/events/:eventId', (req, res) => {
     res.render('events/show', {
@@ -90,6 +97,7 @@ module.exports = router => {
   })
 
   // Handle screening completion
+  // Todo - name this route better
   router.post('/clinics/:clinicId/events/:eventId/start', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
@@ -113,7 +121,16 @@ module.exports = router => {
     }
   })
 
-  const MAMMOGRAPHY_VIEWS = ['medical-information', 'record-medical-information', 'ready-for-imaging', 'awaiting-images', 'images', 'confirm', 'screening-complete', 'attended-not-screened-reason']
+  const MAMMOGRAPHY_VIEWS = [
+    'medical-information',
+    'record-medical-information',
+    'ready-for-imaging',
+    'awaiting-images',
+    'images',
+    'confirm',
+    'screening-complete',
+    'attended-not-screened-reason'
+  ]
 
   // Event within clinic context
   router.get('/clinics/:clinicId/events/:eventId/:view', (req, res, next) => {
@@ -121,6 +138,11 @@ module.exports = router => {
       res.render(`events/mammography/${req.params.view}`, {
       })
     } else next()
+  })
+
+  // Event within clinic context
+  router.get('/clinics/:clinicId/events/:eventId/medical-information/:view', (req, res, next) => {
+    res.render(`events/mammography/medical-information/${req.params.view}`, {})
   })
 
   // Specific route for imaging view
@@ -223,6 +245,44 @@ module.exports = router => {
     const participantName = getFullName(eventData.participant)
     const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
+    const data = req.session.data
+    const notScreenedReason = data.appointmentStoppedReason
+    const needsReschedule = data.appointmentReschedule
+    const otherReasonDetails = data.otherDetails
+    console.log('notScreenedReason', notScreenedReason)
+    console.log('needsReschedule', needsReschedule)
+    console.log()
+
+    if (!notScreenedReason || !needsReschedule) {
+      if (!notScreenedReason) {
+        req.flash('error', {
+          text: 'A reason for why this appointment cannot continue must be provided',
+          name: 'appointmentStoppedReason',
+          href: '#appointmentStoppedReason-1'})
+
+      }
+      if (notScreenedReason?.includes("other")){
+        if (!otherReasonDetails) {
+          req.flash('error', {
+            text: 'Explain why this appointment cannot proceed',
+            name: 'otherDetails',
+            href: '#otherDetails'})
+        }
+      }
+      if (!needsReschedule) {
+        req.flash('error', {
+          text: 'Select whether the participant needs to be invited for another appointment',
+          name: 'appointmentReschedule',
+          href: '#appointmentReschedule-1'})
+      }
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
+      return
+    }
+    else {
+      delete data.appointmentStoppedReason
+      delete data.appointmentReschedule
+    }
+
     // Update event status to attended
     const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
     req.session.data.events[eventIndex] = updateEventStatus(
@@ -243,6 +303,7 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/complete', (req, res) => {
     const { clinicId, eventId } = req.params
 
+    const data = req.session.data
     const eventData = getEventData(req.session.data, clinicId, eventId)
     const participantName = getFullName(eventData.participant)
     const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
@@ -253,6 +314,8 @@ module.exports = router => {
       req.session.data.events[eventIndex],
       'event_complete'
     )
+
+    delete data.eventTemp
 
     const successMessage = `
     ${participantName} has been screened. <a href="${participantEventUrl}" class="app-nowrap">View their appointment</a>`

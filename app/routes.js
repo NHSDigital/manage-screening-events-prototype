@@ -36,6 +36,11 @@ router.use((req, res, next) => {
       delete req.session.data.clearQuery
     }
 
+    // Remove eventTemp from session data
+    if (req.session.data && req.session.data.clearEventTemp) {
+      delete req.session.data.eventTemp
+    }
+
     // Redirect to the same URL without query string
     return res.redirect(req.path)
   }
