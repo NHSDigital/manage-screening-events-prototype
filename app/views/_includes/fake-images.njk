@@ -85,15 +85,15 @@
                     label: {
                       text: "Repeat reason"
                     },
-                    id: "repeatReason",
-                    name: "repeatReason" + side.viewShortWithSide,
-                    value: side.repeatReason
+                    id: "repeatReason-" + side.viewShortWithSide,
+                    name: "eventTemp[mammogramData][repeatReason-" + side.viewShortWithSide + "]",
+                    value: data.eventTemp.mammogramData["repeatReason-" + side.viewShortWithSide]
                   }) }}
                 {% endset %}
 
                 {{ radios({
                   idPrefix: "isRepeatQuestion-" + side.viewShortWithSide,
-                  name: "isRepeatQuestion-" + side.viewShortWithSide,
+                  name: "eventTemp[mammogramData][isRepeatQuestion-" + side.viewShortWithSide + "]",
                   fieldset: {
                     legend: {
                       text: "Why are there multiple " + side.viewShortWithSide + " images?",
@@ -101,14 +101,14 @@
                       isPageHeading: false
                     }
                   },
+                  value: data.eventTemp.mammogramData["isRepeatQuestion-" + side.viewShortWithSide],
                   items: [
                     {
                       value: "isRepeat",
                       text: "A repeat was needed",
                       conditional: {
                         html: repeatReasonHtml
-                      },
-                      checked: true if side.isRepeat
+                      }
                     },
                     {
                       value: "extraImages",

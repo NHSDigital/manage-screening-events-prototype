@@ -50,26 +50,36 @@ module.exports = router => {
 
   // Set clinics to active in nav for all urls starting with /clinics
   router.use('/clinics/:clinicId/events/:eventId', (req, res, next) => {
-    const eventData = getEventData(req.session.data, req.params.clinicId, req.params.eventId)
+    const eventId = req.params.eventId
+    const clinicId = req.params.clinicId
+    const eventData = getEventData(req.session.data, clinicId, eventId)
     const data = req.session.data
 
     if (!eventData) {
-      console.log(`No event ${req.params.eventId} found for clinic ${req.params.clinicId}`)
-      res.redirect('/clinics/' + req.params.clinicId)
+      console.log(`No event ${eventId} found for clinic ${clinicId}`)
+      res.redirect('/clinics/' + clinicId)
       return
     }
 
+    // Store a temporary copy of the event data in session
+    // We'll read and write to this through the appointment
+    if (!data.eventTemp || (data.eventTemp?.id !== eventId)) {
+      if (!data.eventTemp) {
+        console.log('No eventTemp data found, creating new one')
+      }
+      else if (data.eventTemp?.id !== eventId) {
+        console.log(`EventTemp data found, but eventId ${data.eventTemp.id} does not match ${eventId}, creating new one`)
+      }
+      data.eventTemp = eventData.event
+    }
 
-    // Combine event data with temp data until ready to save back to event
-    // This is to allow for the event data to be updated in the session
-    data.eventTemp = Object.assign({}, eventData.event, data.eventTemp)
     res.locals.eventData = eventData
     res.locals.clinic = eventData.clinic
     res.locals.event = eventData.event
     res.locals.participant = eventData.participant
     res.locals.unit = eventData.unit
-    res.locals.clinicId = req.params.clinicId
-    res.locals.eventId = req.params.eventId
+    res.locals.clinicId = clinicId
+    res.locals.eventId = eventId
 
     next()
   })
@@ -172,14 +182,11 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/medical-information-answer', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
-    const hasDetailsToRecord = data.medicalBackgroundQuestion
-    delete data.hasDetailsToRecord
+    const hasRelevantMedicalInformation = data?.eventTemp?.medicalInformation?.hasRelevantMedicalInformation
 
-    const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
-
-    if (!hasDetailsToRecord) {
+    if (!hasRelevantMedicalInformation) {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information`)
-    } else if (hasDetailsToRecord === 'yes') {
+    } else if (hasRelevantMedicalInformation === 'yes') {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/record-medical-information`)
     } else {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/awaiting-images`)
@@ -190,10 +197,7 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/record-medical-information-answer', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
-    const imagingCanProceed = data.imagingCanProceed
-    delete data.imagingCanProceed
-
-    const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
+    const imagingCanProceed = data.eventTemp.appointment.imagingCanProceed
 
     if (!imagingCanProceed) {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/record-medical-information`)
@@ -208,17 +212,12 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/imaging-answer', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
-    const imagingComplete = data.imagingComplete
-    delete data.imagingComplete
+    const isPartialMammography = data.eventTemp.mammogramData.isPartialMammography
 
-    const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
-
-    if (!imagingComplete) {
+    if (!isPartialMammography) {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/imaging`)
-    } else if (imagingComplete === 'yes' || imagingComplete === 'yesPartial') {
-      res.redirect(`/clinics/${clinicId}/events/${eventId}/confirm`)
     } else {
-      res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/confirm`)
     }
   })
 
@@ -231,41 +230,36 @@ module.exports = router => {
     const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
     const data = req.session.data
-    const notScreenedReason = data.appointmentStoppedReason
-    const needsReschedule = data.appointmentReschedule
-    const otherReasonDetails = data.otherDetails
-    console.log('notScreenedReason', notScreenedReason)
-    console.log('needsReschedule', needsReschedule)
-    console.log()
+    const notScreenedReason = data.eventTemp.appointmentStopped.stoppedReason
+    const needsReschedule = data.eventTemp.appointmentStopped.needsReschedule
+    const otherReasonDetails = data.eventTemp.appointmentStopped.otherDetails
+    const hasOtherReasonButNoDetails = notScreenedReason?.includes("other") && !otherReasonDetails
 
-    if (!notScreenedReason || !needsReschedule) {
+    if (!notScreenedReason || !needsReschedule || hasOtherReasonButNoDetails) {
       if (!notScreenedReason) {
         req.flash('error', {
           text: 'A reason for why this appointment cannot continue must be provided',
-          name: 'appointmentStoppedReason',
-          href: '#appointmentStoppedReason-1'})
+          name: 'eventTemp[appointmentStopped][stoppedReason]',
+          href: '#stoppedReason-1'
+        })
 
       }
-      if (notScreenedReason?.includes("other")){
-        if (!otherReasonDetails) {
-          req.flash('error', {
-            text: 'Explain why this appointment cannot proceed',
-            name: 'otherDetails',
-            href: '#otherDetails'})
-        }
+      if (hasOtherReasonButNoDetails){
+        req.flash('error', {
+          text: 'Explain why this appointment cannot proceed',
+          name: 'eventTemp[appointmentStopped][otherDetails]',
+          href: '#otherDetails'
+        })
       }
       if (!needsReschedule) {
         req.flash('error', {
           text: 'Select whether the participant needs to be invited for another appointment',
-          name: 'appointmentReschedule',
-          href: '#appointmentReschedule-1'})
+          name: 'eventTemp[appointmentStopped][needsReschedule]',
+          href: '#needsReschedule-1'
+        })
       }
       res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
       return
-    }
-    else {
-      delete data.appointmentStoppedReason
-      delete data.appointmentReschedule
     }
 
     // Update event status to attended

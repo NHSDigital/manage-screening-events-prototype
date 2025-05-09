@@ -39,7 +39,6 @@
   <div class="nhsuk-grid-row">
     <div class="nhsuk-grid-column-two-thirds">
 
-
       {# {% set notImportedCorrectlyHtml %}
 
         {{ input({
@@ -88,7 +87,8 @@
 
       {% set reasonHtml %}
         {{ textarea({
-          name: "partialMammographyReason",
+          name: "eventTemp[mammogramData][partialMammographyReason]",
+          value: data.eventTemp.mammogramData.partialMammographyReason,
           id: "partialMammographyReason",
           label: {
             text: "Reason for partial mammography"
@@ -98,7 +98,7 @@
 
       {{ radios({
         idPrefix: "imagingComplete",
-        name: "imagingComplete",
+        name: "eventTemp[mammogramData][isPartialMammography]",
         fieldset: {
           legend: {
             text: "Has the full mammography been taken?",
@@ -106,13 +106,14 @@
             isPageHeading: false
           }
         },
+        value: data.eventTemp.mammogramData.isPartialMammography,
         items: [
           {
-            value: "yes",
+            value: "no",
             text: "Yes (" + imageCount + " images)"
           },
           {
-            value: "yesPartial",
+            value: "yes",
             text: "No, partial mammography only",
             conditional: {
               html: reasonHtml
@@ -127,8 +128,6 @@
 
     </div>
   </div>
-
-  {# <p><a href="./attended-not-screened-reason">Screening cannot proceed</a></p> #}
 
 {% endblock %}
 

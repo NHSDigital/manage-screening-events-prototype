@@ -30,7 +30,7 @@
   {% set taskStatus = {} %}
   {% set valueHtml = "" %}
 
-  {{ query.taskStatus | log }}
+
 
 {% set valueHtml = null %}
 
@@ -250,8 +250,8 @@
 
 
 {{ radios({
-  idPrefix: "example",
-  name: "imagingCanProceed",
+  idPrefix: "imagingCanProceed",
+  name: "eventTemp[appointment][imagingCanProceed]",
   fieldset: {
     legend: {
       text: "Can imaging go ahead?",
@@ -259,6 +259,7 @@
       isPageHeading: false
     }
   },
+  value: data.eventTemp.appointment.imagingCanProceed,
   items: [
     {
       value: "yes",

@@ -49,8 +49,8 @@
   </ul>
 
   {{ radios({
-    idPrefix: "medicalBackgroundQuestion",
-    name: "medicalBackgroundQuestion",
+    idPrefix: "hasRelevantMedicalInformation",
+    name: "eventTemp[medicalInformation][hasRelevantMedicalInformation]",
     fieldset: {
       legend: {
         text: "Has the participant shared any relevant medical information?",
@@ -58,6 +58,7 @@
         isPageHeading: false
       }
     },
+    value: data.eventTemp.medicalInformation.hasRelevantMedicalInformation,
     items: [
       {
         value: "yes",
