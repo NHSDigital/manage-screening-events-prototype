@@ -51,6 +51,7 @@ module.exports = router => {
   // Set clinics to active in nav for all urls starting with /clinics
   router.use('/clinics/:clinicId/events/:eventId', (req, res, next) => {
     const eventData = getEventData(req.session.data, req.params.clinicId, req.params.eventId)
+    const data = req.session.data
 
     if (!eventData) {
       console.log(`No event ${req.params.eventId} found for clinic ${req.params.clinicId}`)
@@ -58,20 +59,10 @@ module.exports = router => {
       return
     }
 
-    // An idea for how we could automate saving back to participant
-    // if (data.saveToParticipant){
-    //   const participantIndex = data.participants.findIndex(p => p.id === eventData.participant.id);
-    //   if (participantIndex !== -1) {
-    //     // Update participant record with questionnaire data
-    //     data.participants[participantIndex] = {
-    //       ...data.participants[participantIndex],
-    //       ...data.saveToParticipant
-    //     };
 
-    //     delete data.saveToParticipant
-    //   }
-    // }
-
+    // Combine event data with temp data until ready to save back to event
+    // This is to allow for the event data to be updated in the session
+    data.eventTemp = Object.assign({}, eventData.event, data.eventTemp)
     res.locals.eventData = eventData
     res.locals.clinic = eventData.clinic
     res.locals.event = eventData.event
@@ -83,7 +74,7 @@ module.exports = router => {
     next()
   })
 
-  // Clear temporary data when opening a new event
+  // Main route in to starting an event - used to clear any temp data
   router.get('/clinics/:clinicId/events/:eventId/start', (req, res) => {
     delete req.session.data.eventTemp
     console.log('Cleared eventTemp data')
@@ -98,17 +89,18 @@ module.exports = router => {
 
   // Handle screening completion
   // Todo - name this route better
-  router.post('/clinics/:clinicId/events/:eventId/start', (req, res) => {
+  router.post('/clinics/:clinicId/events/:eventId/can-appointment-go-ahead-answer', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
-    const canBeginScreening = data.beginScreening
-    delete data.beginScreening
+    const canAppointmentGoAhead = data.eventTemp?.appointment?.canAppointmentGoAhead
 
     const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
 
-    if (!canBeginScreening) {
+    // No answer, return to page
+    if (!canAppointmentGoAhead) {
       res.redirect(`/clinics/${clinicId}/events/${eventId}`)
-    } else if (canBeginScreening === 'yes') {
+    } else if (canAppointmentGoAhead === 'yes') {
+      // Check-in participant if they're not already checked in
       if (req.session.data.events[eventIndex].status !== 'event_checked_in') {
         req.session.data.events[eventIndex] = updateEventStatus(
           req.session.data.events[eventIndex],
@@ -229,13 +221,6 @@ module.exports = router => {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
     }
   })
-
-  // // Advance status to attened / complete
-  // router.post('/clinics/:clinicId/events/:eventId/complete', (req, res) => {
-
-  //   res.redirect(`/clinics/${req.params.clinicId}/events/${req.params.eventId}`, {
-  //   })
-  // })
 
   // Handle screening completion
   router.post('/clinics/:clinicId/events/:eventId/attended-not-screened-answer', (req, res) => {

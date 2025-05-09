@@ -153,24 +153,27 @@
     descriptionHtml: medicalInformationCardHtml
   }) }}
 
-  {{ data.eventTemp | log("eventTemp")}}
-
   {% set hrtHtml %}
-    {% if data.eventTemp.hrt %}
-      {% if data.eventTemp.hrt.hrtQuestion == 'yes' %}
+    {% set hrtData = data.eventTemp.medicalInformation.hrt %}
+
+    {% if hrtData %}
+      {% if hrtData.hrtQuestion == 'yes' %}
         <p>
           Currently taking HRT
         </p>
         <p>
-          Duration taken: {{ data.eventTemp.hrt.hrtDuration }}
+          {# Example: "Duration taken: 3 months" #}
+          Duration taken: {{ hrtData.hrtDuration }}
         </p>
-      {% elseif data.eventTemp.hrt.hrtQuestion == 'no-recently-stopped' %}
+      {% elseif hrtData.hrtQuestion == 'no-recently-stopped' %}
         <p>
           Recently stopped taking HRT
         </p>
-        Stopped: {{ data.eventTemp.hrt.hrtDurationSinceStopped }} ago<br>
-        Duration taken: {{ data.eventTemp.hrt.hrtDurationBeforeStopping }}
-      {% elseif data.eventTemp.hrt.hrtQuestion == 'no' %}
+        <p>
+          Stopped: {{ hrtData.hrtDurationSinceStopped }} ago<br>
+          Duration taken: {{ hrtData.hrtDurationBeforeStopping }}
+        </p>
+      {% elseif hrtData.hrtQuestion == 'no' %}
         Not taking HRT
       {% else %}
         No information provided
