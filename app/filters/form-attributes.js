@@ -40,10 +40,16 @@ const decorateAttributes = (originalObject, data, path) => {
   // Map dot or bracket notation to path parts
   const pathParts = _.toPath(path)
 
-  // Strip 'data' prefix if present
-  let dataPath = [...pathParts]
-  if (pathParts[0] === 'data') {
-    dataPath = dataPath.slice(1)
+  // Remove the first part of the path which we don't need for reading data
+  // e.g. "eventTemp.medicalData.hrt" > "medicalData.hrt"
+  let dataPath = [...pathParts].slice(1)
+
+  // The path we use for saving should have the first part, unless it starts with 'data'
+  // e.g. "eventTemp.medicalData.hrt" > "eventTemp.medicalData.hrt"
+  // e.g. "data.nationality" > "nationality"
+  let pathForSaving = pathParts
+  if (pathForSaving[0] === 'data') {
+    pathForSaving = pathParts.slice(1)
   }
 
   // Get the stored value from data

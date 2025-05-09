@@ -53,6 +53,12 @@ require('./routes/participants')(router)
 require('./routes/events')(router)
 require('./routes/reading')(router)
 
-// Add your routes here - above the module.exports line
+// Workaround for Chrome DevTools requesting a specific URL
+router.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
+  // Either return an empty JSON object
+  res.json({});
+  // Or send a 204 No Content response
+  // res.status(204).end();
+})
 
 module.exports = router
