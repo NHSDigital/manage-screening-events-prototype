@@ -3,7 +3,7 @@
 <div class="nhsuk-u-margin-bottom-4">
 
   {# Convert object to an array of views #}
-  {% set mammogramViews = event.mammogramData.views | getObjectValues %}
+  {% set mammogramViews = data.eventTemp.mammogramData.views | getObjectValues %}
 
   {# Group views by view name so we get MLO or CC only #}
   {% set groupedViews = mammogramViews | groupby("viewShort") %}

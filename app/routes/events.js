@@ -3,6 +3,7 @@ const dayjs = require('dayjs')
 
 const { getFullName } = require('../lib/utils/participants')
 const { generateMammogramImages } = require('../lib/generators/mammogram-generator')
+const { getEvent, saveEventTempToEvent, updateEventStatus } = require('../lib/utils/event-data')
 
 /**
  * Get single event and its related data
@@ -31,20 +32,20 @@ function getEventData (data, clinicId, eventId) {
   }
 }
 
-// Update event status and add to history
-function updateEventStatus (event, newStatus) {
-  return {
-    ...event,
-    status: newStatus,
-    statusHistory: [
-      ...event.statusHistory,
-      {
-        status: newStatus,
-        timestamp: new Date().toISOString(),
-      },
-    ],
-  }
-}
+// // Update event status and add to history
+// function updateEventStatus (event, newStatus) {
+//   return {
+//     ...event,
+//     status: newStatus,
+//     statusHistory: [
+//       ...event.statusHistory,
+//       {
+//         status: newStatus,
+//         timestamp: new Date().toISOString(),
+//       },
+//     ],
+//   }
+// }
 
 module.exports = router => {
 
@@ -103,19 +104,17 @@ module.exports = router => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
     const canAppointmentGoAhead = data.eventTemp?.appointment?.canAppointmentGoAhead
-
-    const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
+    const event = getEvent(data, eventId)
 
     // No answer, return to page
     if (!canAppointmentGoAhead) {
       res.redirect(`/clinics/${clinicId}/events/${eventId}`)
-    } else if (canAppointmentGoAhead === 'yes') {
+    }
+    else if (canAppointmentGoAhead === 'yes') {
+
       // Check-in participant if they're not already checked in
-      if (req.session.data.events[eventIndex].status !== 'event_checked_in') {
-        req.session.data.events[eventIndex] = updateEventStatus(
-          req.session.data.events[eventIndex],
-          'event_checked_in'
-        )
+      if (event?.status !== 'event_checked_in') {
+        updateEventStatus(data, eventId, 'event_checked_in')
       }
       res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information`)
     } else {
@@ -150,12 +149,11 @@ module.exports = router => {
   // Specific route for imaging view
   router.get('/clinics/:clinicId/events/:eventId/imaging', (req, res) => {
     const { clinicId, eventId } = req.params
-    const event = req.session.data.events.find(e => e.id === eventId)
+    const data = req.session.data
     const eventData = getEventData(req.session.data, clinicId, eventId)
 
     // If no mammogram data exists, generate it
-    if (!event.mammogramData) {
-      const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
+    if (!data?.eventTemp?.mammogramData) {
       // Set start time to 3 minutes ago to simulate an in-progress screening
       const startTime = dayjs().subtract(3, 'minutes').toDate()
       const mammogramData = generateMammogramImages({
@@ -163,15 +161,8 @@ module.exports = router => {
         isSeedData: false,
         config: eventData?.participant?.config,
       })
-
-      // Update both session data and locals
-      const updatedEvent = {
-        ...event,
-        mammogramData
-      }
-
-      req.session.data.events[eventIndex] = updatedEvent
-      res.locals.event = updatedEvent
+      data.eventTemp.mammogramData = mammogramData
+      res.locals.eventTemp = data.eventTemp
     }
 
     res.render('events/mammography/imaging', {})
@@ -262,18 +253,13 @@ module.exports = router => {
       return
     }
 
-    // Update event status to attended
-    const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
-    req.session.data.events[eventIndex] = updateEventStatus(
-      req.session.data.events[eventIndex],
-      'event_attended_not_screened'
-    )
+    saveEventTempToEvent(data)
+
+    updateEventStatus(data, eventId, 'event_attended_not_screened')
 
     const successMessage = `
     ${participantName} has been is ‘attended not screened’. <a href="${participantEventUrl}" class="app-nowrap">View their appointment</a>`
-
     req.flash('success', { wrapWithHeading: successMessage})
-
 
     res.redirect(`/clinics/${clinicId}/`)
   })
@@ -287,14 +273,17 @@ module.exports = router => {
     const participantName = getFullName(eventData.participant)
     const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
-    // Update event status to attended
-    const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
-    req.session.data.events[eventIndex] = updateEventStatus(
-      req.session.data.events[eventIndex],
-      'event_complete'
-    )
+    saveEventTempToEvent(data)
+    updateEventStatus(data, eventId, 'event_complete')
 
-    delete data.eventTemp
+    // // Update event status to attended
+    // const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
+    // req.session.data.events[eventIndex] = updateEventStatus(
+    //   req.session.data.events[eventIndex],
+    //   'event_complete'
+    // )
+
+    // delete data.eventTemp
 
     const successMessage = `
     ${participantName} has been screened. <a href="${participantEventUrl}" class="app-nowrap">View their appointment</a>`

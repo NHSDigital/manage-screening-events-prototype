@@ -1,7 +1,7 @@
 
 {% extends 'layout-app.html' %}
 
-{% set imageCount = event.mammogramData.metadata.totalImages %}
+{% set imageCount = data.eventTemp.mammogramData.metadata.totalImages %}
 
 {% set pageHeading = imageCount + " images taken" %}
 
