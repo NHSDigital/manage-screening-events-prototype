@@ -1,0 +1,65 @@
+
+{% extends 'layout-app.html' %}
+
+
+{% set pageHeading = "What is the symptom?" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './details' %}
+
+{# {% set back = {
+  href: "/clinics/" + clinicId,
+  text: "Back to clinic"
+} %}
+ #}
+
+
+
+
+{% block pageContent %}
+
+  {{ participant | log }}
+
+  {% set symptoms = [
+    "Breast lump",
+    "Swelling or shape change",
+    "Skin change",
+    "Nipple change",
+    "Persistent pain",
+    "Other"
+  ] %}
+
+  {% set radioItems = [] %}
+
+  {% for symptom in symptoms %}
+    {% set radioItems = radioItems | push({
+      value: symptom,
+      text: symptom
+    }) %}
+  {% endfor %}
+
+
+  {{ radios({
+    name: "eventTemp[symptomTemp][type]",
+    idPrefix: "type",
+    value: data.eventTemp.symptomTemp.type,
+    fieldset: {
+      legend: {
+        text: pageHeading,
+        classes: "nhsuk-fieldset__legend--l",
+        isPageHeading: true
+      }
+    },
+    items: radioItems
+  }) }}
+
+
+  {{ button({
+    text: "Continue"
+  }) }}
+
+  {% include "screening-cannot-proceed-link.njk" %}
+
+{% endblock %}
+

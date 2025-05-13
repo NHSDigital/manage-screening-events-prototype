@@ -35,23 +35,47 @@
 
 {% endset %}
 
+{{ data.eventTemp | log("EventTemp") }}
+
+{% set hasAdditionalMammograms = data.eventTemp.previousMammograms | length > 0 %}
+
+
 {% set lastMammogramHtml %}
+  {% set previousMammogram = data.eventTemp.previousMammograms[0] %}
+
+  <p>
+    {% if previousMammogram %}
+      <span class="nhsuk-u-font-weight-bold">At this BSU</span><br>
+    {% endif %}
+    {# Temporarily hardcode until we can investigate bug with date #}
+    {{ "2022-03-23" | formatDate }}
+    ({{ "2022-03-23" | formatDate | formatRelativeDate | asHint }})</br>
+    West Sussex BSU
+    {# {% set mostRecentClinic = data | getParticipantMostRecentClinic(participant.id) %}
+    {% if mostRecentClinic %}
+      {{ mostRecentClinic | log }}
+      {{ mostRecentClinic.event.timing.startTime | formatDate }} ({{ mostRecentClinic.event.timing.startTime | formatDate | formatRelativeDate | asHint }})</br>
+      {{ mostRecentClinic.location.name }}</br>
+      {{ mostRecentClinic.event.type | sentenceCase }}
+
+    {% else %}
+        {{ "Not known" | asHint }}
+    {% endif %} #}
+  </p>
+
+  {% if previousMammogram %}
+    <p>
+      <span class="nhsuk-u-font-weight-bold">Added today</span><br>
+      {{ previousMammogram.location }}</br>
+      {{ previousMammogram.otherDetails }}
+    </p>
+  {% endif %}
 
 
-  {# Temporarily hardcode until we can investigate bug with date #}
-  {{ "2022-03-23" | formatDate }}
-  ({{ "2022-03-23" | formatDate | formatRelativeDate | asHint }})</br>
-  West Sussex BSU
-  {# {% set mostRecentClinic = data | getParticipantMostRecentClinic(participant.id) %}
-  {% if mostRecentClinic %}
-    {{ mostRecentClinic | log }}
-    {{ mostRecentClinic.event.timing.startTime | formatDate }} ({{ mostRecentClinic.event.timing.startTime | formatDate | formatRelativeDate | asHint }})</br>
-    {{ mostRecentClinic.location.name }}</br>
-    {{ mostRecentClinic.event.type | sentenceCase }}
 
-  {% else %}
-      {{ "Not known" | asHint }}
-  {% endif %} #}
+
+
+
 {% endset %}
 
 {{ summaryList({
@@ -196,7 +220,7 @@
    } if not isMinimalParticipant,
    {
      key: {
-       text: "Last known mammogram"
+       text: "Last known mammogram" if not hasAdditionalMammograms else "Last known mammograms"
      },
      value: {
        html: lastMammogramHtml
@@ -204,8 +228,8 @@
      actions: {
         items: [
           {
-            href: "#",
-            text: "View or change",
+            href: eventId + "/previous-mammograms/add",
+            text: "Add another" if not hasAdditionalMammograms else "View or update",
             visuallyHiddenText: "email"
           }
         ]

@@ -122,6 +122,37 @@ module.exports = router => {
     }
   })
 
+  // Main route in to starting an event - used to clear any temp data
+  router.get('/clinics/:clinicId/events/:eventId/previous-mammograms/add', (req, res) => {
+    delete req.session.data.eventTemp.previousMammogramTemp
+    res.render('events/mammography/previous-mammograms/edit')
+  })
+
+  // Save data about a mammogram
+  router.post('/clinics/:clinicId/events/:eventId/previous-mammograms-answer', (req, res) => {
+    const { clinicId, eventId } = req.params
+    const data = req.session.data
+    const previousMammogram = data.eventTemp?.previousMammogramTemp
+    delete data.eventTemp.previousMammogramTemp
+
+    // Push to eventTemp.previousMammograms
+    if (!data.eventTemp.previousMammograms) {
+      data.eventTemp.previousMammograms = []
+    }
+    if (previousMammogram) {
+      data.eventTemp.previousMammograms.push(previousMammogram)
+    }
+
+    res.redirect(`/clinics/${clinicId}/events/${eventId}`)
+
+  })
+
+  // Main route in to starting an event - used to clear any temp data
+  router.get('/clinics/:clinicId/events/:eventId/medical-information/symptoms/add', (req, res) => {
+    delete req.session.data.eventTemp.symptomsTemp
+    res.redirect(`/clinics/${req.params.clinicId}/events/${req.params.eventId}/medical-information/symptoms/type`)
+  })
+
   const MAMMOGRAPHY_VIEWS = [
     'medical-information',
     'record-medical-information',
@@ -130,15 +161,21 @@ module.exports = router => {
     'images',
     'confirm',
     'screening-complete',
-    'attended-not-screened-reason'
+    'attended-not-screened-reason',
+    'previous-mammograms/edit',
+    'medical-information/symptoms/type',
+    'medical-information/symptoms/details',
   ]
 
   // Event within clinic context
-  router.get('/clinics/:clinicId/events/:eventId/:view', (req, res, next) => {
-    if (MAMMOGRAPHY_VIEWS.some(view => view === req.params.view)) {
-      res.render(`events/mammography/${req.params.view}`, {
-      })
-    } else next()
+  router.get('/clinics/:clinicId/events/:eventId/*', (req, res, next) => {
+    const view = req.params[0] // Gets the wildcard part
+
+    if (MAMMOGRAPHY_VIEWS.some(viewPath => viewPath === view)) {
+      res.render(`events/mammography/${view}`, {})
+    } else {
+      next()
+    }
   })
 
   // Event within clinic context

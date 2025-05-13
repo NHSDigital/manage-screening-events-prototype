@@ -1,0 +1,270 @@
+
+{% extends 'layout-app.html' %}
+
+{% set previousMammogramCount = data.eventTemp.previousMammograms | length %}
+
+{# {% set pageHeading = "Add details of a previous mammogram" if previousMammogramCount == 0 else "Add another degree" %} #}
+
+{% set pageHeading = "Add details of a previous mammogram" %}
+
+{# {% set gridColumn = "nhsuk-grid-column-full" %} #}
+
+{% set formAction = './../previous-mammograms-answer' %}
+
+{# {% set back = {
+  href: "/clinics/" + clinicId,
+  text: "Back to clinic"
+} %}
+ #}
+
+
+{% block pageContent %}
+
+  {{ participant | log }}
+  {{ data.eventTemp | log("EventTemp") }}
+
+
+  {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
+
+  <h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">
+      {{ participant | getFullName }}
+    </span>
+    {{ pageHeading }}
+  </h1>
+
+  {% set bsuHtml %}
+
+    {% set selectItems = [{
+      value: "",
+      text: "",
+      selected: true,
+      disabled: true
+    }] %}
+
+
+    {% for bsu in data.allBreastScreeningUnits %}
+      {% set selectItems = selectItems | push({
+        value: bsu,
+        text: bsu
+      }) %}
+    {% endfor %}
+
+    {{ select({
+      id: "bsu",
+      name: "eventTemp[previousMammogramTemp][bsu]",
+      label: {
+        text: "Which unit?"
+      },
+      items: selectItems,
+      value: data.eventTemp.previousMammogramTemp.bsu
+    }) }}
+
+  {% endset %}
+
+  {% set otherUkHtml %}
+
+    {{ textarea({
+      name: "eventTemp[previousMammogramTemp][otherUk]",
+      rows: "2",
+      label: {
+        text: "Location",
+        _classes: "nhsuk-label--s"
+      },
+      hint: {
+        text: "Include the clinic or hospital name, or any location details"
+      }
+    }) }}
+
+  {% endset %}
+
+  {% set otherNonUkHtml %}
+
+    {{ textarea({
+      name: "eventTemp[previousMammogramTemp][otherNonUk]",
+      rows: "2",
+      label: {
+        text: "Location",
+        _classes: "nhsuk-label--s"
+      },
+      hint: {
+        text: "Include the clinic or hospital name, or any location details"
+      }
+    }) }}
+
+  {% endset %}
+
+  {{ radios({
+    idPrefix: "location",
+    name: "eventTemp[previousMammogramTemp][location]",
+    fieldset: {
+      legend: {
+        text: "Where were the mammograms taken?",
+        classes: "nhsuk-fieldset__legend--m",
+        isPageHeading: false
+      }
+    },
+    items: [
+      {
+        value: "bsu",
+        text: "At an NHS breast screening unit",
+        conditional: {
+          html: bsuHtml
+        }
+      },
+      {
+        value: "otherUk",
+        text: "Somewhere else in the UK",
+        conditional: {
+          html: otherUkHtml
+        }
+      },
+      {
+        value: "otherNonUk",
+        text: "Somewhere else outside the UK",
+        conditional: {
+          html: otherNonUkHtml
+        }
+      }
+    ]
+  }) }}
+
+  {% set dateKnownHtml %}
+    {{ dateInput({
+      id: "dateTaken",
+      namePrefix: "eventTemp[previousMammogramTemp][dateTaken]",
+      fieldset: {
+        legend: {
+          text: "What is your date of birth?",
+          classes: "nhsuk-u-visually-hidden",
+          isPageHeading: false
+        }
+      },
+      hint: {
+        text: "For example, 15 3 2025"
+      },
+      items: [
+        {
+          name: "day",
+          classes: "nhsuk-input--width-2"
+        },
+        {
+          name: "month",
+          classes: "nhsuk-input--width-2"
+        },
+        {
+          name: "year",
+          classes: "nhsuk-input--width-4"
+        }
+      ]
+    }) }}
+  {% endset %}
+
+  {% set approximateDateHtml %}
+    {{ input({
+      id: "approximateDate",
+      name: "eventTemp[previousMammogramTemp][approximateDate]",
+      label: {
+        text: "Details",
+        _classes: "nhsuk-label--s"
+      },
+      hint: {
+        text: "For example, 9 months ago"
+      },
+      classes: "nhsuk-u-width-two-thirds"
+    }) }}
+  {% endset %}
+
+  {# Radios for when were they taken - choices 'Date known' and 'Enter approximate date' and 'Not sure'  #}
+  {{ radios({
+    idPrefix: "dateType",
+    name: "eventTemp[previousMammogramTemp][dateType]",
+    fieldset: {
+      legend: {
+        text: "When were the mammograms taken?",
+        classes: "nhsuk-fieldset__legend--m",
+        isPageHeading: false
+      }
+    },
+    items: [
+      {
+        value: "dateKnown",
+        text: "Enter exact date",
+        conditional: {
+          html: dateKnownHtml
+        }
+      },
+      {
+        value: "approximateDate",
+        text: "Enter approximate date",
+        conditional: {
+          html: approximateDateHtml
+        }
+      },
+      {
+        value: "notSure",
+        text: "Not sure"
+      }
+    ]
+  }) }}
+
+  {# Radios for 'Were they taken with the same name' with optoins for 'Same name [name here]' and 'Different name ' #}
+
+  {% set differentNameHtml %}
+
+    {{ input({
+      id: "sameNameInput",
+      name: "eventTemp[previousMammogramTemp][previousName]",
+      label: {
+        text: "What was the name?"
+      },
+      classes: "nhsuk-u-width-two-thirds"
+    }) }}
+
+  {% endset %}
+
+  {{ radios({
+    idPrefix: "sameName",
+    name: "eventTemp[previousMammogramTemp][sameName]",
+    fieldset: {
+      legend: {
+        text: "Were the mammograms taken with the same name?",
+        classes: "nhsuk-fieldset__legend--m",
+        isPageHeading: false
+      }
+    },
+    items: [
+      {
+        value: "sameName",
+        text: "Same name (" + participant | getFullName + ")"
+      },
+      {
+        value: "differentName",
+        text: "Different name",
+        conditional: {
+          html: differentNameHtml
+        }
+      }
+    ]
+  }) }}
+
+  {# Textarea for any other relevant details #}
+
+  {{ textarea({
+    name: "eventTemp[previousMammogramTemp][otherDetails]",
+    rows: "2",
+    label: {
+      text: "Any other relevant details? (optional)",
+      classes: "nhsuk-label--m"
+    },
+    _hint: {
+      text: "Details that may help locating these images"
+    }
+  }) }}
+
+  {{ button({
+    text: "Continue"
+  }) }}
+
+{% endblock %}
+
