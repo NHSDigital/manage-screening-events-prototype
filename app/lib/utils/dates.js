@@ -330,6 +330,47 @@ const isWithinDayRange = (dateString, minDays, maxDays = null, compareDate = nul
   return isOlderThanMin && isYoungerThanMax
 }
 
+/**
+ * Add or subtract time from a date
+ * @param {string|Array|Object} dateInput - ISO date string, array [day, month, year], or object {day, month, year}
+ * @param {number} amount - Amount to add (can be negative to subtract)
+ * @param {string} unit - Unit of time ('year', 'years', 'month', 'months', 'week', 'weeks', 'day', 'days', 'hour', 'hours', 'minute', 'minutes', 'second', 'seconds')
+ * @returns {string} Modified date as ISO string
+ * @example
+ * add('2023-01-01', 5, 'weeks') // returns '2023-02-05T00:00:00.000Z'
+ * add('2023-01-01', -2, 'days') // returns '2022-12-30T00:00:00.000Z'
+ */
+const add = (dateInput, amount, unit) => {
+  if (!dateInput || amount === undefined || !unit) return ''
+
+  let date
+
+  // Handle array or object input using existing helper
+  if (Array.isArray(dateInput) || (typeof dateInput === 'object' && dateInput !== null && !(dateInput instanceof Date))) {
+    date = arrayOrObjectToDateObject(dateInput)
+    if (!date) return ''
+  } else {
+    // Handle string input
+    date = dayjs(dateInput)
+  }
+
+  return date.add(amount, unit).toISOString()
+}
+
+/**
+ * Remove time from a date (convenience wrapper for add with negative amount)
+ * @param {string|Array|Object} dateInput - ISO date string, array [day, month, year], or object {day, month, year}
+ * @param {number} amount - Amount to remove
+ * @param {string} unit - Unit of time ('year', 'years', 'month', 'months', 'week', 'weeks', 'day', 'days', 'hour', 'hours', 'minute', 'minutes', 'second', 'seconds')
+ * @returns {string} Modified date as ISO string
+ * @example
+ * remove('2023-01-01', 2, 'days') // returns '2022-12-30T00:00:00.000Z'
+ * remove('2023-01-01', 1, 'week') // returns '2022-12-25T00:00:00.000Z'
+ */
+const remove = (dateInput, amount, unit) => {
+  return add(dateInput, -amount, unit)
+}
+
 module.exports = {
   formatDate,
   formatDateShort,
@@ -350,4 +391,6 @@ module.exports = {
   dayjs,
   daysSince,
   isWithinDayRange,
+  add,
+  remove
 }
