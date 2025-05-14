@@ -216,7 +216,7 @@
       id: "sameNameInput",
       name: "eventTemp[previousMammogramTemp][previousName]",
       label: {
-        text: "What was the name?"
+        text: "Enter the previously used name"
       },
       classes: "nhsuk-u-width-two-thirds"
     }) }}
@@ -228,7 +228,7 @@
     name: "eventTemp[previousMammogramTemp][sameName]",
     fieldset: {
       legend: {
-        text: "Were the mammograms taken with the same name?",
+        text: "Were they taken with the name " + (participant | getFullName) + "?",
         classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }
@@ -236,11 +236,11 @@
     items: [
       {
         value: "sameName",
-        text: "Same name (" + participant | getFullName + ")"
+        text: "Yes"
       },
       {
         value: "differentName",
-        text: "Different name",
+        text: "No, under a different name",
         conditional: {
           html: differentNameHtml
         }
@@ -254,11 +254,11 @@
     name: "eventTemp[previousMammogramTemp][otherDetails]",
     rows: "2",
     label: {
-      text: "Any other relevant details? (optional)",
+      text: "Additional information (optional)",
       classes: "nhsuk-label--m"
     },
-    _hint: {
-      text: "Details that may help locating these images"
+    hint: {
+      text: "For example, the reason mammograms were taken and the outcome of the assessment "
     }
   }) }}
 

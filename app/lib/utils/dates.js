@@ -24,12 +24,55 @@ dayjs.extend(customParseFormat)
 dayjs.tz.setDefault('Europe/London')
 
 /**
+ * Convert array [day, month, year] or object {day, month, year} to dayjs object
+ * @param {Array|Object} input - Array [day, month, year] or object {day, month, year}
+ * @returns {dayjs} dayjs object or null if invalid
+ */
+const arrayOrObjectToDateObject = (input) => {
+  let day, month, year
+
+  if (Array.isArray(input)) {
+    if (input.length !== 3) return null
+    [day, month, year] = input
+  } else if (typeof input === 'object' && input !== null) {
+    // Handle object with day, month, year properties
+    day = input.day
+    month = input.month
+    year = input.year
+  } else {
+    return null
+  }
+
+  // Validate that we have all required parts
+  if (!day || !month || !year) return null
+
+  // Convert to numbers if they're strings
+  day = parseInt(day, 10)
+  month = parseInt(month, 10)
+  year = parseInt(year, 10)
+
+  // Basic validation
+  if (isNaN(day) || isNaN(month) || isNaN(year)) return null
+
+  // dayjs expects month to be 0-based, so subtract 1
+  return dayjs().year(year).month(month - 1).date(day)
+}
+
+/**
  * Format a date in UK format
- * @param {string} dateString - ISO date string
+ * @param {string|Array|Object} dateString - ISO date string, array [day, month, year], or object {day, month, year}
  * @param {string} format - Optional format string
  */
 const formatDate = (dateString, format = 'D MMMM YYYY') => {
   if (!dateString) return ''
+
+  // Handle array or object input
+  if (Array.isArray(dateString) || (typeof dateString === 'object' && dateString !== null && !(dateString instanceof Date))) {
+    const dateObj = arrayOrObjectToDateObject(dateString)
+    return dateObj ? dateObj.format(format) : ''
+  }
+
+  // Handle string input (existing functionality)
   return dayjs(dateString).format(format)
 }
 

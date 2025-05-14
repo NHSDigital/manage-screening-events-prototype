@@ -39,12 +39,10 @@
 
 {% set hasAdditionalMammograms = data.eventTemp.previousMammograms | length > 0 %}
 
-
 {% set lastMammogramHtml %}
-  {% set previousMammogram = data.eventTemp.previousMammograms[0] %}
 
   <p>
-    {% if previousMammogram %}
+    {% if hasAdditionalMammograms %}
       <span class="nhsuk-u-font-weight-bold">At this BSU</span><br>
     {% endif %}
     {# Temporarily hardcode until we can investigate bug with date #}
@@ -63,12 +61,43 @@
     {% endif %} #}
   </p>
 
-  {% if previousMammogram %}
-    <p>
-      <span class="nhsuk-u-font-weight-bold">Added today</span><br>
-      {{ previousMammogram.location }}</br>
-      {{ previousMammogram.otherDetails }}
-    </p>
+  {% if hasAdditionalMammograms %}
+    {% for previousMammogram in data.eventTemp.previousMammograms %}
+      <p>
+        <span class="nhsuk-u-font-weight-bold">Added today</span><br>
+
+        {# Date #}
+        {% if previousMammogram.dateType == 'dateKnown' %}
+          {{ previousMammogram.dateTaken | formatDate }}
+          ({{ previousMammogram.dateTaken | formatDate | formatRelativeDate | asHint }})</br>
+        {% elseif previousMammogram.dateType == 'approximateDate' %}
+          Approximate date: {{ previousMammogram.approximateDate }}</br>
+        {% else %}
+          Date not known</br>
+        {% endif %}
+
+        {# Location #}
+        {% if previousMammogram.location == "bsu" %}
+          {{ previousMammogram.bsu }}</br>
+        {% elseif previousMammogram.location == "otherUk" %}
+          {{ previousMammogram.otherUk | nl2br | safe }}</br>
+        {% elseif previousMammogram.location == "otherNonUk" %}
+          {{ previousMammogram.otherNonUk | nl2br | safe }}</br>
+        {% endif %}
+
+        {# Changed name #}
+        {% if previousMammogram.sameName == "differentName" %}
+          Taken under the name {{ previousMammogram.previousName }}</br>
+        {% endif %}
+
+        {# Additional information #}
+        {% if previousMammogram.otherDetails %}
+          Additional information:
+          {{ previousMammogram.otherDetails | nl2br | safe }}
+        {% endif %}
+      </p>
+    {% endfor %}
+
   {% endif %}
 
 
@@ -230,6 +259,7 @@
           {
             href: eventId + "/previous-mammograms/add",
             text: "Add another" if not hasAdditionalMammograms else "View or update",
+            text: "Add another",
             visuallyHiddenText: "email"
           }
         ]
