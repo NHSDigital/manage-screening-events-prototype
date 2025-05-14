@@ -41,11 +41,11 @@ const decorateAttributes = (originalObject, data, path) => {
   const pathParts = _.toPath(path)
 
   // Remove the first part of the path which we don't need for reading data
-  // e.g. "eventTemp.medicalData.hrt" > "medicalData.hrt"
+  // e.g. "event.medicalData.hrt" > "medicalData.hrt"
   let dataPath = [...pathParts].slice(1)
 
   // The path we use for saving should have the first part, unless it starts with 'data'
-  // e.g. "eventTemp.medicalData.hrt" > "eventTemp.medicalData.hrt"
+  // e.g. "event.medicalData.hrt" > "event.medicalData.hrt"
   // e.g. "data.nationality" > "nationality"
   let pathForSaving = pathParts
   if (pathForSaving[0] === 'data') {

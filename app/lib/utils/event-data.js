@@ -74,22 +74,22 @@ const updateEventStatus = (data, eventId, newStatus) => {
  * @param {Object} data - Session data
  * @returns {Object|null} Updated event or null if no temp data
  *
- * This function takes the data.eventTemp object and saves it back to the
- * events array, then clears eventTemp. It's used at the end of a workflow
+ * This function takes the data.event object and saves it back to the
+ * events array, then clears event. It's used at the end of a workflow
  * to commit changes made to the temporary event back to the main array.
  */
-const saveEventTempToEvent = (data) => {
-  if (!data.eventTemp || !data.eventTemp.id) {
+const saveTempEventToEvent = (data) => {
+  if (!data.event || !data.event.id) {
     return null
   }
 
-  const eventId = data.eventTemp.id
+  const eventId = data.event.id
 
   // Use updateEvent to save the temp data
-  const updatedEvent = updateEvent(data, eventId, data.eventTemp)
+  const updatedEvent = updateEvent(data, eventId, data.event)
 
   // Clear temp data
-  delete data.eventTemp
+  delete data.event
 
   return updatedEvent
 }
@@ -100,5 +100,5 @@ module.exports = {
   getEventData,
   updateEvent,
   updateEventStatus,
-  saveEventTempToEvent,
+  saveTempEventToEvent,
 }

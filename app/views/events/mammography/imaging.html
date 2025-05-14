@@ -1,7 +1,7 @@
 
 {% extends 'layout-app.html' %}
 
-{% set imageCount = data.eventTemp.mammogramData.metadata.totalImages %}
+{% set imageCount = event.mammogramData.metadata.totalImages %}
 
 {% set pageHeading = imageCount + " images taken" %}
 
@@ -87,8 +87,8 @@
 
       {% set reasonHtml %}
         {{ textarea({
-          name: "eventTemp[mammogramData][partialMammographyReason]",
-          value: data.eventTemp.mammogramData.partialMammographyReason,
+          name: "event[mammogramData][partialMammographyReason]",
+          value: event.mammogramData.partialMammographyReason,
           id: "partialMammographyReason",
           label: {
             text: "Reason for partial mammography"
@@ -98,7 +98,7 @@
 
       {{ radios({
         idPrefix: "imagingComplete",
-        name: "eventTemp[mammogramData][isPartialMammography]",
+        name: "event[mammogramData][isPartialMammography]",
         fieldset: {
           legend: {
             text: "Has the full mammography been taken?",
@@ -106,7 +106,7 @@
             isPageHeading: false
           }
         },
-        value: data.eventTemp.mammogramData.isPartialMammography,
+        value: event.mammogramData.isPartialMammography,
         items: [
           {
             value: "no",

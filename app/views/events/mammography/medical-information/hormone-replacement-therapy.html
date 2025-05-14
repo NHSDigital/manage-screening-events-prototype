@@ -34,8 +34,8 @@
 
   {% set currentlyTakingHtml %}
     {{ input({
-      name: "eventTemp[medicalInformation][hrt][hrtDuration]",
-      value: data.eventTemp.medicalInformation.hrt.hrtDuration,
+      name: "event[medicalInformation][hrt][hrtDuration]",
+      value: event.medicalInformation.hrt.hrtDuration,
       label: {
         text: "How long have they been taking HRT?"
       },
@@ -50,8 +50,8 @@
   {% set recentlyStoppedHtml %}
 
   {{ input({
-    name: "eventTemp[medicalInformation][hrt][hrtDurationSinceStopped]",
-    value: data.eventTemp.medicalInformation.hrt.hrtDurationSinceStopped,
+    name: "event[medicalInformation][hrt][hrtDurationSinceStopped]",
+    value: event.medicalInformation.hrt.hrtDurationSinceStopped,
     label: {
       text: "How long since they stopped taking HRT?"
     },
@@ -62,8 +62,8 @@
   }) }}
 
   {{ input({
-    name: "eventTemp[medicalInformation][hrt][hrtDurationBeforeStopping]",
-    value: data.eventTemp.medicalInformation.hrt.hrtDurationBeforeStopping,
+    name: "event[medicalInformation][hrt][hrtDurationBeforeStopping]",
+    value: event.medicalInformation.hrt.hrtDurationBeforeStopping,
     label: {
       text: "How long did they take HRT for?"
     },
@@ -76,9 +76,9 @@
 {% endset %}
 
   {{ radios({
-    name: "eventTemp[medicalInformation][hrt][hrtQuestion]",
+    name: "event[medicalInformation][hrt][hrtQuestion]",
     idPrefix: "hrtQuestion",
-    value: data.eventTemp.medicalInformation.hrt.hrtQuestion,
+    value: event.medicalInformation.hrt.hrtQuestion,
     fieldset: {
       legend: {
         text: pageHeading,

@@ -3,7 +3,7 @@
 <div class="nhsuk-u-margin-bottom-4">
 
   {# Convert object to an array of views #}
-  {% set mammogramViews = data.eventTemp.mammogramData.views | getObjectValues %}
+  {% set mammogramViews = event.mammogramData.views | getObjectValues %}
 
   {# Group views by view name so we get MLO or CC only #}
   {% set groupedViews = mammogramViews | groupby("viewShort") %}
@@ -86,14 +86,14 @@
                       text: "Repeat reason"
                     },
                     id: "repeatReason-" + side.viewShortWithSide,
-                    name: "eventTemp[mammogramData][repeatReason-" + side.viewShortWithSide + "]",
-                    value: data.eventTemp.mammogramData["repeatReason-" + side.viewShortWithSide]
+                    name: "event[mammogramData][repeatReason-" + side.viewShortWithSide + "]",
+                    value: event.mammogramData["repeatReason-" + side.viewShortWithSide]
                   }) }}
                 {% endset %}
 
                 {{ radios({
                   idPrefix: "isRepeatQuestion-" + side.viewShortWithSide,
-                  name: "eventTemp[mammogramData][isRepeatQuestion-" + side.viewShortWithSide + "]",
+                  name: "event[mammogramData][isRepeatQuestion-" + side.viewShortWithSide + "]",
                   fieldset: {
                     legend: {
                       text: "Why are there multiple " + side.viewShortWithSide + " images?",
@@ -101,7 +101,7 @@
                       isPageHeading: false
                     }
                   },
-                  value: data.eventTemp.mammogramData["isRepeatQuestion-" + side.viewShortWithSide],
+                  value: event.mammogramData["isRepeatQuestion-" + side.viewShortWithSide],
                   items: [
                     {
                       value: "isRepeat",

@@ -166,21 +166,21 @@
   {% set valueHtml = 'None' %}
 
   {% set hrtHtml %}
-    {% if data.eventTemp.hrt %}
-      {% if data.eventTemp.hrt.hrtQuestion == 'yes' %}
+    {% if event.hrt %}
+      {% if event.hrt.hrtQuestion == 'yes' %}
         <p>
           Currently taking HRT
         </p>
         <p>
-          Duration taken: {{ data.eventTemp.hrt.hrtDuration }}
+          Duration taken: {{ event.hrt.hrtDuration }}
         </p>
-      {% elseif data.eventTemp.hrt.hrtQuestion == 'no-recently-stopped' %}
+      {% elseif event.hrt.hrtQuestion == 'no-recently-stopped' %}
         <p>
           Recently stopped taking HRT
         </p>
-        Stopped: {{ data.eventTemp.hrt.hrtDurationSinceStopped }} ago<br>
-        Duration taken: {{ data.eventTemp.hrt.hrtDurationBeforeStopping }}
-      {% elseif data.eventTemp.hrt.hrtQuestion == 'no' %}
+        Stopped: {{ event.hrt.hrtDurationSinceStopped }} ago<br>
+        Duration taken: {{ event.hrt.hrtDurationBeforeStopping }}
+      {% elseif event.hrt.hrtQuestion == 'no' %}
         Not taking HRT
       {% else %}
         No information provided

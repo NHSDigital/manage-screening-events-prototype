@@ -154,7 +154,7 @@
   }) }}
 
   {% set hrtHtml %}
-    {% set hrtData = data.eventTemp.medicalInformation.hrt %}
+    {% set hrtData = event.medicalInformation.hrt %}
 
     {% if hrtData %}
       {% if hrtData.hrtQuestion == 'yes' %}
@@ -251,7 +251,7 @@
 
 {{ radios({
   idPrefix: "imagingCanProceed",
-  name: "eventTemp[appointment][imagingCanProceed]",
+  name: "event[appointment][imagingCanProceed]",
   fieldset: {
     legend: {
       text: "Can imaging go ahead?",
@@ -259,7 +259,7 @@
       isPageHeading: false
     }
   },
-  value: data.eventTemp.appointment.imagingCanProceed,
+  value: event.appointment.imagingCanProceed,
   items: [
     {
       value: "yes",

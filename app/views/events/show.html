@@ -300,7 +300,7 @@ Before you proceed, check the participant’s identity and confirm that their la
       <div class="nhsuk-grid-row">
         <div class="nhsuk-grid-column-two-thirds">
           {{ radios({
-            name: "eventTemp[appointment][canAppointmentGoAhead]",
+            name: "event[appointment][canAppointmentGoAhead]",
             idPrefix: "canAppointmentGoAhead",
             fieldset: {
               legend: {
@@ -312,7 +312,7 @@ Before you proceed, check the participant’s identity and confirm that their la
             hint: {
               text: screeningHint
             },
-            value: data.eventTemp.appointment.canAppointmentGoAhead,
+            value: event.appointment.canAppointmentGoAhead,
             items: [
               {
                 value: "yes",

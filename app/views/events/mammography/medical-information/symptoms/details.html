@@ -1,7 +1,7 @@
 
 {% extends 'layout-app.html' %}
 
-{% set type = data.eventTemp.symptomTemp.type %}
+{% set type = event.symptomTemp.type %}
 {% if type != "Other" %}
   {% set pageHeading = "Details of the " + (type | lower) %}
 {% else %}
@@ -45,9 +45,9 @@
 
 
   {{ radios({
-    name: "eventTemp[symptomTemp][type]",
+    name: "event[symptomTemp][type]",
     idPrefix: "type",
-    value: data.eventTemp.stymptomTemp.type,
+    value: event.stymptomTemp.type,
     fieldset: {
       legend: {
         text: pageHeading,

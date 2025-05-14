@@ -35,9 +35,7 @@
 
 {% endset %}
 
-{{ data.eventTemp | log("EventTemp") }}
-
-{% set hasAdditionalMammograms = data.eventTemp.previousMammograms | length > 0 %}
+{% set hasAdditionalMammograms = event.previousMammograms | length > 0 %}
 
 {% set lastMammogramHtml %}
 
@@ -62,7 +60,7 @@
   </p>
 
   {% if hasAdditionalMammograms %}
-    {% for previousMammogram in data.eventTemp.previousMammograms %}
+    {% for previousMammogram in event.previousMammograms %}
       <p>
         <span class="nhsuk-u-font-weight-bold">Added today</span><br>
 

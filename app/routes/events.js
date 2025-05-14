@@ -3,7 +3,7 @@ const dayjs = require('dayjs')
 
 const { getFullName } = require('../lib/utils/participants')
 const { generateMammogramImages } = require('../lib/generators/mammogram-generator')
-const { getEvent, saveEventTempToEvent, updateEventStatus } = require('../lib/utils/event-data')
+const { getEvent, saveTempEventToEvent, updateEventStatus } = require('../lib/utils/event-data')
 
 /**
  * Get single event and its related data
@@ -53,32 +53,37 @@ module.exports = router => {
   router.use('/clinics/:clinicId/events/:eventId', (req, res, next) => {
     const eventId = req.params.eventId
     const clinicId = req.params.clinicId
-    const eventData = getEventData(req.session.data, clinicId, eventId)
+    const originalEventData = getEventData(req.session.data, clinicId, eventId)
     const data = req.session.data
 
-    if (!eventData) {
+    if (!originalEventData) {
       console.log(`No event ${eventId} found for clinic ${clinicId}`)
       res.redirect('/clinics/' + clinicId)
       return
     }
 
-    // Store a temporary copy of the event data in session
-    // We'll read and write to this through the appointment
-    if (!data.eventTemp || (data.eventTemp?.id !== eventId)) {
-      if (!data.eventTemp) {
-        console.log('No eventTemp data found, creating new one')
+    // We store a temporary copy of the event to session for use by forms
+    // If it doens't exist, create it now
+    if (!data.event || (data.event?.id !== eventId)) {
+      if (!data.event) {
+        console.log('No temp event data found, creating new one')
       }
-      else if (data.eventTemp?.id !== eventId) {
-        console.log(`EventTemp data found, but eventId ${data.eventTemp.id} does not match ${eventId}, creating new one`)
+      else if (data.event?.id !== eventId) {
+        console.log(`Temp event data found, but eventId ${data.event.id} does not match ${eventId}, creating new one`)
       }
-      data.eventTemp = eventData.event
+      // Copy over the event data to the temp event
+      data.event = originalEventData.event
     }
 
-    res.locals.eventData = eventData
-    res.locals.clinic = eventData.clinic
-    res.locals.event = eventData.event
-    res.locals.participant = eventData.participant
-    res.locals.unit = eventData.unit
+    // This will now have any temp event data that forms have added too
+    // We'll later save this back to the source data
+    res.locals.event = data.event
+
+    res.locals.eventData = originalEventData
+    res.locals.clinic = originalEventData.clinic
+
+    res.locals.participant = originalEventData.participant
+    res.locals.unit = originalEventData.unit
     res.locals.clinicId = clinicId
     res.locals.eventId = eventId
 
@@ -86,9 +91,13 @@ module.exports = router => {
   })
 
   // Main route in to starting an event - used to clear any temp data
+  // Possibly not needed as if the ID doesn't match our use route would reset this - but this could
+  // be used to reset a patient back to defaults
   router.get('/clinics/:clinicId/events/:eventId/start', (req, res) => {
-    delete req.session.data.eventTemp
-    console.log('Cleared eventTemp data')
+    // Explicitly delete the temp event data
+    // On next request this will be recreated from the event array
+    delete req.session.data.event
+    console.log('Cleared temp event data')
     res.redirect(`/clinics/${req.params.clinicId}/events/${req.params.eventId}`)
   })
 
@@ -103,7 +112,7 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/can-appointment-go-ahead-answer', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
-    const canAppointmentGoAhead = data.eventTemp?.appointment?.canAppointmentGoAhead
+    const canAppointmentGoAhead = data.event?.appointment?.canAppointmentGoAhead
     const event = getEvent(data, eventId)
 
     // No answer, return to page
@@ -124,7 +133,7 @@ module.exports = router => {
 
   // Main route in to starting an event - used to clear any temp data
   router.get('/clinics/:clinicId/events/:eventId/previous-mammograms/add', (req, res) => {
-    delete req.session.data.eventTemp.previousMammogramTemp
+    delete req.session.data?.event?.previousMammogramTemp
     res.render('events/mammography/previous-mammograms/edit')
   })
 
@@ -132,15 +141,15 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/previous-mammograms-answer', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
-    const previousMammogram = data.eventTemp?.previousMammogramTemp
-    delete data.eventTemp.previousMammogramTemp
+    const previousMammogram = data.event?.previousMammogramTemp
+    delete data.event?.previousMammogramTemp
 
-    // Push to eventTemp.previousMammograms
-    if (!data.eventTemp.previousMammograms) {
-      data.eventTemp.previousMammograms = []
+    // Push to event.previousMammograms
+    if (!data.event.previousMammograms) {
+      data.event.previousMammograms = []
     }
     if (previousMammogram) {
-      data.eventTemp.previousMammograms.push(previousMammogram)
+      data.event.previousMammograms.push(previousMammogram)
     }
 
     res.redirect(`/clinics/${clinicId}/events/${eventId}`)
@@ -149,7 +158,7 @@ module.exports = router => {
 
   // Main route in to starting an event - used to clear any temp data
   router.get('/clinics/:clinicId/events/:eventId/medical-information/symptoms/add', (req, res) => {
-    delete req.session.data.eventTemp.symptomsTemp
+    delete req.session.data.event.symptomsTemp
     res.redirect(`/clinics/${req.params.clinicId}/events/${req.params.eventId}/medical-information/symptoms/type`)
   })
 
@@ -190,7 +199,7 @@ module.exports = router => {
     const eventData = getEventData(req.session.data, clinicId, eventId)
 
     // If no mammogram data exists, generate it
-    if (!data?.eventTemp?.mammogramData) {
+    if (!data?.event?.mammogramData) {
       // Set start time to 3 minutes ago to simulate an in-progress screening
       const startTime = dayjs().subtract(3, 'minutes').toDate()
       const mammogramData = generateMammogramImages({
@@ -198,8 +207,8 @@ module.exports = router => {
         isSeedData: false,
         config: eventData?.participant?.config,
       })
-      data.eventTemp.mammogramData = mammogramData
-      res.locals.eventTemp = data.eventTemp
+      data.event.mammogramData = mammogramData
+      res.locals.event = data.event
     }
 
     res.render('events/mammography/imaging', {})
@@ -210,7 +219,7 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/medical-information-answer', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
-    const hasRelevantMedicalInformation = data?.eventTemp?.medicalInformation?.hasRelevantMedicalInformation
+    const hasRelevantMedicalInformation = data?.event?.medicalInformation?.hasRelevantMedicalInformation
 
     if (!hasRelevantMedicalInformation) {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information`)
@@ -225,7 +234,7 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/record-medical-information-answer', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
-    const imagingCanProceed = data.eventTemp.appointment.imagingCanProceed
+    const imagingCanProceed = data.event.appointment.imagingCanProceed
 
     if (!imagingCanProceed) {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/record-medical-information`)
@@ -240,7 +249,7 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/imaging-answer', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
-    const isPartialMammography = data.eventTemp.mammogramData.isPartialMammography
+    const isPartialMammography = data.event.mammogramData.isPartialMammography
 
     if (!isPartialMammography) {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/imaging`)
@@ -258,16 +267,16 @@ module.exports = router => {
     const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
     const data = req.session.data
-    const notScreenedReason = data.eventTemp.appointmentStopped.stoppedReason
-    const needsReschedule = data.eventTemp.appointmentStopped.needsReschedule
-    const otherReasonDetails = data.eventTemp.appointmentStopped.otherDetails
+    const notScreenedReason = data.event.appointmentStopped.stoppedReason
+    const needsReschedule = data.event.appointmentStopped.needsReschedule
+    const otherReasonDetails = data.event.appointmentStopped.otherDetails
     const hasOtherReasonButNoDetails = notScreenedReason?.includes("other") && !otherReasonDetails
 
     if (!notScreenedReason || !needsReschedule || hasOtherReasonButNoDetails) {
       if (!notScreenedReason) {
         req.flash('error', {
           text: 'A reason for why this appointment cannot continue must be provided',
-          name: 'eventTemp[appointmentStopped][stoppedReason]',
+          name: 'event[appointmentStopped][stoppedReason]',
           href: '#stoppedReason-1'
         })
 
@@ -275,14 +284,14 @@ module.exports = router => {
       if (hasOtherReasonButNoDetails){
         req.flash('error', {
           text: 'Explain why this appointment cannot proceed',
-          name: 'eventTemp[appointmentStopped][otherDetails]',
+          name: 'event[appointmentStopped][otherDetails]',
           href: '#otherDetails'
         })
       }
       if (!needsReschedule) {
         req.flash('error', {
           text: 'Select whether the participant needs to be invited for another appointment',
-          name: 'eventTemp[appointmentStopped][needsReschedule]',
+          name: 'event[appointmentStopped][needsReschedule]',
           href: '#needsReschedule-1'
         })
       }
@@ -290,7 +299,7 @@ module.exports = router => {
       return
     }
 
-    saveEventTempToEvent(data)
+    saveTempEventToEvent(data)
 
     updateEventStatus(data, eventId, 'event_attended_not_screened')
 
@@ -310,17 +319,8 @@ module.exports = router => {
     const participantName = getFullName(eventData.participant)
     const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
-    saveEventTempToEvent(data)
+    saveTempEventToEvent(data)
     updateEventStatus(data, eventId, 'event_complete')
-
-    // // Update event status to attended
-    // const eventIndex = req.session.data.events.findIndex(e => e.id === eventId)
-    // req.session.data.events[eventIndex] = updateEventStatus(
-    //   req.session.data.events[eventIndex],
-    //   'event_complete'
-    // )
-
-    // delete data.eventTemp
 
     const successMessage = `
     ${participantName} has been screened. <a href="${participantEventUrl}" class="app-nowrap">View their appointment</a>`
