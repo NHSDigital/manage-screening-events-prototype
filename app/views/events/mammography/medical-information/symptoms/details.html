@@ -32,7 +32,20 @@
     {{ pageHeading }}
   </h1>
 
-  {% if event.symptomTemp.type == "Nipple change" %}
+
+  {% if event.symptomTemp.type == "Other" %}
+
+    {{ input({
+      name: "event[symptomTemp][otherDescription]",
+      label: {
+        text: "What is the symptom?",
+        classes: "nhsuk-label--m"
+      },
+      value: event.symptomTemp.otherDescription,
+      classes: "nhsuk-u-width-two-thirds"
+    }) }}
+
+  {% elseif event.symptomTemp.type == "Nipple change" %}
     {{ radios({
       idPrefix: "nippleChangeType",
       name: "event[symptomTemp][nippleChangeType]",
@@ -77,9 +90,7 @@
         }
       ]
     }) }}
-  {% endif %}
-
-  {% if event.symptomTemp.type == "Skin change" %}
+  {% elseif event.symptomTemp.type == "Skin change" %}
 
     {{ radios({
       idPrefix: "skinChangeType",
@@ -266,13 +277,21 @@
 
   {% else %}
 
+    {% set radioQuestionText %}
+      {% if event.symptomTemp.type == "Other" %}
+        Where is (or was) the symptom located?
+      {% else %}
+        Where is (or was) the {{ event.symptomTemp.type | lower }} located?
+      {% endif %}
+    {% endset %}
+
     {{ radios({
       idPrefix: "location",
       name: "event[symptomTemp][location]",
       value: event.symptomTemp.location,
       fieldset: {
         legend: {
-          text: "Where is (or was) the " + (event.symptomTemp.type | lower) + " located?",
+          text: radioQuestionText,
           classes: "nhsuk-fieldset__legend--m",
           isPageHeading: false
         }
@@ -344,22 +363,13 @@
     }) }}
   {% endif %}
 
-
-
-  {#
-
-  ## Has the [lump] been investigated by a medical professional?
-
-
-
-( ) Yes
-
-Provide details
-
-Include where, when and the outcome
-	[text box]
-
-( ) No  #}
+  {% set radioQuestionText %}
+    {% if event.symptomTemp.type == "Other" %}
+      Has the symptom been investigated by a medical professional?
+    {% else %}
+      Has the {{ event.symptomTemp.type | lower }} been investigated by a medical professional?
+    {% endif %}
+  {% endset %}
 
   {{ radios({
     idPrefix: "hasBeenInvestigated",
@@ -367,7 +377,7 @@ Include where, when and the outcome
     value: event.symptomTemp.hasBeenInvestigated,
     fieldset: {
       legend: {
-        text: "Has the " + (event.symptomTemp.type | lower) + " been investigated by a medical professional?",
+        text: radioQuestionText,
         classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }

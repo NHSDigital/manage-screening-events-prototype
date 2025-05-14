@@ -111,8 +111,12 @@
     value: event.previousMammogramTemp.location,
     items: [
       {
+        value: "currentBsu",
+        text: "At " + unit.name
+      },
+      {
         value: "bsu",
-        text: "At an NHS breast screening unit",
+        text: "At another NHS breast screening unit",
         conditional: {
           html: bsuHtml
         }
