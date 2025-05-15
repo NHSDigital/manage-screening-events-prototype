@@ -23,7 +23,7 @@
     height: 24px;
     width: 60px;
 
-    @include mq($from: tablet) {
+    @include nhsuk-media-query($from: tablet) {
       height: 32px;
       width: 80px;
     }
@@ -35,7 +35,7 @@
   display: block;
   @include nhsuk-font(22, $line-height: 1.1, $weight: bold);
 
-  @include mq($media-type: print) {
+  @include nhsuk-media-query($media-type: print) {
     color: $nhsuk-print-text-color;
   }
 }
@@ -49,7 +49,7 @@
   display: block;
   @include nhsuk-font(14, $weight: bold);
 
-  @include mq($media-type: print) {
+  @include nhsuk-media-query($media-type: print) {
     color: $color_nhsuk-blue;
   }
 }

@@ -63,7 +63,7 @@ $nhsuk-success-color: $color_nhsuk-green !default;
   // text in high contrast mode
   border-bottom: 1px solid transparent;
 
-  @include govuk-media-query($from: tablet) {
+  @include nhsuk-media-query($from: tablet) {
     padding: 2px nhsuk-spacing(4) nhsuk-spacing(1);
   }
 }
@@ -84,7 +84,7 @@ $nhsuk-success-color: $color_nhsuk-green !default;
 
   background-color: $color_nhsuk-white;
 
-  @include govuk-media-query($from: tablet) {
+  @include nhsuk-media-query($from: tablet) {
     padding: $padding-tablet;
   }
 
@@ -111,7 +111,7 @@ $nhsuk-success-color: $color_nhsuk-green !default;
 .app-notification-banner__heading {
   margin: 0 0 nhsuk-spacing(3);
   padding: 0;
-  @include nhsuk-font($size: 24, $weight: bold);
+  @include nhsuk-font($size: 26, $weight: bold);
 }
 
 .app-notification-banner__link {

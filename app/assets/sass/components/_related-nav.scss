@@ -8,7 +8,7 @@
 .nhsuk-related-nav {
   border-top: 1px solid $nhsuk-border-color;
 
-  @include mq($until: desktop) {
+  @include nhsuk-media-query($until: desktop) {
     margin-top: nhsuk-spacing(7);
   }
 }
@@ -16,11 +16,11 @@
 .nhsuk-related-nav__heading {
   margin-bottom: 12px;
   padding-top: nhsuk-spacing(3);
-  @include nhsuk-typography-responsive(19, $override-line-height: 1.2);
+  @include nhsuk-font-size(19, $line-height: 1.2);
 }
 
 .nhsuk-related-nav__list {
   list-style: none;
   padding-left: 0;
-  @include nhsuk-typography-responsive(16);
+  @include nhsuk-font-size(16);
 }
