@@ -1,3 +1,8 @@
+@use 'nhsuk-frontend/packages/core/settings' as *;
+@use 'nhsuk-frontend/packages/core/tools' as *;
+@use "sass:color";
+@use "sass:math";
+
 // Adapted from https://github.com/alphagov/govuk-frontend/blob/main/packages/govuk-frontend/src/govuk/components/notification-banner/_index.scss
 
 $nhsuk-success-color: $color_nhsuk-green !default;
@@ -25,7 +30,7 @@ $nhsuk-success-color: $color_nhsuk-green !default;
   }
 
   &:hover {
-    color: scale-color($nhsuk-success-color, $lightness: -30%);
+    color: color.scale($nhsuk-success-color, $lightness: -30%);
   }
 
   &:active {
@@ -40,12 +45,11 @@ $nhsuk-success-color: $color_nhsuk-green !default;
 }
 
 .app-notification-banner {
+  border: $nhsuk-border-width solid $color_nhsuk-blue;
+  background-color: $color_nhsuk-blue;
+
   @include nhsuk-font($size: 19);
   @include nhsuk-responsive-margin(8, "bottom");
-
-  border: $nhsuk-border-width solid $color_nhsuk-blue;
-
-  background-color: $color_nhsuk-blue;
 
   &:focus {
     outline: $nhsuk-focus-width solid $nhsuk-focus-color;
@@ -59,7 +63,7 @@ $nhsuk-success-color: $color_nhsuk-green !default;
   // text in high contrast mode
   border-bottom: 1px solid transparent;
 
-  @include govuk-media-query($from: tablet) {
+  @include nhsuk-media-query($from: tablet) {
     padding: 2px nhsuk-spacing(4) nhsuk-spacing(1);
   }
 }
@@ -67,11 +71,10 @@ $nhsuk-success-color: $color_nhsuk-green !default;
 .app-notification-banner__title {
   // Set the size again because this element is a heading and the user agent
   // font size overrides the inherited font size
-  @include nhsuk-font($size: 19);
-  @include nhsuk-typography-weight-bold;
   margin: 0;
   padding: 0;
   color: $color_nhsuk-white;
+  @include nhsuk-font($size: 19, $weight: bold);
 }
 
 .app-notification-banner__content {
@@ -81,7 +84,7 @@ $nhsuk-success-color: $color_nhsuk-green !default;
 
   background-color: $color_nhsuk-white;
 
-  @include govuk-media-query($from: tablet) {
+  @include nhsuk-media-query($from: tablet) {
     padding: $padding-tablet;
   }
 
@@ -93,7 +96,7 @@ $nhsuk-success-color: $color_nhsuk-green !default;
     box-sizing: border-box;
 
     // Calculate the internal width of a two-thirds column...
-    $two-col-width: ($nhsuk-page-width * 2 / 3) - ($nhsuk-gutter * 1 / 3);
+    $two-col-width: math.div($nhsuk-page-width * 2, 3) - math.div($nhsuk-gutter * 1, 3);
 
     // ...and then factor in the left border and padding
     $banner-exterior: ($padding-tablet + $nhsuk-border-width);
@@ -106,12 +109,9 @@ $nhsuk-success-color: $color_nhsuk-green !default;
 }
 
 .app-notification-banner__heading {
-  @include nhsuk-font($size: 24);
-  @include nhsuk-typography-weight-bold;
-
   margin: 0 0 nhsuk-spacing(3);
-
   padding: 0;
+  @include nhsuk-font($size: 26, $weight: bold);
 }
 
 .app-notification-banner__link {

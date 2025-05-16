@@ -5,8 +5,10 @@ const gulp = require('gulp');
 const babel = require('gulp-babel');
 const browserSync = require('browser-sync');
 const clean = require('gulp-clean');
-const sass = require('gulp-sass')(require('sass'));
 const nodemon = require('gulp-nodemon');
+const gulpSass = require('gulp-sass');
+const PluginError = require('plugin-error');
+const dartSass = require('sass-embedded');
 
 // Local dependencies
 const config = require('./app/config');
@@ -14,23 +16,32 @@ const config = require('./app/config');
 // Set configuration variables
 const port = parseInt(process.env.PORT) || config.port;
 
+// Set Sass compiler
+const sass = gulpSass(dartSass);
+
 // Delete all the files in /public build directory
 function cleanPublic() {
   return gulp.src('public', { allowEmpty: true }).pipe(clean());
 }
 
-sass.compiler = require('sass');
-
 // Compile SASS to CSS
-function compileStyles() {
+function compileStyles(done) {
   return gulp
-    .src(['app/assets/sass/**/*.scss', 'docs/assets/sass/**/*.scss'])
-    .pipe(sass())
-    .pipe(gulp.dest('public/css'))
-    .on('error', (err) => {
-      console.log(err)
-      process.exit(1)
+    .src(['app/assets/sass/**/*.scss', 'docs/assets/sass/**/*.scss'], {
+      sourcemaps: true,
     })
+    .pipe(sass({
+      loadPaths: ['node_modules'],
+      sourceMap: true,
+      sourceMapIncludeSources: true,
+    }).on('error', (error) => {
+      done(
+        new PluginError('compileCSS', error.messageFormatted, {
+          showProperties: false,
+        })
+      )
+    }))
+    .pipe(gulp.dest('public/css'))
 }
 
 // Compile JavaScript (with ES6 support)
