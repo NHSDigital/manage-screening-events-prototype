@@ -1,32 +1,31 @@
 // Import NHS.UK frontend library
-@import 'node_modules/nhsuk-frontend/packages/nhsuk';
+@forward 'nhsuk-frontend/packages/nhsuk';
 
 // Components that are not in the NHS.UK frontend library
-@import 'components/dark-mode';
-@import 'components/list-border';
-@import 'components/related-nav';
-@import 'components/header';
-@import 'components/header-organisation';
-@import 'components/secondary-navigation';
-@import 'components/count';
-@import 'components/forward-link';
-@import 'components/notification-banner';
-@import 'components/status';
-@import 'components/reading';
+@forward 'components/dark-mode';
+@forward 'components/list-border';
+@forward 'components/related-nav';
+@forward 'components/header';
+@forward 'components/header-organisation';
+@forward 'components/secondary-navigation';
+@forward 'components/count';
+@forward 'components/forward-link';
+@forward 'components/notification-banner';
+@forward 'components/status';
+@forward 'components/reading';
 
-@import 'components/overrides';
+@forward 'components/overrides';
 
-@import 'components/annotation';
-@import 'button-group';
-
-
-@import 'misc';
+@forward 'components/annotation';
+@forward 'button-group';
 
 
-@import 'typography';
-@import 'utils';
+@forward 'misc';
+
+
+@forward 'typography';
+@forward 'utils';
 
 ///////////////////////////////////////////
 // Add your custom CSS/Sass styles below...
 ///////////////////////////////////////////
-
