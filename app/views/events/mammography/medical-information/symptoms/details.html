@@ -1,3 +1,4 @@
+{# app/views/events/mammography/medical-information/symptoms/details.html #}
 
 {% extends 'layout-app.html' %}
 
@@ -10,7 +11,7 @@
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
-{% set formAction = './symptoms/details' %}
+{% set formAction = './save' %}
 
 {# {% set back = {
   href: "/clinics/" + clinicId,
@@ -23,7 +24,9 @@
 
 {% block pageContent %}
 
-  {{ participant | log }}
+  {{ participant | log("Participant") }}
+  {{ event | log("Temp event") }}
+
 
   <h1 class="nhsuk-heading-l">
     <span class="nhsuk-caption-l">
@@ -123,7 +126,7 @@
             html: input({
               name: "event[symptomTemp][skinChangeDescription]",
               label: {
-                text: "Describe the specific area"
+                text: "Describe the change"
               },
               value: event.symptomTemp.skinChangeDescription,
               classes: "nhsuk-u-width-two-thirds"
@@ -135,117 +138,7 @@
   {% endif %}
 
 
-  {% set yesOngoingHtml %}
-    {{ dateInput({
-      id: "approxStartDate",
-      namePrefix: "event[symptomTemp][approxStartDate]",
-      fieldset: {
-        legend: {
-          text: "Approximate start date",
-          _classes: "nhsuk-label--m",
-          isPageHeading: false
-        }
-      },
-      value: event.symptomTemp.approxStartDate,
-      hint: {
-        text: "For example, " + today() | remove(3, "months") | formatDate("M YYYY")
-      },
-      items: [
-        {
-          name: "month",
-          classes: "nhsuk-input--width-2"
-        },
-        {
-          name: "year",
-          classes: "nhsuk-input--width-4"
-        }
-      ]
-    }) }}
-  {% endset %}
 
-  {% set noOngoingHtml %}
-    {{ dateInput({
-      id: "approxStartDate",
-      namePrefix: "event[symptomTemp][approxStartDate]",
-      fieldset: {
-        legend: {
-          text: "Approximate start date",
-          _classes: "nhsuk-label--m",
-          isPageHeading: false
-        }
-      },
-      value: event.symptomTemp.approxStartDate,
-      hint: {
-        text: "For example, " + today() | remove(9, "months") | formatDate("M YYYY")
-      },
-      items: [
-        {
-          name: "month",
-          classes: "nhsuk-input--width-2"
-        },
-        {
-          name: "year",
-          classes: "nhsuk-input--width-4"
-        }
-      ]
-    }) }}
-
-    {{ dateInput({
-      id: "approxEndDate",
-      namePrefix: "event[symptomTemp][approxEndDate]",
-      fieldset: {
-        legend: {
-          text: "Approximate end date",
-          _classes: "nhsuk-label--m",
-          isPageHeading: false
-        }
-      },
-      value: event.symptomTemp.approxStartDate,
-      hint: {
-        text: "For example, " + today() | remove(1, "weeks") | formatDate("M YYYY")
-      },
-      items: [
-        {
-          name: "month",
-          classes: "nhsuk-input--width-2"
-        },
-        {
-          name: "year",
-          classes: "nhsuk-input--width-4"
-        }
-      ]
-    }) }}
-  {% endset %}
-
-  {# Is this an ongoing symptom #}
-  {{ radios({
-    idPrefix: "isOngoing",
-    name: "event[symptomTemp][isOngoing]",
-    value: event.symptomTemp.isOngoing,
-    fieldset: {
-      legend: {
-        text: "Is this an ongoing symptom?",
-        classes: "nhsuk-fieldset__legend--m",
-        isPageHeading: false
-      }
-    },
-    items: [
-      {
-        value: "yes",
-        text: "Yes",
-        conditional: {
-          html: yesOngoingHtml
-        }
-      },
-      {
-        value: "no",
-        text: "No",
-        conditional: {
-          html: noOngoingHtml
-        }
-      }
-    ]
-  }) }}
 
   {% if event.symptomTemp.type == "Nipple change" %}
     {{ radios({
@@ -279,9 +172,9 @@
 
     {% set radioQuestionText %}
       {% if event.symptomTemp.type == "Other" %}
-        Where is (or was) the symptom located?
+        Where is the symptom located?
       {% else %}
-        Where is (or was) the {{ event.symptomTemp.type | lower }} located?
+        Where is the {{ event.symptomTemp.type | lower }} located?
       {% endif %}
     {% endset %}
 
@@ -363,6 +256,124 @@
     }) }}
   {% endif %}
 
+  {% set yesOngoingHtml %}
+    {{ dateInput({
+      id: "ongoingStartDate",
+      namePrefix: "event[symptomTemp][ongoingStartDate]",
+      fieldset: {
+        legend: {
+          text: "Approximate start date",
+          _classes: "nhsuk-label--m",
+          isPageHeading: false
+        }
+      },
+      value: event.symptomTemp.approxStartDate,
+      hint: {
+        text: "For example, " + today() | remove(3, "months") | formatDate("M YYYY")
+      },
+      items: [
+        {
+          name: "month",
+          classes: "nhsuk-input--width-2",
+          value: event.symptomTemp.approxStartDate.month
+        },
+        {
+          name: "year",
+          classes: "nhsuk-input--width-4",
+          value: event.symptomTemp.approxStartDate.year
+        }
+      ]
+    }) }}
+{% endset %}
+
+{% set noOngoingHtml %}
+  {{ dateInput({
+    id: "notOngoingStartDate",
+    namePrefix: "event[symptomTemp][notOngoingStartDate]",
+    fieldset: {
+      legend: {
+        text: "Approximate start date",
+        _classes: "nhsuk-label--m",
+        isPageHeading: false
+      }
+    },
+    value: event.symptomTemp.approxStartDate,
+    hint: {
+      text: "For example, " + today() | remove(9, "months") | formatDate("M YYYY")
+    },
+    items: [
+      {
+        name: "month",
+        classes: "nhsuk-input--width-2",
+        value: event.symptomTemp.approxStartDate.month
+      },
+      {
+        name: "year",
+        classes: "nhsuk-input--width-4",
+        value: event.symptomTemp.approxStartDate.year
+      }
+    ]
+  }) }}
+
+  {{ dateInput({
+    id: "approxEndDate",
+    namePrefix: "event[symptomTemp][approxEndDate]",
+    fieldset: {
+      legend: {
+        text: "Approximate end date",
+        _classes: "nhsuk-label--m",
+        isPageHeading: false
+      }
+    },
+    value: event.symptomTemp.approxStartDate,
+    hint: {
+      text: "For example, " + today() | remove(1, "weeks") | formatDate("M YYYY")
+    },
+    items: [
+      {
+        name: "month",
+        classes: "nhsuk-input--width-2",
+        value: event.symptomTemp.approxEndDate.month
+      },
+      {
+        name: "year",
+        classes: "nhsuk-input--width-4",
+        value: event.symptomTemp.approxEndDate.year
+      }
+    ]
+  }) }}
+{% endset %}
+
+{# Is this an ongoing symptom #}
+{{ radios({
+  idPrefix: "isOngoing",
+  name: "event[symptomTemp][isOngoing]",
+  value: event.symptomTemp.isOngoing,
+  fieldset: {
+    legend: {
+      text: "Is this an ongoing symptom?",
+      classes: "nhsuk-fieldset__legend--m",
+      isPageHeading: false
+    }
+  },
+  items: [
+    {
+      value: "yes",
+      text: "Yes",
+      conditional: {
+        html: yesOngoingHtml
+      }
+    },
+    {
+      value: "no",
+      text: "No",
+      conditional: {
+        html: noOngoingHtml
+      }
+    }
+  ]
+}) }}
+
   {% set radioQuestionText %}
     {% if event.symptomTemp.type == "Other" %}
       Has the symptom been investigated by a medical professional?
@@ -373,7 +384,7 @@
 
   {{ radios({
     idPrefix: "hasBeenInvestigated",
-    name: "event[symptomTemp][hasBeenInvestigated",
+    name: "event[symptomTemp][hasBeenInvestigated]",
     value: event.symptomTemp.hasBeenInvestigated,
     fieldset: {
       legend: {
@@ -387,7 +398,7 @@
         value: "yes",
         text: "Yes",
         conditional: {
-          html: input({
+          html: textarea({
             name: "event[symptomTemp][investigatedDescription]",
             label: {
               text: "Provide details"
@@ -396,7 +407,7 @@
               text: "Include where, when and the outcome"
             },
             value: event.symptomTemp.investigatedDescription,
-            classes: "nhsuk-u-width-two-thirds"
+            _classes: "nhsuk-u-width-two-thirds"
           })
         }
       },
@@ -407,6 +418,8 @@
     ]
   }) }}
 
+
+
   {{ textarea({
     name: "event[symptomTemp][additionalInfo]",
     label: {
@@ -414,16 +427,37 @@
       classes: "nhsuk-label--m"
     },
     rows: 4,
-    value: event.symptomTemp.additionalInfo,
-    classes: "nhsuk-u-width-two-thirds"
+    value: event.symptomTemp.additionalInfo
   }) }}
 
-  {{ button({
-    text: "Continue"
-  }) }}
+  <div class="nhsuk-button-group">
+    {{ button({
+      text: "Save symptom",
+      attributes: {
+        name: "action",
+        value: "save"
+      }
+    }) }}
 
+    {{ button({
+      text: "Save and add another",
+      classes: "nhsuk-button--secondary",
+      attributes: {
+        name: "action",
+        value: "save-and-add"
+      }
+    }) }}
+  </div>
 
-  {% include "screening-cannot-proceed-link.njk" %}
+  {# Only show link if this is a previously saved symptom #}
+  {% if event.symptomTemp.id %}
+    <p class="nhsuk-u-margin-top-4">
+      <a href="./delete/{{ event.symptomTemp.id }}" class="nhsuk-link app-link--warning">
+        Delete this symptom
+      </a>
+    </p>
+  {% endif %}
+  {# {% include "screening-cannot-proceed-link.njk" %} #}
 
 {% endblock %}
 

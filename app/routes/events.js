@@ -4,6 +4,7 @@ const dayjs = require('dayjs')
 const { getFullName } = require('../lib/utils/participants')
 const { generateMammogramImages } = require('../lib/generators/mammogram-generator')
 const { getEvent, saveTempEventToEvent, updateEventStatus } = require('../lib/utils/event-data')
+const generateId = require('../lib/utils/id-generator')
 
 /**
  * Get single event and its related data
@@ -156,9 +157,146 @@ module.exports = router => {
 
   })
 
+  // Save symptom - handles both 'save' and 'save and add another' with data cleanup
+  router.post('/clinics/:clinicId/events/:eventId/medical-information/symptoms/save', (req, res) => {
+    const { clinicId, eventId } = req.params
+    const data = req.session.data
+    const action = req.body.action // 'save' or 'save-and-add'
+
+    // Save temp symptom to array
+    if (data.event?.symptomTemp) {
+      if (!data.event.symptoms) {
+        data.event.symptoms = []
+      }
+
+      const symptomTemp = data.event.symptomTemp
+      const symptomType = symptomTemp.type
+
+      // Start with base symptom data
+      const symptom = {
+        id: symptomTemp.id || generateId(),
+        type: symptomType,
+        isOngoing: symptomTemp.isOngoing,
+        hasBeenInvestigated: symptomTemp.hasBeenInvestigated,
+        additionalInfo: symptomTemp.additionalInfo
+      }
+
+      // Add investigation details if investigated
+      if (symptomTemp.hasBeenInvestigated === 'yes') {
+        symptom.investigatedDescription = symptomTemp.investigatedDescription
+      }
+
+      // Handle dates - combine ongoing/not ongoing into single approxStartDate
+      if (symptomTemp.isOngoing === 'yes' && symptomTemp.ongoingStartDate) {
+        symptom.approxStartDate = symptomTemp.ongoingStartDate
+      } else if (symptomTemp.isOngoing === 'no') {
+        if (symptomTemp.notOngoingStartDate) {
+          symptom.approxStartDate = symptomTemp.notOngoingStartDate
+        }
+        if (symptomTemp.approxEndDate) {
+          symptom.approxEndDate = symptomTemp.approxEndDate
+        }
+      }
+
+      // Handle type-specific fields
+      if (symptomType === 'Other') {
+        symptom.otherDescription = symptomTemp.otherDescription
+        // Add location for Other symptoms
+        if (symptomTemp.location) {
+          symptom.location = symptomTemp.location
+          if (symptomTemp.location === 'other') {
+            symptom.otherLocationDescription = symptomTemp.otherDescription
+          }
+        }
+      } else if (symptomType === 'Nipple change') {
+        symptom.nippleChangeType = symptomTemp.nippleChangeType
+        symptom.nippleChangeLocation = symptomTemp.nippleChangeLocation
+        if (symptomTemp.nippleChangeType === 'other') {
+          symptom.nippleChangeDescription = symptomTemp.nippleChangeDescription
+        }
+      } else if (symptomType === 'Skin change') {
+        symptom.skinChangeType = symptomTemp.skinChangeType
+        symptom.location = symptomTemp.location
+        if (symptomTemp.skinChangeType === 'other') {
+          symptom.skinChangeDescription = symptomTemp.skinChangeDescription
+        }
+        // Add location descriptions
+        if (symptomTemp.location === 'rightBreast') {
+          symptom.rightBreastDescription = symptomTemp.rightBreastDescription
+        } else if (symptomTemp.location === 'leftBreast') {
+          symptom.leftBreastDescription = symptomTemp.leftBreastDescription
+        } else if (symptomTemp.location === 'bothBreasts') {
+          symptom.bothBreastsDescription = symptomTemp.bothBreastsDescription
+        } else if (symptomTemp.location === 'other') {
+          symptom.otherLocationDescription = symptomTemp.otherDescription
+        }
+      } else {
+        // For other symptom types (Breast lump, Swelling, Persistent pain)
+        symptom.location = symptomTemp.location
+        // Add location descriptions
+        if (symptomTemp.location === 'rightBreast') {
+          symptom.rightBreastDescription = symptomTemp.rightBreastDescription
+        } else if (symptomTemp.location === 'leftBreast') {
+          symptom.leftBreastDescription = symptomTemp.leftBreastDescription
+        } else if (symptomTemp.location === 'bothBreasts') {
+          symptom.bothBreastsDescription = symptomTemp.bothBreastsDescription
+        } else if (symptomTemp.location === 'other') {
+          symptom.otherLocationDescription = symptomTemp.otherDescription
+        }
+      }
+
+      // Update existing or add new
+      const existingIndex = data.event.symptoms.findIndex(s => s.id === symptom.id)
+      if (existingIndex !== -1) {
+        data.event.symptoms[existingIndex] = symptom
+      } else {
+        data.event.symptoms.push(symptom)
+      }
+
+      delete data.event.symptomTemp
+    }
+
+    // Redirect based on action
+    if (action === 'save-and-add') {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/add`)
+    } else {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/record-medical-information`)
+    }
+  })
+
+  // Edit existing symptom
+  router.get('/clinics/:clinicId/events/:eventId/medical-information/symptoms/edit/:symptomId', (req, res) => {
+    const { clinicId, eventId, symptomId } = req.params
+    const data = req.session.data
+
+    // Load symptom into temp for editing
+    const symptom = data.event?.symptoms?.find(s => s.id === symptomId)
+    if (symptom) {
+      data.event.symptomTemp = { ...symptom }
+    }
+
+    // Go directly to details page since we already know the type
+    res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/details`)
+  })
+
+  // Delete symptom
+  router.get('/clinics/:clinicId/events/:eventId/medical-information/symptoms/delete/:symptomId', (req, res) => {
+    const { clinicId, eventId, symptomId } = req.params
+    const data = req.session.data
+
+    // Remove symptom from array
+    if (data.event?.symptoms) {
+      data.event.symptoms = data.event.symptoms.filter(s => s.id !== symptomId)
+    }
+
+    req.flash('success', 'Symptom deleted')
+
+    res.redirect(`/clinics/${clinicId}/events/${eventId}/record-medical-information`)
+  })
+
   // Main route in to starting an event - used to clear any temp data
   router.get('/clinics/:clinicId/events/:eventId/medical-information/symptoms/add', (req, res) => {
-    delete req.session.data.event.symptomsTemp
+    delete req.session.data.event.symptomTemp
     res.redirect(`/clinics/${req.params.clinicId}/events/${req.params.eventId}/medical-information/symptoms/type`)
   })
 

@@ -1,3 +1,4 @@
+{# app/views/events/mammography/record-medical-information.html #}
 
 {% extends 'layout-app.html' %}
 
@@ -30,7 +31,7 @@
   {% set taskStatus = {} %}
   {% set valueHtml = "" %}
 
-
+{{ event | log("Event") }}
 
 {% set valueHtml = null %}
 
@@ -124,23 +125,6 @@
               }
             ]
           }
-        },
-        {
-          key: {
-            text: "Recent breast changes or symptoms"
-          },
-          value: {
-            html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "./medical-information/symptoms/add",
-                text: "Add",
-                visuallyHiddenText: "recent breast changes or symptoms"
-              }
-            ]
-          }
         }
       ]
     } | showMissingInformationLink) }}
@@ -152,6 +136,8 @@
     feature: false,
     descriptionHtml: medicalInformationCardHtml
   }) }}
+
+  {% include "symptoms-card.njk" %}
 
   {% set hrtHtml %}
     {% set hrtData = event.medicalInformation.hrt %}

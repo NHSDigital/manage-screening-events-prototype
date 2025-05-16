@@ -1,0 +1,99 @@
+{# /app/views/_includes/summary-lists/event-symptoms.njk #}
+
+{% if event.symptoms and event.symptoms.length > 0 %}
+  {% set rows = [] %}
+
+  {% for symptom in event.symptoms %}
+    {% set symptomHtml %}
+      {# Display symptom details based on type #}
+      {% if symptom.type == "Nipple change" and symptom.nippleChangeType %}
+        {{ symptom.nippleChangeType | replace('_', ' ') | sentenceCase }}
+        {% if symptom.nippleChangeDescription %}
+          - {{ symptom.nippleChangeDescription }}
+        {% endif %}
+      {% elseif symptom.type == "Skin change" and symptom.skinChangeType %}
+        {{ symptom.skinChangeType | replace('_', ' ') | sentenceCase }}
+        {% if symptom.skinChangeDescription %}
+          - {{ symptom.skinChangeDescription }}
+        {% endif %}
+      {% elseif symptom.type == "Other" and symptom.otherDescription %}
+        {{ symptom.otherDescription }}
+      {% else %}
+        {{ symptom.type }}
+      {% endif %}
+
+      {# Show location #}
+      {% if symptom.location %}
+        {% if symptom.location == "rightBreast" %}
+          <br>Right breast
+          {% if symptom.rightBreastDescription %} - {{ symptom.rightBreastDescription }}{% endif %}
+        {% elseif symptom.location == "leftBreast" %}
+          <br>Left breast
+          {% if symptom.leftBreastDescription %} - {{ symptom.leftBreastDescription }}{% endif %}
+        {% elseif symptom.location == "bothBreasts" %}
+          <br>Both breasts
+          {% if symptom.bothBreastsDescription %} - {{ symptom.bothBreastsDescription }}{% endif %}
+        {% elseif symptom.location == "other" %}
+          <br>{{ symptom.otherLocationDescription or "Other location" }}
+        {% endif %}
+      {% elseif symptom.nippleChangeLocation %}
+        {% if symptom.nippleChangeLocation == "rightNipple" %}
+          <br>Right nipple
+        {% elseif symptom.nippleChangeLocation == "leftNipple" %}
+          <br>Left nipple
+        {% elseif symptom.nippleChangeLocation == "bothNipples" %}
+          <br>Both nipples
+        {% endif %}
+      {% endif %}
+
+      {# Show duration #}
+      <br>
+      {% if symptom.isOngoing == "yes" %}
+        Ongoing since {{ symptom.approxStartDate.month }}/{{ symptom.approxStartDate.year }}
+      {% elseif symptom.isOngoing == "no" %}
+        {{ symptom.approxStartDate.month }}/{{ symptom.approxStartDate.year }} to {{ symptom.approxEndDate.month }}/{{ symptom.approxEndDate.year }}
+      {% endif %}
+
+      {# Show investigation status #}
+      {% if symptom.hasBeenInvestigated == "yes" %}
+        <p class="app-text-grey nhsuk-u-margin-top-2 nhsuk-u-margin-bottom-0">
+          Previously investigated: {{ symptom.investigatedDescription }}
+        </p>
+      {% else %}
+        <p class="app-text-grey nhsuk-u-margin-top-2 nhsuk-u-margin-bottom-0">
+          Has not been investigated
+        </p>
+      {% endif %}
+
+      {# Show additional info if present #}
+      {% if symptom.additionalInfo %}
+        <p class="app-text-grey nhsuk-u-margin-top-1 nhsuk-u-margin-bottom-0">
+          {{ symptom.additionalInfo }}
+        </p>
+      {% endif %}
+    {% endset %}
+
+    {% set rows = rows | push({
+      key: {
+        text: symptom.type
+      },
+      value: {
+        html: symptomHtml | trim
+      },
+      actions: {
+        items: [
+          {
+            href: "./medical-information/symptoms/edit/" + symptom.id,
+            text: "Change",
+            visuallyHiddenText: symptom.type | lower
+          }
+        ]
+      },
+      classes: "nhsuk-summary-list--no-border" if loop.last
+    }) %}
+  {% endfor %}
+
+  {{ summaryList({
+    rows: rows
+  }) }}
+{% endif %}
