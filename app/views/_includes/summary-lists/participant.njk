@@ -75,7 +75,9 @@
         {% endif %}
 
         {# Location #}
-        {% if previousMammogram.location == "bsu" %}
+        {% if previousMammogram.location == "currentBsu" %}
+          {{ unit.name }}</br>
+        {% elseif previousMammogram.location == "bsu" %}
           {{ previousMammogram.bsu }}</br>
         {% elseif previousMammogram.location == "otherUk" %}
           {{ previousMammogram.otherUk | nl2br | safe }}</br>
@@ -85,7 +87,7 @@
 
         {# Changed name #}
         {% if previousMammogram.sameName == "differentName" %}
-          Taken under the name {{ previousMammogram.previousName }}</br>
+          Taken under the name: {{ previousMammogram.previousName }}</br>
         {% endif %}
 
         {# Additional information #}
