@@ -1,7 +1,10 @@
 // app/data/session-data-defaults.js
 
 const users = require('./users')
+// Used to simulate in prototype
 const breastScreeningUnits = require('./breast-screening-units')
+// All breast screening units
+const allBreastScreeningUnits = require('./all-breast-screening-units')
 const path = require('path')
 const fs = require('fs')
 const { needsRegeneration } = require('../lib/utils/regenerate-data')
@@ -67,6 +70,7 @@ module.exports = {
   users,
   currentUser: users[0],
   breastScreeningUnits,
+  allBreastScreeningUnits,
   participants,
   clinics,
   events,

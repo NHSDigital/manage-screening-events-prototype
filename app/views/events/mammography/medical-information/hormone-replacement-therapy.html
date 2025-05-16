@@ -30,11 +30,10 @@
     {{ pageHeading }}
   </h1> #}
 
-  {{ data | log }}
-
   {% set currentlyTakingHtml %}
-
     {{ input({
+      name: "event[medicalInformation][hrt][hrtDuration]",
+      value: event.medicalInformation.hrt.hrtDuration,
       label: {
         text: "How long have they been taking HRT?"
       },
@@ -42,13 +41,15 @@
       hint: {
         text: "For example, 2 years, 6 months"
       }
-    } | decorateAttributes(data, "eventTemp.hrt.hrtDuration" )) }}
+    }) }}
 
   {% endset %}
 
   {% set recentlyStoppedHtml %}
 
   {{ input({
+    name: "event[medicalInformation][hrt][hrtDurationSinceStopped]",
+    value: event.medicalInformation.hrt.hrtDurationSinceStopped,
     label: {
       text: "How long since they stopped taking HRT?"
     },
@@ -56,9 +57,11 @@
     hint: {
       text: "For example, 3 months"
     }
-  } | decorateAttributes(data, "eventTemp.hrt.hrtDurationSinceStopped" )) }}
+  }) }}
 
   {{ input({
+    name: "event[medicalInformation][hrt][hrtDurationBeforeStopping]",
+    value: event.medicalInformation.hrt.hrtDurationBeforeStopping,
     label: {
       text: "How long did they take HRT for?"
     },
@@ -66,11 +69,14 @@
     hint: {
       text: "For example, 5 years"
     }
-  } | decorateAttributes(data, "eventTemp.hrt.hrtDurationBeforeStopping" )) }}
+  }) }}
 
 {% endset %}
 
   {{ radios({
+    name: "event[medicalInformation][hrt][hrtQuestion]",
+    idPrefix: "hrtQuestion",
+    value: event.medicalInformation.hrt.hrtQuestion,
     fieldset: {
       legend: {
         text: pageHeading,
@@ -98,7 +104,7 @@
       text: "No"
     }
   ]
-  } | decorateAttributes(data, "eventTemp.hrt.hrtQuestion" )) }}
+  }) }}
 
 
   {{ button({

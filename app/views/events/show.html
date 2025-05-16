@@ -296,12 +296,12 @@ Before you proceed, check the participant’s identity and confirm that their la
 {% endset %}
 
   {% set screeningHtml %}
-    <form action="./{{eventId}}/start" method="post">
+    <form action="./{{eventId}}/can-appointment-go-ahead-answer" method="post">
       <div class="nhsuk-grid-row">
         <div class="nhsuk-grid-column-two-thirds">
           {{ radios({
-            idPrefix: "beginScreening",
-            name: "beginScreening",
+            name: "event[appointment][canAppointmentGoAhead]",
+            idPrefix: "canAppointmentGoAhead",
             fieldset: {
               legend: {
                 text: "Can the appointment go ahead?",
@@ -309,9 +309,10 @@ Before you proceed, check the participant’s identity and confirm that their la
                 isPageHeading: false
               }
             },
-              hint: {
-                text: screeningHint
-              },
+            hint: {
+              text: screeningHint
+            },
+            value: event.appointment.canAppointmentGoAhead,
             items: [
               {
                 value: "yes",
@@ -325,22 +326,6 @@ Before you proceed, check the participant’s identity and confirm that their la
           }) }}
         </div>
       </div>
-
-
-      {#
-      ,
-          {
-            value: "no-identity",
-            text: "No, I cannot confirm the participant’s identity"
-          },
-          {
-            value: "no-recent-mammogram",
-            text: "No, their last mammogram is too recent"
-          },
-          {
-            value: "no-other-reason",
-            text: "No, for a different reason"
-          } #}
 
       {{ button({
         text: "Continue"

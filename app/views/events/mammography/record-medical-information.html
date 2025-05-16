@@ -1,3 +1,4 @@
+{# app/views/events/mammography/record-medical-information.html #}
 
 {% extends 'layout-app.html' %}
 
@@ -30,7 +31,7 @@
   {% set taskStatus = {} %}
   {% set valueHtml = "" %}
 
-  {{ query.taskStatus | log }}
+{{ event | log("Event") }}
 
 {% set valueHtml = null %}
 
@@ -124,23 +125,6 @@
               }
             ]
           }
-        },
-        {
-          key: {
-            text: "Recent breast changes or symptoms"
-          },
-          value: {
-            html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "recent breast changes or symptoms"
-              }
-            ]
-          }
         }
       ]
     } | showMissingInformationLink) }}
@@ -153,24 +137,29 @@
     descriptionHtml: medicalInformationCardHtml
   }) }}
 
-  {{ data.eventTemp | log("eventTemp")}}
+  {% include "symptoms-card.njk" %}
 
   {% set hrtHtml %}
-    {% if data.eventTemp.hrt %}
-      {% if data.eventTemp.hrt.hrtQuestion == 'yes' %}
+    {% set hrtData = event.medicalInformation.hrt %}
+
+    {% if hrtData %}
+      {% if hrtData.hrtQuestion == 'yes' %}
         <p>
           Currently taking HRT
         </p>
         <p>
-          Duration taken: {{ data.eventTemp.hrt.hrtDuration }}
+          {# Example: "Duration taken: 3 months" #}
+          Duration taken: {{ hrtData.hrtDuration }}
         </p>
-      {% elseif data.eventTemp.hrt.hrtQuestion == 'no-recently-stopped' %}
+      {% elseif hrtData.hrtQuestion == 'no-recently-stopped' %}
         <p>
           Recently stopped taking HRT
         </p>
-        Stopped: {{ data.eventTemp.hrt.hrtDurationSinceStopped }} ago<br>
-        Duration taken: {{ data.eventTemp.hrt.hrtDurationBeforeStopping }}
-      {% elseif data.eventTemp.hrt.hrtQuestion == 'no' %}
+        <p>
+          Stopped: {{ hrtData.hrtDurationSinceStopped }} ago<br>
+          Duration taken: {{ hrtData.hrtDurationBeforeStopping }}
+        </p>
+      {% elseif hrtData.hrtQuestion == 'no' %}
         Not taking HRT
       {% else %}
         No information provided
@@ -247,8 +236,8 @@
 
 
 {{ radios({
-  idPrefix: "example",
-  name: "imagingCanProceed",
+  idPrefix: "imagingCanProceed",
+  name: "event[appointment][imagingCanProceed]",
   fieldset: {
     legend: {
       text: "Can imaging go ahead?",
@@ -256,6 +245,7 @@
       isPageHeading: false
     }
   },
+  value: event.appointment.imagingCanProceed,
   items: [
     {
       value: "yes",
