@@ -221,11 +221,11 @@ module.exports = router => {
           symptom.skinChangeDescription = symptomTemp.skinChangeDescription
         }
         // Add location descriptions
-        if (symptomTemp.location === 'rightBreast') {
+        if (symptomTemp.location === 'right breast') {
           symptom.rightBreastDescription = symptomTemp.rightBreastDescription
-        } else if (symptomTemp.location === 'leftBreast') {
+        } else if (symptomTemp.location === 'left breast') {
           symptom.leftBreastDescription = symptomTemp.leftBreastDescription
-        } else if (symptomTemp.location === 'bothBreasts') {
+        } else if (symptomTemp.location === 'both breasts') {
           symptom.bothBreastsDescription = symptomTemp.bothBreastsDescription
         } else if (symptomTemp.location === 'other') {
           symptom.otherLocationDescription = symptomTemp.otherDescription
@@ -234,11 +234,11 @@ module.exports = router => {
         // For other symptom types (Breast lump, Swelling, Persistent pain)
         symptom.location = symptomTemp.location
         // Add location descriptions
-        if (symptomTemp.location === 'rightBreast') {
+        if (symptomTemp.location === 'right breast') {
           symptom.rightBreastDescription = symptomTemp.rightBreastDescription
-        } else if (symptomTemp.location === 'leftBreast') {
+        } else if (symptomTemp.location === 'left breast') {
           symptom.leftBreastDescription = symptomTemp.leftBreastDescription
-        } else if (symptomTemp.location === 'bothBreasts') {
+        } else if (symptomTemp.location === 'both breasts') {
           symptom.bothBreastsDescription = symptomTemp.bothBreastsDescription
         } else if (symptomTemp.location === 'other') {
           symptom.otherLocationDescription = symptomTemp.otherDescription

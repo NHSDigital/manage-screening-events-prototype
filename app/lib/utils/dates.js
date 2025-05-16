@@ -93,6 +93,54 @@ const formatDateShort = (dateString) => {
 }
 
 /**
+ * Format a month/year to a readable string
+ * @param {string|Array|Object|Date} input - ISO date string, [month, year] array, {month, year} object, or Date object
+ * @param {string} format - Optional format string (default: 'MMMM YYYY')
+ * @returns {string} Formatted month/year string
+ */
+const formatMonthYear = (input, format = 'MMMM YYYY') => {
+  if (!input) return ''
+
+  let month, year
+
+  // Handle different input types
+  if (Array.isArray(input)) {
+    if (input.length === 2) {
+      // [month, year] format
+      [month, year] = input
+    } else if (input.length === 3) {
+      // [day, month, year] format - ignore day
+      [, month, year] = input
+    } else {
+      return ''
+    }
+  } else if (typeof input === 'object' && input !== null && !(input instanceof Date)) {
+    // Handle {month, year} object
+    month = input.month
+    year = input.year
+  } else {
+    // Handle ISO date string or Date object
+    const date = dayjs(input)
+    month = date.month() + 1 // dayjs months are 0-based
+    year = date.year()
+  }
+
+  // Validate that we have month and year
+  if (!month || !year) return ''
+
+  // Convert to numbers if they're strings
+  month = parseInt(month, 10)
+  year = parseInt(year, 10)
+
+  // Basic validation
+  if (isNaN(month) || isNaN(year)) return ''
+
+  // Create a dayjs object with the 1st of the month
+  // dayjs expects month to be 0-based, so subtract 1
+  return dayjs().year(year).month(month - 1).date(1).format(format)
+}
+
+/**
  * Format a time in UK format
  * @param {string} dateString - ISO date string
  * @param {string} format - Optional format string
@@ -374,6 +422,7 @@ const remove = (dateInput, amount, unit) => {
 module.exports = {
   formatDate,
   formatDateShort,
+  formatMonthYear,
   formatTime,
   formatTimeString,
   formatTimeRange,

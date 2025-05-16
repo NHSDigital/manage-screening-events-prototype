@@ -5,77 +5,98 @@
 
   {% for symptom in event.symptoms %}
     {% set symptomHtml %}
-      {# Display symptom details based on type #}
+      {# Start with an array to build content, then join with <br> #}
+      {% set contentLines = [] %}
+
+      {# Add symptom-specific details #}
       {% if symptom.type == "Nipple change" and symptom.nippleChangeType %}
-        {{ symptom.nippleChangeType | replace('_', ' ') | sentenceCase }}
-        {% if symptom.nippleChangeDescription %}
-          - {{ symptom.nippleChangeDescription }}
+        {% set line = symptom.nippleChangeType | sentenceCase %}
+        {% if symptom.nippleChangeType == "other" and symptom.nippleChangeDescription %}
+          {% set line = line + " - " + symptom.nippleChangeDescription %}
         {% endif %}
+        {% set contentLines = contentLines | push(line) %}
       {% elseif symptom.type == "Skin change" and symptom.skinChangeType %}
-        {{ symptom.skinChangeType | replace('_', ' ') | sentenceCase }}
-        {% if symptom.skinChangeDescription %}
-          - {{ symptom.skinChangeDescription }}
+        {% set line = symptom.skinChangeType | sentenceCase %}
+        {% if symptom.skinChangeType == "other" and symptom.skinChangeDescription %}
+          {% set line = line + " - " + symptom.skinChangeDescription %}
         {% endif %}
+        {% set contentLines = contentLines | push(line) %}
       {% elseif symptom.type == "Other" and symptom.otherDescription %}
-        {{ symptom.otherDescription }}
-      {% else %}
-        {{ symptom.type }}
+        {% set contentLines = contentLines | push(symptom.otherDescription) %}
       {% endif %}
 
-      {# Show location #}
-      {% if symptom.location %}
-        {% if symptom.location == "rightBreast" %}
-          <br>Right breast
-          {% if symptom.rightBreastDescription %} - {{ symptom.rightBreastDescription }}{% endif %}
-        {% elseif symptom.location == "leftBreast" %}
-          <br>Left breast
-          {% if symptom.leftBreastDescription %} - {{ symptom.leftBreastDescription }}{% endif %}
-        {% elseif symptom.location == "bothBreasts" %}
-          <br>Both breasts
-          {% if symptom.bothBreastsDescription %} - {{ symptom.bothBreastsDescription }}{% endif %}
-        {% elseif symptom.location == "other" %}
-          <br>{{ symptom.otherLocationDescription or "Other location" }}
-        {% endif %}
-      {% elseif symptom.nippleChangeLocation %}
-        {% if symptom.nippleChangeLocation == "rightNipple" %}
-          <br>Right nipple
-        {% elseif symptom.nippleChangeLocation == "leftNipple" %}
-          <br>Left nipple
-        {% elseif symptom.nippleChangeLocation == "bothNipples" %}
-          <br>Both nipples
+      {# Add area description if it adds meaningful info beyond the key #}
+      {% if symptom.location == "right breast" and symptom.rightBreastDescription %}
+        {% set contentLines = contentLines | push(symptom.rightBreastDescription | sentenceCase) %}
+      {% elseif symptom.location == "left breast" and symptom.leftBreastDescription %}
+        {% set contentLines = contentLines | push(symptom.leftBreastDescription | sentenceCase) %}
+      {% elseif symptom.location == "both breasts" and symptom.bothBreastsDescription %}
+        {% set contentLines = contentLines | push(symptom.bothBreastsDescription | sentenceCase) %}
+      {% endif %}
+
+      {# Add duration #}
+      {% if symptom.approxStartDate %}
+        {% if symptom.isOngoing == "yes" %}
+          {% set contentLines = contentLines | push("Ongoing since " + (symptom.approxStartDate | formatMonthYear)) %}
+        {% elseif symptom.isOngoing == "no" and symptom.approxEndDate %}
+          {% set contentLines = contentLines | push((symptom.approxStartDate | formatMonthYear) + " to " + (symptom.approxEndDate | formatMonthYear)) %}
         {% endif %}
       {% endif %}
 
-      {# Show duration #}
-      <br>
-      {% if symptom.isOngoing == "yes" %}
-        Ongoing since {{ symptom.approxStartDate.month }}/{{ symptom.approxStartDate.year }}
-      {% elseif symptom.isOngoing == "no" %}
-        {{ symptom.approxStartDate.month }}/{{ symptom.approxStartDate.year }} to {{ symptom.approxEndDate.month }}/{{ symptom.approxEndDate.year }}
-      {% endif %}
+      {# Join content lines with <br> #}
+      {{ contentLines | join('<br>') | safe }}
 
-      {# Show investigation status #}
-      {% if symptom.hasBeenInvestigated == "yes" %}
+      {# Add investigation status #}
+      {% if symptom.hasBeenInvestigated == "yes" and symptom.investigatedDescription %}
         <p class="app-text-grey nhsuk-u-margin-top-2 nhsuk-u-margin-bottom-0">
           Previously investigated: {{ symptom.investigatedDescription }}
         </p>
-      {% else %}
+      {% elseif symptom.hasBeenInvestigated == "no" %}
         <p class="app-text-grey nhsuk-u-margin-top-2 nhsuk-u-margin-bottom-0">
           Has not been investigated
         </p>
       {% endif %}
 
-      {# Show additional info if present #}
+      {# Add additional info if present #}
       {% if symptom.additionalInfo %}
         <p class="app-text-grey nhsuk-u-margin-top-1 nhsuk-u-margin-bottom-0">
-          {{ symptom.additionalInfo }}
+          Additional info: {{ symptom.additionalInfo }}
         </p>
+      {% endif %}
+    {% endset %}
+
+    {# Generate key with location for most symptoms #}
+    {% set keyText %}
+      {% if symptom.nippleChangeLocation %}
+        {% if symptom.nippleChangeLocation == "right nipple" %}
+          {{ symptom.type }} on right nipple
+        {% elseif symptom.nippleChangeLocation == "left nipple" %}
+          {{ symptom.type }} on left nipple
+        {% elseif symptom.nippleChangeLocation == "both nipples" %}
+          {{ symptom.type }} on both nipples
+        {% else %}
+          {{ symptom.type }}
+        {% endif %}
+      {% elseif symptom.location %}
+        {% if symptom.location == "right breast" %}
+          {{ symptom.type }} on right breast
+        {% elseif symptom.location == "left breast" %}
+          {{ symptom.type }} on left breast
+        {% elseif symptom.location == "both breasts" %}
+          {{ symptom.type }} on both breasts
+        {% elseif symptom.location == "other" %}
+          {{ symptom.type }} on {{ symptom.otherLocationDescription | lower or "other area" }}
+        {% else %}
+          {{ symptom.type }}
+        {% endif %}
+      {% else %}
+        {{ symptom.type }}
       {% endif %}
     {% endset %}
 
     {% set rows = rows | push({
       key: {
-        text: symptom.type
+        text: keyText | trim
       },
       value: {
         html: symptomHtml | trim

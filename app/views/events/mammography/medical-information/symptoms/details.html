@@ -66,7 +66,7 @@
           text: "Discharge"
         },
         {
-          value: "inversionOrShapeChange",
+          value: "inversion or shape change",
           text: "Inversion or shape change"
         },
         {
@@ -74,7 +74,7 @@
           text: "Rash"
         },
         {
-          value: "colourChange",
+          value: "colour change",
           text: "Colour change"
         },
         {
@@ -108,7 +108,7 @@
       },
       items: [
         {
-          value: "dimplesOrIndentation",
+          value: "dimples or indentation",
           text: "Dimples or indentation"
         },
         {
@@ -116,7 +116,7 @@
           text: "Rash"
         },
         {
-          value: "colourChange",
+          value: "colour change",
           text: "Colour change"
         },
         {
@@ -143,7 +143,7 @@
   {% if event.symptomTemp.type == "Nipple change" %}
     {{ radios({
       idPrefix: "nippleChangeLocation",
-      name: "event[symptomTemp][nippleChangeLocation",
+      name: "event[symptomTemp][nippleChangeLocation]",
       value: event.symptomTemp.nippleChangeLocation,
       fieldset: {
         legend: {
@@ -154,15 +154,15 @@
       },
       items: [
         {
-          value: "rightNipple",
+          value: "right nipple",
           text: "Right nipple"
         },
         {
-          value: "leftNipple",
+          value: "left nipple",
           text: "Left nipple"
         },
         {
-          value: "bothNipples",
+          value: "both nipples",
           text: "Both nipples"
         }
       ]
@@ -191,7 +191,7 @@
       },
       items: [
         {
-          value: "rightBreast",
+          value: "right breast",
           text: "Right breast",
           conditional: {
             html: input({
@@ -205,7 +205,7 @@
           }
         },
         {
-          value: "leftBreast",
+          value: "left breast",
           text: "Left breast",
           conditional: {
             html: input({
@@ -219,7 +219,7 @@
           }
         },
         {
-          value: "bothBreasts",
+          value: "both breasts",
           text: "Both breasts",
           conditional: {
             html: input({
@@ -267,7 +267,6 @@
           isPageHeading: false
         }
       },
-      value: event.symptomTemp.approxStartDate,
       hint: {
         text: "For example, " + today() | remove(3, "months") | formatDate("M YYYY")
       },
@@ -297,7 +296,6 @@
         isPageHeading: false
       }
     },
-    value: event.symptomTemp.approxStartDate,
     hint: {
       text: "For example, " + today() | remove(9, "months") | formatDate("M YYYY")
     },
@@ -325,7 +323,6 @@
         isPageHeading: false
       }
     },
-    value: event.symptomTemp.approxStartDate,
     hint: {
       text: "For example, " + today() | remove(1, "weeks") | formatDate("M YYYY")
     },
