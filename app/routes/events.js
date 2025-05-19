@@ -143,19 +143,105 @@ module.exports = router => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
     const previousMammogram = data.event?.previousMammogramTemp
-    delete data.event?.previousMammogramTemp
+    const action = req.body.action
 
-    // Push to event.previousMammograms
-    if (!data.event.previousMammograms) {
-      data.event.previousMammograms = []
+    // Check if this is coming from "proceed anyway" page
+    if (action === 'proceed-anyway') {
+      // Validate that a reason was provided
+      if (!previousMammogram?.overrideReason) {
+        // Set error in flash and redirect back to proceed-anyway page
+        req.flash('error', {
+          text: 'Enter a reason for proceeding with this appointment',
+          name: 'event_previousMammogramTemp_overrideReason'
+        })
+        return res.redirect(`/clinics/${clinicId}/events/${eventId}/previous-mammograms/proceed-anyway`)
+      }
+
+      // Save the mammogram with override flag and reason
+      if (!data.event.previousMammograms) {
+        data.event.previousMammograms = []
+      }
+
+      data.event.previousMammograms.push({
+        ...previousMammogram,
+        warningOverridden: true
+      })
+
+      delete data.event?.previousMammogramTemp
+      return res.redirect(`/clinics/${clinicId}/events/${eventId}`)
     }
+
+    // Check if this is a recent mammogram (within 6 months)
+    const isRecentMammogram = checkIfRecentMammogram(previousMammogram)
+
+    // If recent mammogram detected and not already coming from warning page
+    if (isRecentMammogram && action !== 'continue') {
+      return res.redirect(`/clinics/${clinicId}/events/${eventId}/previous-mammograms/appointment-should-not-proceed`)
+    }
+
+    // Normal flow - save the mammogram
     if (previousMammogram) {
+      if (!data.event.previousMammograms) {
+        data.event.previousMammograms = []
+      }
       data.event.previousMammograms.push(previousMammogram)
     }
 
-    res.redirect(`/clinics/${clinicId}/events/${eventId}`)
+    delete data.event?.previousMammogramTemp
 
+    // If user clicked "continue" on warning page, start the appointment cancellation flow
+    if (action === 'continue') {
+      // Set stopping reason for the appointment
+      if (!data.event.appointmentStopped) {
+        data.event.appointmentStopped = {}
+      }
+      data.event.appointmentStopped.stoppedReason = 'recent_mammogram'
+      data.event.appointmentStopped.needsReschedule = 'no' // Default to no reschedule needed
+
+      return res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
+    }
+
+    res.redirect(`/clinics/${clinicId}/events/${eventId}`)
   })
+
+  // Helper function to check if mammogram was taken within the last 6 months
+  function checkIfRecentMammogram(mammogram) {
+    if (!mammogram) return false
+
+    const now = dayjs()
+    const sixMonthsAgo = now.subtract(6, 'month')
+
+    // Check based on date type
+    if (mammogram.dateType === 'dateKnown' && mammogram.dateTaken) {
+      const date = mammogram.dateTaken
+      if (date.year && date.month && date.day) {
+        const mammogramDate = dayjs(`${date.year}-${date.month}-${date.day}`)
+        return mammogramDate.isAfter(sixMonthsAgo)
+      }
+    } else if (mammogram.dateType === 'approximateDate' && mammogram.approximateDate) {
+      // Try to parse approximate date text
+      const approxText = mammogram.approximateDate.toLowerCase()
+
+      // Check for common time patterns that would indicate recent mammogram
+      if (
+        approxText.includes('month ago') ||
+        approxText.includes('1 month') ||
+        approxText.includes('2 month') ||
+        approxText.includes('3 month') ||
+        approxText.includes('4 month') ||
+        approxText.includes('5 month') ||
+        approxText.includes('last month') ||
+        approxText.includes('weeks ago') ||
+        approxText.includes('few weeks') ||
+        approxText.includes('last week') ||
+        approxText.includes('days ago')
+      ) {
+        return true
+      }
+    }
+
+    return false
+  }
 
   // Save symptom - handles both 'save' and 'save and add another' with data cleanup
   router.post('/clinics/:clinicId/events/:eventId/medical-information/symptoms/save', (req, res) => {
@@ -310,6 +396,8 @@ module.exports = router => {
     'screening-complete',
     'attended-not-screened-reason',
     'previous-mammograms/edit',
+    'previous-mammograms/appointment-should-not-proceed',
+    'previous-mammograms/proceed-anyway',
     'medical-information/symptoms/type',
     'medical-information/symptoms/details',
   ]
@@ -442,7 +530,7 @@ module.exports = router => {
     updateEventStatus(data, eventId, 'event_attended_not_screened')
 
     const successMessage = `
-    ${participantName} has been is ‘attended not screened’. <a href="${participantEventUrl}" class="app-nowrap">View their appointment</a>`
+    ${participantName} has been ‘attended not screened’. <a href="${participantEventUrl}" class="app-nowrap">View their appointment</a>`
     req.flash('success', { wrapWithHeading: successMessage})
 
     res.redirect(`/clinics/${clinicId}/`)

@@ -71,7 +71,12 @@
         {% elseif previousMammogram.dateType == 'approximateDate' %}
           Approximate date: {{ previousMammogram.approximateDate }}</br>
         {% else %}
-          Date not known</br>
+          Date unknown</br>
+        {% endif %}
+
+        {# Previous mammogram was less than 6 months and we are force-proceeding #}
+        {% if previousMammogram.overrideReason %}
+          Reason for continuing with mammograms: {{ previousMammogram.overrideReason }}
         {% endif %}
 
         {# Location #}
@@ -80,14 +85,23 @@
         {% elseif previousMammogram.location == "bsu" %}
           {{ previousMammogram.bsu }}</br>
         {% elseif previousMammogram.location == "otherUk" %}
-          {{ previousMammogram.otherUk | nl2br | safe }}</br>
+          In the UK: {{ previousMammogram.otherUk | nl2br | safe }}</br>
         {% elseif previousMammogram.location == "otherNonUk" %}
-          {{ previousMammogram.otherNonUk | nl2br | safe }}</br>
+          Outside the UK: {{ previousMammogram.otherNonUk | nl2br | safe }}</br>
+        {% elseif previousMammogram.location == "preferNotToSay" %}
+          Location: prefer not to say</br>
+        {% else %}
+          Unknown location</br>
+        {% endif %}
+
+        {# Previous mammogram was less than 6 months and we are force-proceeding #}
+        {% if previousMammogram.overrideReason %}
+          Reason for continuing with mammograms: {{ previousMammogram.overrideReason }}
         {% endif %}
 
         {# Changed name #}
         {% if previousMammogram.sameName == "differentName" %}
-          Taken under the name: {{ previousMammogram.previousName }}</br>
+          Previous name: {{ previousMammogram.previousName }}</br>
         {% endif %}
 
         {# Additional information #}
@@ -229,7 +243,7 @@
           } if allowEdits
         ]
       }
-   } if not isMinimalParticipant,
+   },
    {
      key: {
        text: "Email"

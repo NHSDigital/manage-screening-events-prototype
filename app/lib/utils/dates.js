@@ -420,6 +420,7 @@ const remove = (dateInput, amount, unit) => {
 }
 
 module.exports = {
+  arrayOrObjectToDateObject,
   formatDate,
   formatDateShort,
   formatMonthYear,

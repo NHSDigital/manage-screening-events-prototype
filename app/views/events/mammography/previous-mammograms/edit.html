@@ -1,3 +1,4 @@
+{# app/views/events/mammography/previous-mammograms/edit.html #}
 
 {% extends 'layout-app.html' %}
 
@@ -54,9 +55,9 @@
 
     {{ select({
       id: "bsu",
-      name: "event.previousMammogramTemp[bsu]",
+      name: "event[previousMammogramTemp][bsu]",
       label: {
-        text: "Which unit?"
+        text: "Select a unit"
       },
       items: selectItems,
       value: event.previousMammogramTemp.bsu
@@ -67,7 +68,7 @@
   {% set otherUkHtml %}
 
     {{ textarea({
-      name: "event.previousMammogramTemp[otherUk]",
+      name: "event[previousMammogramTemp][otherUk]",
       rows: "2",
       label: {
         text: "Location",
@@ -84,7 +85,7 @@
   {% set otherNonUkHtml %}
 
     {{ textarea({
-      name: "event.previousMammogramTemp[otherNonUk]",
+      name: "event[previousMammogramTemp][otherNonUk]",
       rows: "2",
       label: {
         text: "Location",
@@ -103,7 +104,7 @@
     name: "event[previousMammogramTemp][location]",
     fieldset: {
       legend: {
-        text: "Where were the mammograms taken?",
+        text: "Where were the breast x-rays taken?",
         classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }
@@ -130,10 +131,17 @@
       },
       {
         value: "otherNonUk",
-        text: "Somewhere else outside the UK",
+        text: "Outside the UK",
         conditional: {
           html: otherNonUkHtml
         }
+      },
+      {
+        divider: "or"
+      },
+      {
+        value: "preferNotToSay",
+        text: "Prefer not to say"
       }
     ]
   }) }}
@@ -144,7 +152,7 @@
       namePrefix: "event[previousMammogramTemp][dateTaken]",
       fieldset: {
         legend: {
-          text: "Mammogram taken date",
+          text: "Date of mammogram",
           classes: "nhsuk-u-visually-hidden",
           isPageHeading: false
         }
@@ -175,8 +183,8 @@
       id: "approximateDate",
       name: "event[previousMammogramTemp][approximateDate]",
       label: {
-        text: "Details",
-        _classes: "nhsuk-label--s"
+        text: "Enter an approximate date",
+        classes: "nhsuk-u-visually-hidden"
       },
       hint: {
         text: "For example, 9 months ago"
@@ -192,7 +200,7 @@
     name: "event[previousMammogramTemp][dateType]",
     fieldset: {
       legend: {
-        text: "When were the mammograms taken?",
+        text: "When were the x-rays taken?",
         classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }
@@ -201,14 +209,14 @@
     items: [
       {
         value: "dateKnown",
-        text: "Enter exact date",
+        text: "Enter an exact date",
         conditional: {
           html: dateKnownHtml
         }
       },
       {
         value: "approximateDate",
-        text: "Enter approximate date",
+        text: "Enter an approximate date",
         conditional: {
           html: approximateDateHtml
         }
@@ -273,7 +281,7 @@
     },
     value: event.previousMammogramTemp.otherDetails,
     hint: {
-      text: "For example, the reason mammograms were taken and the outcome of the assessment "
+      text: " For example, the reason for the mammograms and the outcome of the assessment"
     }
   }) }}
 
