@@ -1,0 +1,81 @@
+
+{% extends 'layout-app.html' %}
+
+
+{% set pageHeading = "Pregnancy and breastfeeding" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './../record-medical-information' %}
+
+{# {% set back = {
+  href: "/clinics/" + clinicId,
+  text: "Back to clinic"
+} %}
+ #}
+
+
+
+
+{% block pageContent %}
+
+  {{ participant | log }}
+
+  {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
+
+  {# <h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">
+      {{ participant | getFullName }}
+    </span>
+    {{ pageHeading }}
+  </h1> #}
+
+  {{ data | log }}
+
+
+  {{ radios({
+    fieldset: {
+      legend: {
+        text: pageHeading,
+        classes: "nhsuk-fieldset__legend--l",
+        isPageHeading: true
+      }
+    },
+  hint: {
+    html: '<p class="nhsuk-body">Are you currently pregnant or breastfeeding?</p>'
+  },
+    items: [
+    {
+      value: "yes",
+      text: "Yes, currently pregnant",
+      conditional: {
+        html: currentlyPregnant
+      }
+    },
+    {
+      value: "no-not-pregnant",
+      text: "No, not pregnant",
+      conditional: {
+        html: notPregnant
+      }
+    },
+    {
+      value: "recently-pregnant",
+      text: "Recently pregnant"
+    },
+    {
+      value: "currently-breastfeeding",
+      text: "Currently breastfeeding"
+    }
+  ]
+  } | decorateAttributes(data, "eventTemp.pregnancy.status" )) }}
+
+
+  {{ button({
+    text: "Continue"
+  }) }}
+
+  {% include "screening-cannot-proceed-link.njk" %}
+
+{% endblock %}
+
