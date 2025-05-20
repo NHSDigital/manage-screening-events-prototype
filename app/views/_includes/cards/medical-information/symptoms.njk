@@ -1,0 +1,27 @@
+{# /app/views/_includes/symptoms-card.njk #}
+
+{% set symptomsCardHtml %}
+  {% include "summary-lists/medical-information/symptoms.njk" %}
+
+  {% set hasSymptoms = event.medicalInformation.symptoms and event.medicalInformation.symptoms | length %}
+
+  {% if not hasSymptoms %}
+    {% set insetHtml %}
+      <p>No symptoms have been recorded for this participant.</p>
+    {% endset %}
+    {{ insetText({
+      html: insetHtml
+    }) }}
+  {% endif %}
+
+  <p class="nhsuk-u-margin-top-4 nhsuk-u-margin-bottom-0">
+    <a href="./medical-information/symptoms/add" class="nhsuk-link">{{ "Add another symptom" if hasSymptoms else "Add a symptom" }}</a>
+  </p>
+{% endset %}
+
+{{ card({
+  heading: "Recent breast changes or symptoms",
+  headingLevel: "2",
+  feature: false,
+  descriptionHtml: symptomsCardHtml
+}) }}

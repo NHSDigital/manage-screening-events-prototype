@@ -1,0 +1,69 @@
+{# app/views/events/mammography/medical-information/symptoms/type.html #}
+
+{% extends 'layout-app.html' %}
+
+
+{% set pageHeading = "What is the symptom?" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './details' %}
+
+{# {% set back = {
+  href: "/clinics/" + clinicId,
+  text: "Back to clinic"
+} %}
+ #}
+
+
+
+
+{% block pageContent %}
+
+  {{ participant | log }}
+
+  {% set symptoms = [
+    "Breast lump",
+    "Swelling or shape change",
+    "Skin change",
+    "Nipple change",
+    "Persistent pain",
+    "Other"
+  ] %}
+
+  {% set radioItems = [] %}
+
+  {% for symptom in symptoms %}
+    {% set radioItems = radioItems | push({
+      value: symptom,
+      text: symptom
+    }) %}
+  {% endfor %}
+
+
+  {{ radios({
+    name: "event[symptomTemp][type]",
+    idPrefix: "type",
+    value: event.symptomTemp.type,
+    fieldset: {
+      legend: {
+        text: pageHeading,
+        classes: "nhsuk-fieldset__legend--l",
+        isPageHeading: true
+      }
+    },
+    hint: {
+      text: "If the participant has multiple symptoms, record each one separately"
+    },
+    items: radioItems
+  }) }}
+
+
+  {{ button({
+    text: "Continue"
+  }) }}
+
+  {% include "screening-cannot-proceed-link.njk" %}
+
+{% endblock %}
+

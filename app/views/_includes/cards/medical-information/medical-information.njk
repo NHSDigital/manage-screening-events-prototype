@@ -1,0 +1,64 @@
+{% set medicalInformationCardHtml %}
+    {{ summaryList({
+      rows: [
+        {
+          key: {
+            text: "Breast cancer history"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "breast cancer history"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Non-cancerous lump disagnoses"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "non-cancerous lump disagnoses"
+              }
+            ]
+          }
+        },
+        {
+          key: {
+            text: "Other breast or chest proceedures"
+          },
+          value: {
+            html: valueHtml
+          },
+          actions: {
+            items: [
+              {
+                href: "#",
+                text: "Change",
+                visuallyHiddenText: "other breast or chest proceedures"
+              }
+            ]
+          }
+        }
+      ]
+    } | showMissingInformationLink) }}
+  {% endset %}
+
+  {{ card({
+    heading: "Medical history",
+    headingLevel: "2",
+    feature: false,
+    descriptionHtml: medicalInformationCardHtml
+  }) }}

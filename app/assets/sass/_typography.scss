@@ -19,6 +19,7 @@ h3 {
   @extend .nhsuk-link--no-visited-state;
 }
 
-.app-link--error {
+.app-link--error,
+.app-link--warning {
   color: $nhsuk-error-color;
 }
