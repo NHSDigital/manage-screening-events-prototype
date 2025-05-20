@@ -45,12 +45,11 @@
  </p>
 
  <form method="post" action="{{ formAction }}">
-   <input type="hidden" name="action" value="continue">
-   {{ button({
-     text: "Cancel appointment",
-     text: "Cancel appointment and return to clinic"
-   }) }}
- </form>
+    <input type="hidden" name="action" value="cancel-immediately">
+    {{ button({
+      text: "Cancel appointment and return to clinic"
+    }) }}
+  </form>
 
  <p>
    <a href="./edit">Edit previous mammogram details</a>

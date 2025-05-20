@@ -171,6 +171,40 @@ module.exports = router => {
       return res.redirect(`/clinics/${clinicId}/events/${eventId}`)
     }
 
+    // Handle the direct cancel action from appointment-should-not-proceed.html
+    if (action === 'cancel-immediately') {
+      // Set stopping reason for the appointment
+      if (!data.event.appointmentStopped) {
+        data.event.appointmentStopped = {}
+      }
+      data.event.appointmentStopped.stoppedReason = 'recent_mammogram'
+      data.event.appointmentStopped.needsReschedule = 'no' // Default to no reschedule needed
+
+      // Add the mammogram to history
+      if (!data.event.previousMammograms) {
+        data.event.previousMammograms = []
+      }
+      data.event.previousMammograms.push(previousMammogram)
+      delete data.event?.previousMammogramTemp
+
+      // Save changes and update status
+      saveTempEventToEvent(data)
+      updateEventStatus(data, eventId, 'event_attended_not_screened')
+
+      // Get participant info for message
+      const eventData = getEventData(data, clinicId, eventId)
+      const participantName = getFullName(eventData.participant)
+      const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
+
+      // Flash success message
+      const successMessage = `
+      ${participantName} has been 'attended not screened'. <a href="${participantEventUrl}" class="app-nowrap">View their appointment</a>`
+      req.flash('success', { wrapWithHeading: successMessage})
+
+      // Return to clinic list
+      return res.redirect(`/clinics/${clinicId}/`)
+    }
+
     // Check if this is a recent mammogram (within 6 months)
     const isRecentMammogram = checkIfRecentMammogram(previousMammogram)
 
@@ -248,6 +282,7 @@ module.exports = router => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
     const action = req.body.action // 'save' or 'save-and-add'
+    const referrer = req.query.referrer
 
     // Save temp symptom to array
     if (data.event?.symptomTemp) {
@@ -351,6 +386,10 @@ module.exports = router => {
     if (action === 'save-and-add') {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/add`)
     } else {
+      if (referrer) {
+        res.redirect(referrer)
+        return;
+      }
       res.redirect(`/clinics/${clinicId}/events/${eventId}/record-medical-information`)
     }
   })
