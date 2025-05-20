@@ -3,17 +3,16 @@
 module.exports = [
   {
     id: 'm5ekcxvu', // Must be hardcoded so it matches generated data
-    name: 'West Sussex BSS',
+    name: 'West of London BSS',
     address: {
-      line1: 'Breast Screening Unit',
-      line2: 'Worthing Hospital',
-      line3: 'Lyndhurst Rd',
-      line4: 'Headington',
-      city: 'Worthing',
-      postcode: 'BN11 2DH',
+      line1: 'Breast services',
+      line2: 'Carring Cross Hospital',
+      line3: 'Fulham Palace Rd',
+      city: 'London',
+      postcode: 'W6 8RF',
     },
     phoneNumber: '01865235621',
-    abbreviation: 'WSB',
+    abbreviation: 'ECX',
     // clinicTypes: ['screening', 'assessment'], // Can do both
     clinicTypes: ['screening'],
     riskLevelHandling: [
@@ -41,7 +40,7 @@ module.exports = [
     locations: [
       {
         id: 'duif1ywp', // Must be hardcoded so it matches generated data
-        name: 'West Sussex BSS',
+        name: 'West of London BSS',
         type: 'hospital',
         isMainSite: true,
         // Main sites can handle all supported risk levels
