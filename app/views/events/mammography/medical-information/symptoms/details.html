@@ -6,7 +6,7 @@
 {% if type != "Other" %}
   {% set pageHeading = "Details of the " + (type | lower) %}
 {% else %}
-  {% set pageHeading = "Details of the symptom" %}
+  {% set pageHeading = "Symptom details" %}
 {% endif %}
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
@@ -41,10 +41,22 @@
     {{ input({
       name: "event[symptomTemp][otherDescription]",
       label: {
-        text: "What is the symptom?",
+        text: "Describe the symptom",
         classes: "nhsuk-label--m"
       },
       value: event.symptomTemp.otherDescription,
+      classes: "nhsuk-u-width-two-thirds"
+    }) }}
+
+  {% elseif event.symptomTemp.type == "Persistent pain" %}
+
+    {{ input({
+      name: "event[symptomTemp][persistentPainDescription]",
+      label: {
+        text: "Describe the type of pain",
+        classes: "nhsuk-label--m"
+      },
+      value: event.symptomTemp.persistentPainDescription,
       classes: "nhsuk-u-width-two-thirds"
     }) }}
 
@@ -55,7 +67,7 @@
       value: event.symptomTemp.nippleChangeType,
       fieldset: {
         legend: {
-          text: "What type of nipple change?",
+          text: "Describe the change",
           classes: "nhsuk-fieldset__legend--m",
           isPageHeading: false
         }
@@ -101,7 +113,7 @@
       value: event.symptomTemp.skinChangeType,
       fieldset: {
         legend: {
-          text: "What is the skin change?",
+          text: "How has the skin changed?",
           classes: "nhsuk-fieldset__legend--m",
           isPageHeading: false
         }
@@ -147,7 +159,7 @@
       value: event.symptomTemp.nippleChangeLocation,
       fieldset: {
         legend: {
-          text: "Where is the nipple change located?",
+          text: "Which nipple has changed?",
           classes: "nhsuk-fieldset__legend--m",
           isPageHeading: false
         }
@@ -172,7 +184,7 @@
 
     {% set radioQuestionText %}
       {% if event.symptomTemp.type == "Other" %}
-        Where is the symptom located?
+        Where is the symptom?
       {% else %}
         Where is the {{ event.symptomTemp.type | lower }} located?
       {% endif %}
@@ -256,7 +268,7 @@
     }) }}
   {% endif %}
 
-  {% set yesOngoingHtml %}
+  {# {% set yesOngoingHtml %}
     {{ dateInput({
       id: "ongoingStartDate",
       namePrefix: "event[symptomTemp][ongoingStartDate]",
@@ -339,10 +351,10 @@
       }
     ]
   }) }}
-{% endset %}
+{% endset %} #}
 
 {# Is this an ongoing symptom #}
-{{ radios({
+{# {{ radios({
   idPrefix: "isOngoing",
   name: "event[symptomTemp][isOngoing]",
   value: event.symptomTemp.isOngoing,
@@ -369,15 +381,114 @@
       }
     }
   ]
-}) }}
+}) }} #}
 
-  {% set radioQuestionText %}
-    {% if event.symptomTemp.type == "Other" %}
-      Has the symptom been investigated by a medical professional?
-    {% else %}
-      Has the {{ event.symptomTemp.type | lower }} been investigated by a medical professional?
-    {% endif %}
-  {% endset %}
+  {% set dateKnownHtml %}
+      {{ dateInput({
+        id: "dateStarted",
+        namePrefix: "event[symptomTemp][dateStarted]",
+        fieldset: {
+          legend: {
+            text: "Date symptom started",
+            classes: "nhsuk-u-visually-hidden",
+            isPageHeading: false
+          }
+        },
+        hint: {
+          text: "For example, 3 2025"
+        },
+        items: [
+          {
+            name: "month",
+            classes: "nhsuk-input--width-2",
+            value: event.symptomTemp.dateStarted.month
+          },
+          {
+            name: "year",
+            classes: "nhsuk-input--width-4",
+            value: event.symptomTemp.dateStarted.year
+          }
+        ]
+      }) }}
+    {% endset %}
+
+    {% set approximateDateHtml %}
+      {{ input({
+        id: "approximateDateStarted",
+        name: "event[symptomTemp][approximateDateStarted]",
+        label: {
+          text: "Enter an approximate date",
+          classes: "nhsuk-u-visually-hidden"
+        },
+        hint: {
+          text: "For example, 9 months ago"
+        },
+        classes: "nhsuk-u-width-two-thirds",
+        value: event.symptomTemp.approximateDateStarted
+      }) }}
+    {% endset %}
+
+    {# Radios for when were they taken - choices 'Date known' and 'Enter approximate date' and 'Not sure'  #}
+    {{ radios({
+      idPrefix: "dateType",
+      name: "event[symptomTemp][dateType]",
+      fieldset: {
+        legend: {
+          text: "When did this symptom start?",
+          classes: "nhsuk-fieldset__legend--m",
+          isPageHeading: false
+        }
+      },
+      value: event.symptomTemp.dateType,
+      items: [
+        {
+          value: "dateKnown",
+          text: "Enter a date",
+          conditional: {
+            html: dateKnownHtml
+          }
+        },
+        {
+          value: "approximateDate",
+          text: "Enter an approximate date",
+          conditional: {
+            html: approximateDateHtml
+          }
+        },
+        {
+          value: "notSure",
+          text: "Not sure"
+        }
+      ]
+    }) }}
+
+    {% set stymptomStoppedHtml %}
+      {{ input({
+        name: "event[symptomTemp][approximateDateStopped]",
+        label: {
+          text: "Describe when"
+        },
+        hint: {
+          text: "For example, 3 days ago"
+        },
+        value: event.symptomTemp.approximateDateStopped,
+        classes: "nhsuk-u-width-two-thirds"
+      }) }}
+    {% endset %}
+
+    {{ checkboxes({
+      idPrefix: "hasStopped",
+      name: "event[symptomTemp][hasStopped]",
+      items: [
+        {
+          value: "yes",
+          text: "The symptom has recently stopped",
+          conditional: {
+            html: stymptomStoppedHtml
+          }
+        }
+      ]
+    }) }}
 
   {{ radios({
     idPrefix: "hasBeenInvestigated",
@@ -385,7 +496,7 @@
     value: event.symptomTemp.hasBeenInvestigated,
     fieldset: {
       legend: {
-        text: radioQuestionText,
+        text: "Has this been investigated by a medical professional?",
         classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }

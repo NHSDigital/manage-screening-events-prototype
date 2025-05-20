@@ -251,20 +251,32 @@ module.exports = router => {
 
     // Save temp symptom to array
     if (data.event?.symptomTemp) {
-      if (!data.event.symptoms) {
-        data.event.symptoms = []
+      // Initialize medicalInformation object if needed
+      if (!data.event.medicalInformation) {
+        data.event.medicalInformation = {}
+      }
+
+      // Initialize symptoms array if needed
+      if (!data.event.medicalInformation.symptoms) {
+        data.event.medicalInformation.symptoms = []
       }
 
       const symptomTemp = data.event.symptomTemp
       const symptomType = symptomTemp.type
+      const isNewSymptom = !symptomTemp.id
 
       // Start with base symptom data
       const symptom = {
         id: symptomTemp.id || generateId(),
         type: symptomType,
-        isOngoing: symptomTemp.isOngoing,
+        dateType: symptomTemp.dateType,
         hasBeenInvestigated: symptomTemp.hasBeenInvestigated,
         additionalInfo: symptomTemp.additionalInfo
+      }
+
+      // For new symptoms, add the creation timestamp
+      if (isNewSymptom) {
+        symptom.dateAdded = new Date().toISOString()
       }
 
       // Add investigation details if investigated
@@ -273,50 +285,43 @@ module.exports = router => {
       }
 
       // Handle dates - combine ongoing/not ongoing into single approxStartDate
-      if (symptomTemp.isOngoing === 'yes' && symptomTemp.ongoingStartDate) {
-        symptom.approxStartDate = symptomTemp.ongoingStartDate
-      } else if (symptomTemp.isOngoing === 'no') {
-        if (symptomTemp.notOngoingStartDate) {
-          symptom.approxStartDate = symptomTemp.notOngoingStartDate
-        }
-        if (symptomTemp.approxEndDate) {
-          symptom.approxEndDate = symptomTemp.approxEndDate
-        }
+      if (symptomTemp.dateType === 'dateKnown') {
+        symptom.dateStarted = symptomTemp.dateStarted
+      }
+      else if (symptomTemp.dateType === 'approximateDate') {
+        symptom.approximateDateStarted = symptomTemp.approximateDateStarted
+      }
+
+      console.log('symptomTemp', symptomTemp)
+
+      symptom.hasStopped = (symptomTemp?.hasStopped?.includes('yes')) ? true : false
+
+      if (symptom.hasStopped) {
+        symptom.approximateDateStopped = symptomTemp.approximateDateStopped
       }
 
       // Handle type-specific fields
       if (symptomType === 'Other') {
         symptom.otherDescription = symptomTemp.otherDescription
-        // Add location for Other symptoms
-        if (symptomTemp.location) {
-          symptom.location = symptomTemp.location
-          if (symptomTemp.location === 'other') {
-            symptom.otherLocationDescription = symptomTemp.otherDescription
-          }
-        }
-      } else if (symptomType === 'Nipple change') {
+      }
+      else if (symptomType === 'Persistent pain') {
+        symptom.persistentPainDescription = symptomTemp.persistentPainDescription
+      }
+      else if (symptomType === 'Nipple change') {
         symptom.nippleChangeType = symptomTemp.nippleChangeType
         symptom.nippleChangeLocation = symptomTemp.nippleChangeLocation
         if (symptomTemp.nippleChangeType === 'other') {
           symptom.nippleChangeDescription = symptomTemp.nippleChangeDescription
         }
-      } else if (symptomType === 'Skin change') {
+      }
+      else if (symptomType === 'Skin change') {
         symptom.skinChangeType = symptomTemp.skinChangeType
-        symptom.location = symptomTemp.location
         if (symptomTemp.skinChangeType === 'other') {
           symptom.skinChangeDescription = symptomTemp.skinChangeDescription
         }
-        // Add location descriptions
-        if (symptomTemp.location === 'right breast') {
-          symptom.rightBreastDescription = symptomTemp.rightBreastDescription
-        } else if (symptomTemp.location === 'left breast') {
-          symptom.leftBreastDescription = symptomTemp.leftBreastDescription
-        } else if (symptomTemp.location === 'both breasts') {
-          symptom.bothBreastsDescription = symptomTemp.bothBreastsDescription
-        } else if (symptomTemp.location === 'other') {
-          symptom.otherLocationDescription = symptomTemp.otherDescription
-        }
-      } else {
+      }
+
+      if (symptomType != 'Nipple change') {
         // For other symptom types (Breast lump, Swelling, Persistent pain)
         symptom.location = symptomTemp.location
         // Add location descriptions
@@ -332,11 +337,11 @@ module.exports = router => {
       }
 
       // Update existing or add new
-      const existingIndex = data.event.symptoms.findIndex(s => s.id === symptom.id)
+      const existingIndex = data.event.medicalInformation.symptoms.findIndex(s => s.id === symptom.id)
       if (existingIndex !== -1) {
-        data.event.symptoms[existingIndex] = symptom
+        data.event.medicalInformation.symptoms[existingIndex] = symptom
       } else {
-        data.event.symptoms.push(symptom)
+        data.event.medicalInformation.symptoms.push(symptom)
       }
 
       delete data.event.symptomTemp
@@ -355,8 +360,19 @@ module.exports = router => {
     const { clinicId, eventId, symptomId } = req.params
     const data = req.session.data
 
-    // Load symptom into temp for editing
-    const symptom = data.event?.symptoms?.find(s => s.id === symptomId)
+    // Initialize medicalInformation if needed
+    if (!data.event.medicalInformation) {
+      data.event.medicalInformation = {}
+    }
+
+    // Check new location first
+    let symptom = data.event.medicalInformation.symptoms?.find(s => s.id === symptomId)
+
+    // Check old location if not found (for migration purposes)
+    if (!symptom && data.event.symptoms) {
+      symptom = data.event.symptoms.find(s => s.id === symptomId)
+    }
+
     if (symptom) {
       data.event.symptomTemp = { ...symptom }
     }
@@ -370,7 +386,12 @@ module.exports = router => {
     const { clinicId, eventId, symptomId } = req.params
     const data = req.session.data
 
-    // Remove symptom from array
+    // Remove symptom from new location
+    if (data.event?.medicalInformation?.symptoms) {
+      data.event.medicalInformation.symptoms = data.event.medicalInformation.symptoms.filter(s => s.id !== symptomId)
+    }
+
+    // Remove symptom from old location too (for migration purposes)
     if (data.event?.symptoms) {
       data.event.symptoms = data.event.symptoms.filter(s => s.id !== symptomId)
     }

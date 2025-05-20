@@ -1,0 +1,78 @@
+
+{% set hrtHtml %}
+{% set hrtData = event.medicalInformation.hrt %}
+
+{% if hrtData %}
+  {% if hrtData.hrtQuestion == 'yes' %}
+    <p>
+      Currently taking HRT
+    </p>
+    <p>
+      {# Example: "Duration taken: 3 months" #}
+      Duration taken: {{ hrtData.hrtDuration }}
+    </p>
+  {% elseif hrtData.hrtQuestion == 'no-recently-stopped' %}
+    <p>
+      Recently stopped taking HRT
+    </p>
+    <p>
+      Duration taken: {{ hrtData.hrtDurationBeforeStopping }}<br>
+      Stopped: {{ hrtData.hrtDurationSinceStopped }} ago<br>
+    </p>
+  {% elseif hrtData.hrtQuestion == 'no' %}
+    Not taking HRT
+  {% else %}
+    No information provided
+  {% endif %}
+{% else %}
+  {{ valueHtml }}
+{% endif %}
+{% endset %}
+
+{% set otherInformationHtml %}
+{{ summaryList({
+  rows: [
+    {
+      key: {
+        text: "Hormone replacement therapy (HRT)"
+      },
+      value: {
+        html: hrtHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "./medical-information/hormone-replacement-therapy",
+            text: "Change",
+            visuallyHiddenText: "hormone replacement therapy (HRT)"
+          }
+        ]
+      }
+    },
+    {
+      key: {
+        text: "Pregnancy and breastfeeding"
+      },
+      value: {
+        html: valueHtml
+      },
+      actions: {
+        items: [
+          {
+            href: "#",
+            text: "Change",
+            visuallyHiddenText: "pregnancy and breastfeeding"
+          }
+        ]
+      }
+    }
+  ]
+} | showMissingInformationLink) }}
+{% endset %}
+
+{{ card({
+heading: "Other information",
+headingLevel: "2",
+feature: false,
+descriptionHtml: otherInformationHtml
+}) }}

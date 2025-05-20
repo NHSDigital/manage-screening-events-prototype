@@ -1,9 +1,9 @@
 {# /app/views/_includes/summary-lists/event-symptoms.njk #}
 
-{% if event.symptoms and event.symptoms.length > 0 %}
+{% if event.medicalInformation.symptoms and event.medicalInformation.symptoms.length > 0 %}
   {% set rows = [] %}
 
-  {% for symptom in event.symptoms %}
+  {% for symptom in event.medicalInformation.symptoms %}
     {% set symptomHtml %}
       {# Start with an array to build content, then join with <br> #}
       {% set contentLines = [] %}
@@ -21,6 +21,9 @@
           {% set line = line + " - " + symptom.skinChangeDescription %}
         {% endif %}
         {% set contentLines = contentLines | push(line) %}
+      {% elseif symptom.type == "Persistent pain" %}
+        {% set line = symptom.persistentPainDescription %}
+        {% set contentLines = contentLines | push(line) %}
       {% elseif symptom.type == "Other" and symptom.otherDescription %}
         {% set contentLines = contentLines | push(symptom.otherDescription) %}
       {% endif %}
@@ -32,6 +35,29 @@
         {% set contentLines = contentLines | push(symptom.leftBreastDescription | sentenceCase) %}
       {% elseif symptom.location == "both breasts" and symptom.bothBreastsDescription %}
         {% set contentLines = contentLines | push(symptom.bothBreastsDescription | sentenceCase) %}
+      {% endif %}
+
+      {# Duration #}
+      {% set startDateLine %}
+        {% if symptom.dateType == 'dateKnown' %}
+          Started: {{ symptom.dateStarted | formatMonthYear }}
+            ({{ symptom.dateStarted | formatRelativeDate }})
+
+        {% elseif symptom.dateType == 'approximateDate' %}
+          Started: {{ symptom.approximateDateStarted }}
+        {% elseif symptom.dateType == 'notSure' %}
+          Started: not sure
+        {% else %}
+          Started: not provided
+        {% endif %}
+      {% endset %}
+      {% set contentLines = contentLines | push(startDateLine) %}
+
+      {% if symptom.hasStopped %}
+        {% set endDateLine %}
+          Stopped: {{ symptom.approximateDateStopped }}
+        {% endset %}
+        {% set contentLines = contentLines | push(endDateLine) %}
       {% endif %}
 
       {# Add duration #}

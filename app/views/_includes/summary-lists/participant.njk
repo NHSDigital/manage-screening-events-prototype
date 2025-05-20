@@ -69,14 +69,9 @@
           {{ previousMammogram.dateTaken | formatDate }}
           ({{ previousMammogram.dateTaken | formatDate | formatRelativeDate | asHint }})</br>
         {% elseif previousMammogram.dateType == 'approximateDate' %}
-          Approximate date: {{ previousMammogram.approximateDate }}</br>
+          Approximate date: {{ previousMammogram.approximateDateStarted }}</br>
         {% else %}
           Date unknown</br>
-        {% endif %}
-
-        {# Previous mammogram was less than 6 months and we are force-proceeding #}
-        {% if previousMammogram.overrideReason %}
-          Reason for continuing with mammograms: {{ previousMammogram.overrideReason }}
         {% endif %}
 
         {# Location #}

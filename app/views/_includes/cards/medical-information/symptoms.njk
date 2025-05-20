@@ -1,9 +1,9 @@
 {# /app/views/_includes/symptoms-card.njk #}
 
 {% set symptomsCardHtml %}
-  {% include "summary-lists/event-symptoms.njk" %}
+  {% include "summary-lists/medical-information/symptoms.njk" %}
 
-  {% set hasSymptoms = event.symptoms and event.symptoms | length %}
+  {% set hasSymptoms = event.medicalInformation.symptoms and event.medicalInformation.symptoms | length %}
 
   {% if not hasSymptoms %}
     {% set insetHtml %}
