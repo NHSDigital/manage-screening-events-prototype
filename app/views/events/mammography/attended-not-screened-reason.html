@@ -18,6 +18,8 @@
 {% block pageContent %}
 
   {{ participant | log }}
+  {{ data.event | log("Temp event") }}
+
 
   {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
 
@@ -34,14 +36,14 @@
         text: "Provide details" +  ( " (optional)" if params.value !== "other" else "")
       },
       id: params.value + "Details",
-      name: params.value + "Details"
+      name: "event[appointmentStopped][" + params.value + "Details]",
+      value: event.appointmentStopped[params.value + "Details"]
     } | populateErrors) }}
   {% endmacro %}
 
   {% set checkboxItems = [] %}
 
   {% for reason in [
-    'Participant did not attend',
     'Failed identity check',
     'Language difficulties',
     'Physical health issue',
@@ -63,8 +65,8 @@
   {% endfor %}
 
   {{ checkboxes({
-    idPrefix: "appointmentStoppedReason",
-    name: "appointmentStoppedReason",
+    idPrefix: "stoppedReason",
+    name: "event[appointmentStopped][stoppedReason]",
     fieldset: {
       legend: {
         text: "Why has this appointment been stopped?",
@@ -72,7 +74,7 @@
         isPageHeading: false
       }
     },
-    values: data.appointmentStoppedReason,
+    values: event.appointmentStopped.stoppedReason,
     hint: {
       text: "Select all that apply"
     },
@@ -80,8 +82,8 @@
   } | populateErrors ) }}
 
   {{ radios({
-    idPrefix: "appointmentReschedule",
-    name: "appointmentReschedule",
+    idPrefix: "needsReschedule",
+    name: "event[appointmentStopped][needsReschedule]",
     fieldset: {
       legend: {
         text: "Does the appointment need to be rescheduled?",
@@ -89,7 +91,7 @@
         isPageHeading: false
       }
     },
-    value: data.appointmentReschedule,
+    value: event.appointmentStopped.needsReschedule,
     items: [
       {
         value: "yes",

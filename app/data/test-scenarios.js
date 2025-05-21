@@ -46,6 +46,7 @@ module.exports = [
       extraNeeds: null,
       config: {
         defaultRiskLevel: 'routine',
+        missingViews: ['RMLO', 'RCC'], // ensure all views are present
         scheduling: {
           whenRelativeToToday: 0,
           status: 'event_checked_in',

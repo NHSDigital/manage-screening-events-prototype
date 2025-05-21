@@ -24,12 +24,55 @@ dayjs.extend(customParseFormat)
 dayjs.tz.setDefault('Europe/London')
 
 /**
+ * Convert array [day, month, year] or object {day, month, year} to dayjs object
+ * @param {Array|Object} input - Array [day, month, year] or object {day, month, year}
+ * @returns {dayjs} dayjs object or null if invalid
+ */
+const arrayOrObjectToDateObject = (input) => {
+  let day, month, year
+
+  if (Array.isArray(input)) {
+    if (input.length !== 3) return null
+    [day, month, year] = input
+  } else if (typeof input === 'object' && input !== null) {
+    // Handle object with day, month, year properties
+    day = input.day
+    month = input.month
+    year = input.year
+  } else {
+    return null
+  }
+
+  // Validate that we have all required parts
+  if (!day || !month || !year) return null
+
+  // Convert to numbers if they're strings
+  day = parseInt(day, 10)
+  month = parseInt(month, 10)
+  year = parseInt(year, 10)
+
+  // Basic validation
+  if (isNaN(day) || isNaN(month) || isNaN(year)) return null
+
+  // dayjs expects month to be 0-based, so subtract 1
+  return dayjs().year(year).month(month - 1).date(day)
+}
+
+/**
  * Format a date in UK format
- * @param {string} dateString - ISO date string
+ * @param {string|Array|Object} dateString - ISO date string, array [day, month, year], or object {day, month, year}
  * @param {string} format - Optional format string
  */
 const formatDate = (dateString, format = 'D MMMM YYYY') => {
   if (!dateString) return ''
+
+  // Handle array or object input
+  if (Array.isArray(dateString) || (typeof dateString === 'object' && dateString !== null && !(dateString instanceof Date))) {
+    const dateObj = arrayOrObjectToDateObject(dateString)
+    return dateObj ? dateObj.format(format) : ''
+  }
+
+  // Handle string input (existing functionality)
   return dayjs(dateString).format(format)
 }
 
@@ -47,6 +90,54 @@ const formatDateShort = (dateString) => {
   const monthFormat = ['June', 'July'].includes(date.format('MMMM')) ? 'MMMM' : 'MMM'
 
   return `${date.format('D')} ${date.format(monthFormat)} ${date.format('YYYY')}`
+}
+
+/**
+ * Format a month/year to a readable string
+ * @param {string|Array|Object|Date} input - ISO date string, [month, year] array, {month, year} object, or Date object
+ * @param {string} format - Optional format string (default: 'MMMM YYYY')
+ * @returns {string} Formatted month/year string
+ */
+const formatMonthYear = (input, format = 'MMMM YYYY') => {
+  if (!input) return ''
+
+  let month, year
+
+  // Handle different input types
+  if (Array.isArray(input)) {
+    if (input.length === 2) {
+      // [month, year] format
+      [month, year] = input
+    } else if (input.length === 3) {
+      // [day, month, year] format - ignore day
+      [, month, year] = input
+    } else {
+      return ''
+    }
+  } else if (typeof input === 'object' && input !== null && !(input instanceof Date)) {
+    // Handle {month, year} object
+    month = input.month
+    year = input.year
+  } else {
+    // Handle ISO date string or Date object
+    const date = dayjs(input)
+    month = date.month() + 1 // dayjs months are 0-based
+    year = date.year()
+  }
+
+  // Validate that we have month and year
+  if (!month || !year) return ''
+
+  // Convert to numbers if they're strings
+  month = parseInt(month, 10)
+  year = parseInt(year, 10)
+
+  // Basic validation
+  if (isNaN(month) || isNaN(year)) return ''
+
+  // Create a dayjs object with the 1st of the month
+  // dayjs expects month to be 0-based, so subtract 1
+  return dayjs().year(year).month(month - 1).date(1).format(format)
 }
 
 /**
@@ -287,9 +378,52 @@ const isWithinDayRange = (dateString, minDays, maxDays = null, compareDate = nul
   return isOlderThanMin && isYoungerThanMax
 }
 
+/**
+ * Add or subtract time from a date
+ * @param {string|Array|Object} dateInput - ISO date string, array [day, month, year], or object {day, month, year}
+ * @param {number} amount - Amount to add (can be negative to subtract)
+ * @param {string} unit - Unit of time ('year', 'years', 'month', 'months', 'week', 'weeks', 'day', 'days', 'hour', 'hours', 'minute', 'minutes', 'second', 'seconds')
+ * @returns {string} Modified date as ISO string
+ * @example
+ * add('2023-01-01', 5, 'weeks') // returns '2023-02-05T00:00:00.000Z'
+ * add('2023-01-01', -2, 'days') // returns '2022-12-30T00:00:00.000Z'
+ */
+const add = (dateInput, amount, unit) => {
+  if (!dateInput || amount === undefined || !unit) return ''
+
+  let date
+
+  // Handle array or object input using existing helper
+  if (Array.isArray(dateInput) || (typeof dateInput === 'object' && dateInput !== null && !(dateInput instanceof Date))) {
+    date = arrayOrObjectToDateObject(dateInput)
+    if (!date) return ''
+  } else {
+    // Handle string input
+    date = dayjs(dateInput)
+  }
+
+  return date.add(amount, unit).toISOString()
+}
+
+/**
+ * Remove time from a date (convenience wrapper for add with negative amount)
+ * @param {string|Array|Object} dateInput - ISO date string, array [day, month, year], or object {day, month, year}
+ * @param {number} amount - Amount to remove
+ * @param {string} unit - Unit of time ('year', 'years', 'month', 'months', 'week', 'weeks', 'day', 'days', 'hour', 'hours', 'minute', 'minutes', 'second', 'seconds')
+ * @returns {string} Modified date as ISO string
+ * @example
+ * remove('2023-01-01', 2, 'days') // returns '2022-12-30T00:00:00.000Z'
+ * remove('2023-01-01', 1, 'week') // returns '2022-12-25T00:00:00.000Z'
+ */
+const remove = (dateInput, amount, unit) => {
+  return add(dateInput, -amount, unit)
+}
+
 module.exports = {
+  arrayOrObjectToDateObject,
   formatDate,
   formatDateShort,
+  formatMonthYear,
   formatTime,
   formatTimeString,
   formatTimeRange,
@@ -307,4 +441,6 @@ module.exports = {
   dayjs,
   daysSince,
   isWithinDayRange,
+  add,
+  remove
 }

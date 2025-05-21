@@ -1,3 +1,4 @@
+{# app/views/events/mammography/record-medical-information.html #}
 
 {% extends 'layout-app.html' %}
 
@@ -16,7 +17,8 @@
 
 {% block pageContent %}
 
-  {{ participant | log }}
+  {{ participant | log("Participant") }}
+  {{ event | log("Event") }}
 
   {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
 
@@ -27,255 +29,42 @@
     {{ pageHeading }}
   </h1>
 
-  {% set taskStatus = {} %}
-  {% set valueHtml = "" %}
+  {% set valueHtml = null %}
 
-{% set valueHtml = null %}
+  {# Symptoms #}
+  {% include "cards/medical-information/symptoms.njk" %}
 
+  {# Breast cancer history, non-cancerous lumps, chest procedures #}
+  {% include "cards/medical-information/medical-information.njk" %}
 
-  {% set sections = [
-    ["Breast implants"],
-    ["Breast cancer history", "Including close family history"],
-    ["Other breast diagnosis"],
-    ["Hormone replacement therapy (HRT)"],
-    ["Pregnancy and breastfeeding"],
-    ["Recent breast changes"],
-    ["Other physical or mental health issues"],
-    ["Physical observations", "This could include tattoos, lumps, moles or scars on the breasts."]
-  ] %}
+  {# Scars, moles, warts, lumps #}
+  {% include "cards/medical-information/breast-features.njk" %}
 
-  {% set taskListSections = [] %}
+  {# HRT, pregnancy and breastfeeding #}
+  {% include "cards/medical-information/other-information.njk" %}
 
-  {% for section in sections %}
-    {% set taskListSections = taskListSections | push({
-        title: {
-          text: section[0]
-        },
-        hint: {
-          text: section[1]
-        } if section[1],
-        href: "#",
-        status: {
-          tag: {
-            text: "Incomplete",
-            classes: "nhsuk-tag--blue"
-          }
-        }
-      }) %}
-
-  {% endfor %}
-
-  {% set medicalInformationCardHtml %}
-    {# {{ taskList({
-      idPrefix: "your-health",
-      items: taskListSections
-    }) }} #}
-    {{ summaryList({
-      rows: [
-        {
-          key: {
-            text: "Breast cancer history"
-          },
-          value: {
-            html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "breast cancer history"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Non-cancerous lump disagnoses"
-          },
-          value: {
-            html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "non-cancerous lump disagnoses"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Other breast or chest proceedures"
-          },
-          value: {
-            html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "other breast or chest proceedures"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Recent breast changes or symptoms"
-          },
-          value: {
-            html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "recent breast changes or symptoms"
-              }
-            ]
-          }
-        }
-      ]
-    } | showMissingInformationLink) }}
-  {% endset %}
-
-  {{ card({
-    heading: "Medical information",
-    headingLevel: "2",
-    feature: false,
-    descriptionHtml: medicalInformationCardHtml
-  }) }}
-
-  {{ data.eventTemp | log("eventTemp")}}
-
-  {% set hrtHtml %}
-    {% if data.eventTemp.hrt %}
-      {% if data.eventTemp.hrt.hrtQuestion == 'yes' %}
-        <p>
-          Currently taking HRT
-        </p>
-        <p>
-          Duration taken: {{ data.eventTemp.hrt.hrtDuration }}
-        </p>
-      {% elseif data.eventTemp.hrt.hrtQuestion == 'no-recently-stopped' %}
-        <p>
-          Recently stopped taking HRT
-        </p>
-        Stopped: {{ data.eventTemp.hrt.hrtDurationSinceStopped }} ago<br>
-        Duration taken: {{ data.eventTemp.hrt.hrtDurationBeforeStopping }}
-      {% elseif data.eventTemp.hrt.hrtQuestion == 'no' %}
-        Not taking HRT
-      {% else %}
-        No information provided
-      {% endif %}
-    {% else %}
-      {{ valueHtml }}
-    {% endif %}
-  {% endset %}
-
-  {% set otherInformationHtml %}
-    {{ summaryList({
-      rows: [
-        {
-          key: {
-            text: "Hormone replacement therapy (HRT)"
-          },
-          value: {
-            html: hrtHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "./medical-information/hormone-replacement-therapy",
-                text: "Change",
-                visuallyHiddenText: "hormone replacement therapy (HRT)"
-              }
-            ]
-          }
-        },
-        {
-          key: {
-            text: "Pregnancy and breastfeeding"
-          },
-          value: {
-            html: valueHtml
-          },
-          actions: {
-            items: [
-              {
-                href: "#",
-                text: "Change",
-                visuallyHiddenText: "pregnancy and breastfeeding"
-              }
-            ]
-          }
-        }
-      ]
-    } | showMissingInformationLink) }}
-  {% endset %}
-
-  {{ card({
-    heading: "Other information",
-    headingLevel: "2",
-    feature: false,
-    descriptionHtml: otherInformationHtml
-  }) }}
-
-{% set observationHtml %}
-  {% set insetHtml %}
-    <p>No breast features have been recorded for this participant. Add any scars, moles, warts or lumps observed or reported during the appointment.</p>
-  {% endset %}
-  {{ insetText({
-    html: insetHtml
-  }) }}
-
-  <p><a href="#">Add a feature</a></p>
-{% endset %}
-
-{{ card({
-  heading: "Breast features",
-  headingLevel: "2",
-  descriptionHtml: observationHtml
-}) }}
-
-
-{{ radios({
-  idPrefix: "example",
-  name: "imagingCanProceed",
-  fieldset: {
-    legend: {
-      text: "Can imaging go ahead?",
-      classes: "nhsuk-fieldset__legend--m",
-      isPageHeading: false
-    }
-  },
-  items: [
-    {
-      value: "yes",
-      text: "Yes, mark incomplete sections as ‘none’ or ‘no’"
+  {{ radios({
+    idPrefix: "imagingCanProceed",
+    name: "event[appointment][imagingCanProceed]",
+    fieldset: {
+      legend: {
+        text: "Can imaging go ahead?",
+        classes: "nhsuk-fieldset__legend--m",
+        isPageHeading: false
+      }
     },
-    {
-      value: "no",
-      text: "No, appointment needs to stop"
-    }
-  ]
-}) }}
-
-{#   {% if query.taskStatus !== 'complete' %}
-    <div class="nhsuk-form-group">
-      {{ button({
-        text: "Answer all incomplete as 'No' / 'None'",
-        classes: "nhsuk-button--secondary",
-        href: "./medical-information?taskStatus=complete"
-      }) }}
-    </div>
-  {% endif %} #}
-
+    value: event.appointment.imagingCanProceed,
+    items: [
+      {
+        value: "yes",
+        text: "Yes, mark incomplete sections as ‘none’ or ‘no’"
+      },
+      {
+        value: "no",
+        text: "No, appointment needs to stop"
+      }
+    ]
+  }) }}
 
   {{ button({
     text: "Continue"

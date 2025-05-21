@@ -1,5 +1,15 @@
 // app/lib/utils/event-data.js
 
+/**
+ * Get an event by ID
+ * @param {Object} data - Session data
+ * @param {string} eventId - Event ID
+ * @returns {Object|null} Event object or null if not found
+ */
+const getEvent = (data, eventId) => {
+  return data.events.find(e => e.id === eventId) || null
+}
+
 const getEventData = (data, clinicId, eventId) => {
   const clinic = data.clinics.find(c => c.id === clinicId)
   if (!clinic) return null
@@ -11,10 +21,84 @@ const getEventData = (data, clinicId, eventId) => {
   const unit = data.breastScreeningUnits.find(u => u.id === clinic.breastScreeningUnitId)
   const location = unit.locations.find(l => l.id === clinic.locationId)
 
-  return { clinic, event, participant,location, unit }
+  return { clinic, event, participant, location, unit }
+}
+
+/**
+ * Find and update an event in session data
+ * @param {Object} data - Session data
+ * @param {string} eventId - Event ID
+ * @param {Object} updatedEvent - Updated event object
+ * @returns {Object|null} Updated event or null if not found
+ */
+const updateEvent = (data, eventId, updatedEvent) => {
+  const eventIndex = data.events.findIndex(e => e.id === eventId)
+  if (eventIndex === -1) return null
+
+  // Update in the array
+  data.events[eventIndex] = updatedEvent
+  return updatedEvent
+}
+
+/**
+ * Update event status and add to history
+ * @param {Object} data - Session data
+ * @param {string} eventId - Event ID
+ * @param {string} newStatus - New status
+ * @returns {Object|null} Updated event or null if not found
+ */
+const updateEventStatus = (data, eventId, newStatus) => {
+  const eventIndex = data.events.findIndex(e => e.id === eventId)
+  if (eventIndex === -1) return null
+
+  const event = data.events[eventIndex]
+
+  const updatedEvent = {
+    ...event,
+    status: newStatus,
+    statusHistory: [
+      ...event.statusHistory,
+      {
+        status: newStatus,
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  }
+
+  data.events[eventIndex] = updatedEvent
+  return updatedEvent
+}
+
+/**
+ * Save temporary event data back to the main event
+ * @param {Object} data - Session data
+ * @returns {Object|null} Updated event or null if no temp data
+ *
+ * This function takes the data.event object and saves it back to the
+ * events array, then clears event. It's used at the end of a workflow
+ * to commit changes made to the temporary event back to the main array.
+ */
+const saveTempEventToEvent = (data) => {
+  if (!data.event || !data.event.id) {
+    return null
+  }
+
+  const eventId = data.event.id
+
+  // Use updateEvent to save the temp data
+  const updatedEvent = updateEvent(data, eventId, data.event)
+
+  // Clear temp data
+  delete data.event
+
+  return updatedEvent
 }
 
 
 module.exports = {
-  getEventData
+  getEvent,
+  getEventData,
+  updateEvent,
+  updateEventStatus,
+  saveTempEventToEvent,
 }
