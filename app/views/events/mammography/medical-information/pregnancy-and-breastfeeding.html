@@ -23,19 +23,22 @@
 
   {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
 
-  {# <h1 class="nhsuk-heading-l">
+  <h1 class="nhsuk-heading-l">
     <span class="nhsuk-caption-l">
       {{ participant | getFullName }}
     </span>
     {{ pageHeading }}
-  </h1> #}
+  </h1>
 
   {{ data | log }}
+
 
 
    {% set currentlyPregnant %}
 
     {{ input({
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][pregnancyDetails]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.pregnancyDetails,
       label: {
         text: "Provide timeframe"
       },
@@ -43,7 +46,7 @@
       hint: {
         text: "For example, due in November"
       }
-    } | decorateAttributes(data, "eventTemp.pregnant.pregnantDuration" )) }}
+    } ) }}
 
   {% endset %}
 
@@ -51,6 +54,8 @@
    {% set recentlyPregnant %}
 
     {{ input({
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][pregnancyDetails]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.pregnancyDetails,
       label: {
         text: "Describe when"
       },
@@ -58,13 +63,15 @@
       hint: {
         text: "For example, gave birth two weeks ago"
       }
-    } | decorateAttributes(data, "eventTemp.recentlypregnant.recentlyPregnant" )) }}
+    } ) }}
 
   {% endset %}
 
      {% set currentlyBreastfeeding %}
 
     {{ input({
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][breastfeedingDuration]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.breastfeedingDuration,
       label: {
         text: "For how long"
       },
@@ -72,7 +79,7 @@
       hint: {
         text: "For example, since January"
       }
-    } | decorateAttributes(data, "eventTemp.currentlybreastfeeding.currentlyBreastfeeding" )) }}
+    } ) }}
 
   {% endset %}
 
@@ -82,6 +89,8 @@
        {% set recentlyBreastfeeding %}
 
     {{ input({
+        name: "event[medicalInformation][pregnancyAndBreastfeeding][breastfeedingDuration]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.breastfeedingDuration,
       label: {
         text: "Describe when"
       },
@@ -89,7 +98,7 @@
       hint: {
         text: "For example, two months ago"
       }
-    } | decorateAttributes(data, "eventTemp.recentlybreastfeeding.recentlyBreastfeeding" )) }}
+    } ) }}
 
   {% endset %}
 
@@ -100,14 +109,11 @@
   {{ radios({
     fieldset: {
       legend: {
-        text: pageHeading,
-        classes: "nhsuk-fieldset__legend--l",
+        text: 'Is the participant pregnant?',
+        classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }
     },
-  hint: {
-    html: '<p class="nhsuk-body">Is the participant pregnant?</p>'
-  },
     items: [
     {
       value: "yes",
@@ -134,17 +140,18 @@
       }
     }
   ]
-  } | decorateAttributes(data, "eventTemp.pregnancy.status" )) }}
+  } ) }}
 
-  
+ 
 
   {{ radios({
-    fieldset: {
-
+     fieldset: {
+      legend: {
+        text: 'Is the participant currently breastfeeding?',
+        classes: "nhsuk-fieldset__legend--m",
+        isPageHeading: false
+      }
     },
-  hint: {
-    html: '<p class="nhsuk-body">Is the participant currently breastfeeding?</p>'
-  },
     items: [
     {
       value: "yes",
@@ -171,7 +178,7 @@
       }
     }
   ]
-  } | decorateAttributes(data, "eventTemp.breastfeeding.status" )) }}
+  } ) }}
 
 
 
