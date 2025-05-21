@@ -1,0 +1,197 @@
+
+{% extends 'layout-app.html' %}
+
+
+{% set pageHeading = "Pregnancy and breastfeeding" %}
+
+{% set gridColumn = "nhsuk-grid-column-two-thirds" %}
+
+{% set formAction = './../record-medical-information' %}
+
+{# {% set back = {
+  href: "/clinics/" + clinicId,
+  text: "Back to clinic"
+} %}
+ #}
+
+
+
+
+{% block pageContent %}
+
+  {{ participant | log }}
+
+  {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
+
+  <h1 class="nhsuk-heading-l">
+    <span class="nhsuk-caption-l">
+      {{ participant | getFullName }}
+    </span>
+    {{ pageHeading }}
+  </h1>
+
+  {{ data | log }}
+
+
+
+   {% set currentlyPregnant %}
+
+    {{ input({
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][currentlyPregnantDetails]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.currentlyPregnantDetails,
+      label: {
+        text: "Provide timeframe"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      hint: {
+        text: "For example, due in November"
+      }
+    } ) }}
+
+  {% endset %}
+
+
+   {% set recentlyPregnant %}
+
+    {{ input({
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][recentlyPregnantDetails]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.recentlyPregnantDetails,
+      label: {
+        text: "Describe when"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      hint: {
+        text: "For example, gave birth two weeks ago"
+      }
+    } ) }}
+
+  {% endset %}
+
+     {% set currentlyBreastfeeding %}
+
+    {{ input({
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][currentlyBreastfeedingDuration]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.currentlyBreastfeedingDuration,
+      label: {
+        text: "For how long"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      hint: {
+        text: "For example, since January"
+      }
+    } ) }}
+
+  {% endset %}
+
+
+
+
+       {% set recentlyBreastfeeding %}
+
+    {{ input({
+        name: "event[medicalInformation][pregnancyAndBreastfeeding][recentlyBreastfeedingDuration]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.recentlyBreastfeedingDuration,
+      label: {
+        text: "Describe when"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      hint: {
+        text: "For example, two months ago"
+      }
+    } ) }}
+
+  {% endset %}
+
+
+
+
+
+  {{ radios({
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][pregnancyStatus]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.pregnancyStatus,
+    fieldset: {
+      legend: {
+        text: 'Is the participant pregnant?',
+        classes: "nhsuk-fieldset__legend--m",
+        isPageHeading: false
+      }
+    },
+    items: [
+    {
+      value: "yes",
+      text: "Yes, currently pregnant",
+      conditional: {
+        html: currentlyPregnant
+      }
+    },
+    {
+      value: "noButRecently",
+      text: "No, but have been recently",
+      conditional: {
+        html: recentlyPregnant
+      }
+    },
+    {
+      divider: "or"
+    },
+    {
+      value: "noNotPregnant",
+      text: "No",
+      conditional: {
+        html: notPregnant
+      }
+    }
+  ]
+  } ) }}
+
+ 
+
+  {{ radios({
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][breastfeedingStatus]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.breastfeedingStatus,
+     fieldset: {
+      legend: {
+        text: 'Is the participant currently breastfeeding?',
+        classes: "nhsuk-fieldset__legend--m",
+        isPageHeading: false
+      }
+    },
+    items: [
+    {
+      value: "yes",
+      text: "Yes",
+      conditional: {
+        html: currentlyBreastfeeding
+      }
+    },
+    {
+      value: "recentlyStopped",
+      text: "No, but recently stopped",
+      conditional: {
+        html: recentlyBreastfeeding
+      }
+    },
+    {
+      divider: "or"
+    },
+    {
+      value: "no",
+      text: "No",
+      conditional: {
+        html: notBreastfeeding
+      }
+    }
+  ]
+  } ) }}
+
+
+
+
+  {{ button({
+    text: "Continue"
+  }) }}
+
+  {% include "screening-cannot-proceed-link.njk" %}
+
+{% endblock %}
+

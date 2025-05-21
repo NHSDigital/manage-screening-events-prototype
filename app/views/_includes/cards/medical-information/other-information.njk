@@ -29,6 +29,57 @@
 {% endif %}
 {% endset %}
 
+{% set pregnancyAndBreastfeedingHtml %}
+{% set pregnancyAndBreastfeedingData = event.medicalInformation.pregnancyAndBreastfeeding %}
+
+{% if pregnancyAndBreastfeedingData %}
+  {% if pregnancyAndBreastfeedingData.pregnancyStatus == 'yes' %}
+    <p>
+      Currently pregnant
+    </p>
+    <p>
+      {# Example: "Duration taken: 3 months" #}
+      Timeframe: {{ pregnancyAndBreastfeedingData.currentlyPregnantDetails }}
+    </p>
+  {% elseif pregnancyAndBreastfeedingData.pregnancyStatus == 'noButRecently' %}
+    <p>
+      Recently pregnant
+    </p>
+    <p>
+      Details: {{ pregnancyAndBreastfeedingData.recentlyPregnantDetails }}
+    </p>
+  {% elseif pregnancyAndBreastfeedingData.pregnancyStatus == 'noNotPregnant' %}
+    <p>Not pregnant</p>
+  {% else %}
+    <p>No information provided</p>
+  {% endif %}
+
+ {% if pregnancyAndBreastfeedingData.breastfeedingStatus == 'yes' %}
+    <p>
+      Currently breastfeeding
+    </p>
+    <p>
+      {# Example: "Duration taken: 3 months" #}
+      Duration: {{ pregnancyAndBreastfeedingData.currentlyBreastfeedingDuration }}
+    </p>
+  {% elseif pregnancyAndBreastfeedingData.breastfeedingStatus == 'recentlyStopped' %}
+    <p>
+      Recently breastfeeding
+    </p>
+    <p>
+      Details: {{ pregnancyAndBreastfeedingData.recentlyBreastfeedingDuration }}
+    </p>
+  {% elseif pregnancyAndBreastfeedingData.breastfeedingStatus == 'no' %}
+    <p>Not breastfeeding</p>
+  {% else %}
+    <p>No information provided</p>
+  {% endif %}
+{% else %}
+  {{ valueHtml }}
+{% endif %}
+
+{% endset %}
+
 {% set otherInformationHtml %}
 {{ summaryList({
   rows: [
@@ -54,12 +105,12 @@
         text: "Pregnancy and breastfeeding"
       },
       value: {
-        html: valueHtml
+        html: pregnancyAndBreastfeedingHtml
       },
       actions: {
         items: [
           {
-            href: "#",
+            href: "./medical-information/pregnancy-and-breastfeeding",
             text: "Change",
             visuallyHiddenText: "pregnancy and breastfeeding"
           }
