@@ -37,7 +37,7 @@
 
     {{ input({
       label: {
-        text: "How long have they been pregnant?"
+        text: "Provide timeframe"
       },
       classes: "nhsuk-u-width-two-thirds",
       hint: {
@@ -124,8 +124,11 @@
       }
     },
     {
+      divider: "or"
+    },
+    {
       value: "no-not-pregnant",
-      text: "No, not pregnant",
+      text: "No",
       conditional: {
         html: notPregnant
       }
@@ -156,6 +159,9 @@
       conditional: {
         html: recentlyBreastfeeding
       }
+    },
+    {
+      divider: "or"
     },
     {
       value: "no",
