@@ -49,7 +49,7 @@ $govuk-spacing4: 20px;
 }
 
 .app-secondary-navigation__list {
-  @include clearfix;
+  @include nhsuk-clearfix;
 
   // The list uses box-shadow rather than a border to set a 1px
   // grey line at the bottom, so that border from the current
@@ -71,7 +71,7 @@ $govuk-spacing4: 20px;
   position: relative;
 
   // More generous padding beneath items on wider screens
-  @include mq($from: tablet) {
+  @include nhsuk-media-query($from: tablet) {
     padding-bottom: $govuk-spacing3;
   }
 }
@@ -88,7 +88,7 @@ $govuk-spacing4: 20px;
   padding-bottom: $govuk-spacing1;
 
   // More generous padding beneath items on wider screens
-  @include mq($from: tablet) {
+  @include nhsuk-media-query($from: tablet) {
     padding-bottom: $govuk-spacing2;
   }
 }
