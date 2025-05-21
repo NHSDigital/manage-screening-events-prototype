@@ -107,6 +107,8 @@
 
 
   {{ radios({
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][pregnancyStatus]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.pregnancyStatus,
     fieldset: {
       legend: {
         text: 'Is the participant pregnant?',
@@ -145,6 +147,8 @@
  
 
   {{ radios({
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][breastfeedingStatus]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.breastfeedingStatus,
      fieldset: {
       legend: {
         text: 'Is the participant currently breastfeeding?',
