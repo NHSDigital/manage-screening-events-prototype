@@ -33,16 +33,80 @@
   {{ data | log }}
 
 
+   {% set currentlyPregnant %}
+
+    {{ input({
+      label: {
+        text: "How long have they been pregnant?"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      hint: {
+        text: "For example, due in November"
+      }
+    } | decorateAttributes(data, "eventTemp.pregnant.pregnantDuration" )) }}
+
+  {% endset %}
+
+
+   {% set recentlyPregnant %}
+
+    {{ input({
+      label: {
+        text: "Describe when"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      hint: {
+        text: "For example, gave birth two weeks ago"
+      }
+    } | decorateAttributes(data, "eventTemp.recentlypregnant.recentlyPregnant" )) }}
+
+  {% endset %}
+
+     {% set currentlyBreastfeeding %}
+
+    {{ input({
+      label: {
+        text: "For how long"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      hint: {
+        text: "For example, since January"
+      }
+    } | decorateAttributes(data, "eventTemp.currentlybreastfeeding.currentlyBreastfeeding" )) }}
+
+  {% endset %}
+
+
+
+
+       {% set recentlyBreastfeeding %}
+
+    {{ input({
+      label: {
+        text: "Describe when"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      hint: {
+        text: "For example, two months ago"
+      }
+    } | decorateAttributes(data, "eventTemp.recentlybreastfeeding.recentlyBreastfeeding" )) }}
+
+  {% endset %}
+
+
+
+
+
   {{ radios({
     fieldset: {
       legend: {
         text: pageHeading,
         classes: "nhsuk-fieldset__legend--l",
-        isPageHeading: true
+        isPageHeading: false
       }
     },
   hint: {
-    html: '<p class="nhsuk-body">Are you currently pregnant or breastfeeding?</p>'
+    html: '<p class="nhsuk-body">Is the participant pregnant?</p>'
   },
     items: [
     {
@@ -50,6 +114,13 @@
       text: "Yes, currently pregnant",
       conditional: {
         html: currentlyPregnant
+      }
+    },
+    {
+      value: "no-but-recently",
+      text: "No, but have been recently",
+      conditional: {
+        html: recentlyPregnant
       }
     },
     {
@@ -62,13 +133,45 @@
     {
       value: "recently-pregnant",
       text: "Recently pregnant"
-    },
-    {
-      value: "currently-breastfeeding",
-      text: "Currently breastfeeding"
     }
   ]
   } | decorateAttributes(data, "eventTemp.pregnancy.status" )) }}
+
+  
+
+  {{ radios({
+    fieldset: {
+
+    },
+  hint: {
+    html: '<p class="nhsuk-body">Is the participant currently breastfeeding?</p>'
+  },
+    items: [
+    {
+      value: "yes",
+      text: "Yes",
+      conditional: {
+        html: currentlyBreastfeeding
+      }
+    },
+    {
+      value: "recently-stopped",
+      text: "No, but recently stopped",
+      conditional: {
+        html: recentlyBreastfeeding
+      }
+    },
+    {
+      value: "no",
+      text: "No",
+      conditional: {
+        html: notBreastfeeding
+      }
+    }
+  ]
+  } | decorateAttributes(data, "eventTemp.breastfeeding.status" )) }}
+
+
 
 
   {{ button({
