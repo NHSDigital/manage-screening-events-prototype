@@ -46,7 +46,7 @@
     {# Temporarily hardcode until we can investigate bug with date #}
     {{ "2022-03-23" | formatDate }}
     ({{ "2022-03-23" | formatDate | formatRelativeDate | asHint }})</br>
-    West Sussex BSU
+    West of London BSU
     {# {% set mostRecentClinic = data | getParticipantMostRecentClinic(participant.id) %}
     {% if mostRecentClinic %}
       {{ mostRecentClinic | log }}
@@ -69,7 +69,7 @@
           {{ previousMammogram.dateTaken | formatDate }}
           ({{ previousMammogram.dateTaken | formatDate | formatRelativeDate | asHint }})</br>
         {% elseif previousMammogram.dateType == 'approximateDate' %}
-          Approximate date: {{ previousMammogram.approximateDateStarted }}</br>
+          Approximate date: {{ previousMammogram.approximateDate }}</br>
         {% else %}
           Date unknown</br>
         {% endif %}

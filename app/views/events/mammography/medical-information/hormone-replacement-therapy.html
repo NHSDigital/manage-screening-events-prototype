@@ -6,7 +6,7 @@
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
-{% set formAction = './../record-medical-information' %}
+{% set formAction = './../record-medical-information' | orReferrer(referrer) %}
 
 {# {% set back = {
   href: "/clinics/" + clinicId,
@@ -14,14 +14,9 @@
 } %}
  #}
 
-
-
-
 {% block pageContent %}
 
-  {{ participant | log }}
-
-  {% set unit = data.breastScreeningUnits | findById(clinic.breastScreeningUnitId) %}
+  {{ participant | log("Participant") }}
 
   {# <h1 class="nhsuk-heading-l">
     <span class="nhsuk-caption-l">
@@ -31,6 +26,7 @@
   </h1> #}
 
   {% set currentlyTakingHtml %}
+
     {{ input({
       name: "event[medicalInformation][hrt][hrtDuration]",
       value: event.medicalInformation.hrt.hrtDuration,
@@ -47,31 +43,31 @@
 
   {% set recentlyStoppedHtml %}
 
-  {{ input({
-    name: "event[medicalInformation][hrt][hrtDurationSinceStopped]",
-    value: event.medicalInformation.hrt.hrtDurationSinceStopped,
-    label: {
-      text: "How long since they stopped taking HRT?"
-    },
-    classes: "nhsuk-u-width-two-thirds",
-    hint: {
-      text: "For example, 3 months"
-    }
-  }) }}
+    {{ input({
+      name: "event[medicalInformation][hrt][hrtDurationSinceStopped]",
+      value: event.medicalInformation.hrt.hrtDurationSinceStopped,
+      label: {
+        text: "How long since they stopped taking HRT?"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      hint: {
+        text: "For example, 3 months"
+      }
+    }) }}
 
-  {{ input({
-    name: "event[medicalInformation][hrt][hrtDurationBeforeStopping]",
-    value: event.medicalInformation.hrt.hrtDurationBeforeStopping,
-    label: {
-      text: "How long did they take HRT for?"
-    },
-    classes: "nhsuk-u-width-two-thirds",
-    hint: {
-      text: "For example, 5 years"
-    }
-  }) }}
+    {{ input({
+      name: "event[medicalInformation][hrt][hrtDurationBeforeStopping]",
+      value: event.medicalInformation.hrt.hrtDurationBeforeStopping,
+      label: {
+        text: "How long did they take HRT for?"
+      },
+      classes: "nhsuk-u-width-two-thirds",
+      hint: {
+        text: "For example, 5 years"
+      }
+    }) }}
 
-{% endset %}
+  {% endset %}
 
   {{ radios({
     name: "event[medicalInformation][hrt][hrtQuestion]",
@@ -105,7 +101,6 @@
     }
   ]
   }) }}
-
 
   {{ button({
     text: "Continue"
