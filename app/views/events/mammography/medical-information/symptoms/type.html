@@ -7,7 +7,7 @@
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
-{% set formAction = './details' %}
+{% set formAction = './details' | urlWithReferrer(referrerChain) %}
 
 {# {% set back = {
   href: "/clinics/" + clinicId,

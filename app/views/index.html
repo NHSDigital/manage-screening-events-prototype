@@ -28,6 +28,9 @@
     <a href="{{ exampleParticipant }}">Initial appointment</a>
   </li>
   <li>
+    <a href="{{ exampleParticipant }}/previous-mammograms/add">Add details of a previous mammogram</a>
+  </li>
+  <li>
     <a href="{{ exampleParticipant }}/attended-not-screened-reason">Appointment cannot go ahead</a>
   </li>
   <li>
@@ -37,13 +40,13 @@
     <a href="{{ exampleParticipant }}/record-medical-information">Record medical information</a>
     <ul>
       <li>
-        <a href="{{ exampleParticipant }}/medical-information/symptoms/add?referrer={{ exampleParticipant }}/record-medical-information">Add a symptom</a>
+        <a href="{{ exampleParticipant }}/medical-information/symptoms/add?referrerChain={{ exampleParticipant }}/record-medical-information">Add a symptom</a>
       </li>
       <li>
-        <a href="{{ exampleParticipant }}/medical-information/hormone-replacement-therapy?referrer={{ exampleParticipant }}/record-medical-information">Hormone replacement therapy</a>
+        <a href="{{ exampleParticipant }}/medical-information/hormone-replacement-therapy?referrerChain={{ exampleParticipant }}/record-medical-information">Hormone replacement therapy</a>
       </li>
       <li>
-        <a href="{{ exampleParticipant }}/medical-information/pregnancy-and-breastfeeding?referrer={{ exampleParticipant }}/record-medical-information">Pregnancy and breastfeeding</a>
+        <a href="{{ exampleParticipant }}/medical-information/pregnancy-and-breastfeeding?referrerChain={{ exampleParticipant }}/record-medical-information">Pregnancy and breastfeeding</a>
       </li>
     </ul>
   </li>

@@ -9,8 +9,8 @@
 
 
 {% set back = {
-  href: "/participants" | orReferrer(referrer),
-  text: "Back to participants" if not referrer else "Back to appointment"
+  href: "/participants" | getReturnUrl(referrerChain),
+  text: "Back to participants" if not referrerChain else "Back to appointment"
 } %}
 
 {% block pageContent %}
@@ -27,8 +27,6 @@
   {% set personalDetailsHtml %}
     {% include "summary-lists/participant.njk" %}
   {% endset %}
-
-
 
   {{ card({
     heading: "Personal details",

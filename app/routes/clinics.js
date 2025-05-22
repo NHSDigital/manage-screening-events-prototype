@@ -3,6 +3,8 @@
 const dayjs = require('dayjs')
 const { getFilteredClinics, getClinicEvents } = require('../lib/utils/clinics')
 const { filterEventsByStatus } = require('../lib/utils/status')
+const { getReturnUrl, urlWithReferrer, appendReferrer } = require('../lib/utils/referrers')
+
 
 /**
  * Get clinic and its related data from id
@@ -210,7 +212,7 @@ module.exports = router => {
     const data = req.session.data
 
     // Get current filter from query param, or default to the current page's filter
-    const currentFilter = req.query.filter || req.query.currentFilter || 'all'
+    const currentFilter = req.query.filter || req.query.currentFilter || 'remaining'
 
     // Find the event
     const eventIndex = data.events.findIndex(e => e.id === eventId && e.clinicId === clinicId)
@@ -257,13 +259,9 @@ module.exports = router => {
       })
     }
 
-    // If there's a returnTo path, use that, otherwise go back to the filter view
-    const referrer = req.query.referrer
-    if (referrer) {
-      res.redirect(referrer)
-    } else {
-      res.redirect(`/clinics/${clinicId}/${currentFilter}`)
-    }
+    const returnUrl = getReturnUrl(`/clinics/${clinicId}/${currentFilter}`, req.query.referrerChain)
+    res.redirect(returnUrl)
+
   })
 
 
@@ -272,6 +270,12 @@ module.exports = router => {
 
   // Support both /clinics/:id and /clinics/:id/:filter
   router.get(['/clinics/:id', '/clinics/:id/:filter'], (req, res, next) => {
+
+    // Remaining is our default, so we can redirect to /clinics/:id
+    if (req.params.filter == 'remaining'){
+      res.redirect(`/clinics/${req.params.id}`)
+      return
+    }
 
     // Check filter from either URL param or query string
     let defaultFilter = 'remaining'

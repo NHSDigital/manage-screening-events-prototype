@@ -14,8 +14,12 @@
     }) }}
   {% endif %}
 
+  {% set linkHref %}
+    {{ "./medical-information/symptoms/add" | urlWithReferrer(currentUrl) }}
+  {% endset %}
+
   <p class="nhsuk-u-margin-top-4 nhsuk-u-margin-bottom-0">
-    <a href="./medical-information/symptoms/add" class="nhsuk-link">{{ "Add another symptom" if hasSymptoms else "Add a symptom" }}</a>
+    <a href="{{ linkHref }}" class="nhsuk-link">{{ "Add another symptom" if hasSymptoms else "Add a symptom" }}</a>
   </p>
 {% endset %}
 
