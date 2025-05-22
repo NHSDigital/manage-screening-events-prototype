@@ -1,7 +1,10 @@
+@use 'nhsuk-frontend/packages/core/settings' as *;
+@use 'nhsuk-frontend/packages/core/tools' as *;
+
 // app/assets/sass/components/_reading.scss
 
 .app-reading-status {
-  background-color:  shade($color_nhsuk-blue, 40%);
+  background-color: nhsuk-shade($color_nhsuk-blue, 40%);
   color: $color_nhsuk-white;
   a {
     color: $color_nhsuk-white;
@@ -10,7 +13,7 @@
 }
 
 .app-reading-status {
-  background-color: shade($color_nhsuk-blue, 40%);
+  background-color: nhsuk-shade($color_nhsuk-blue, 40%);
   color: $color_nhsuk-white;
   padding: 8px 0;
   border-bottom: 1px solid #d8dde0;
