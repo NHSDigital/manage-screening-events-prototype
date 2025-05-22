@@ -37,8 +37,8 @@
    {% set currentlyPregnant %}
 
     {{ input({
-      name: "event[medicalInformation][pregnancyAndBreastfeeding][currentlyPregnantDetails]",
-      value: event.medicalInformation.pregnancyAndBreastfeeding.currentlyPregnantDetails,
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][pregnancyDetails]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.pregnancyDetails,
       label: {
         text: "Provide timeframe"
       },
@@ -54,8 +54,8 @@
    {% set recentlyPregnant %}
 
     {{ input({
-      name: "event[medicalInformation][pregnancyAndBreastfeeding][recentlyPregnantDetails]",
-      value: event.medicalInformation.pregnancyAndBreastfeeding.recentlyPregnantDetails,
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][pregnancyDetails]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.pregnancyDetails,
       label: {
         text: "Describe when"
       },
@@ -70,8 +70,8 @@
      {% set currentlyBreastfeeding %}
 
     {{ input({
-      name: "event[medicalInformation][pregnancyAndBreastfeeding][currentlyBreastfeedingDuration]",
-      value: event.medicalInformation.pregnancyAndBreastfeeding.currentlyBreastfeedingDuration,
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][breastfeedingDuration]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.breastfeedingDuration,
       label: {
         text: "For how long"
       },
@@ -89,8 +89,8 @@
        {% set recentlyBreastfeeding %}
 
     {{ input({
-        name: "event[medicalInformation][pregnancyAndBreastfeeding][recentlyBreastfeedingDuration]",
-      value: event.medicalInformation.pregnancyAndBreastfeeding.recentlyBreastfeedingDuration,
+        name: "event[medicalInformation][pregnancyAndBreastfeeding][breastfeedingDuration]",
+      value: event.medicalInformation.pregnancyAndBreastfeeding.breastfeedingDuration,
       label: {
         text: "Describe when"
       },
@@ -119,7 +119,6 @@
     items: [
     {
       value: "yes",
-pregnancy-and-breastfeeding
       text: "Yes",
       conditional: {
         html: currentlyPregnant
@@ -127,7 +126,6 @@ pregnancy-and-breastfeeding
     },
     {
       value: "noButRecently",
-pregnancy-and-breastfeeding
       text: "No, but has been recently",
       conditional: {
         html: recentlyPregnant
