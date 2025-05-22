@@ -21,6 +21,7 @@ module.exports = [
       },
       extraNeeds: ['Wheelchair user'],
       config: {
+        eventId: '5gpn41oi',
         defaultRiskLevel: 'routine',
         repeatViews: ['RMLO'],
         missingViews: [], // ensure all views are present
@@ -45,6 +46,7 @@ module.exports = [
       },
       extraNeeds: null,
       config: {
+        eventId: '0gdof6fh',
         defaultRiskLevel: 'routine',
         missingViews: ['RMLO', 'RCC'], // ensure all views are present
         scheduling: {

@@ -59,7 +59,7 @@ const determineEventStatus = (slotDateTime, currentDateTime, attendanceWeights) 
   }
 }
 
-const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus = null }) => {
+const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus = null, id = null }) => {
   // Parse dates once
   const [hours, minutes] = config.clinics.simulatedTime.split(':')
   const simulatedDateTime = dayjs().hour(parseInt(hours)).minute(parseInt(minutes))
@@ -81,7 +81,7 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
   const eventStatus = forceStatus || determineEventStatus(slotDateTime, simulatedDateTime, attendanceWeights)
 
   const eventBase = {
-    id: generateId(),
+    id: id || generateId(),
     participantId: participant.id,
     clinicId: clinic.id,
     slotId: slot.id,

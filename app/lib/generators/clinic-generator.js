@@ -141,7 +141,7 @@ const determineSessionType = (sessionTimes) => {
   return startHour < 12 ? 'morning' : 'afternoon'
 }
 
-const generateClinic = (date, location, breastScreeningUnit, sessionTimes, overrides = null) => {
+const generateClinic = (date, location, breastScreeningUnit, sessionTimes, overrides = null, id = null) => {
   const clinicType = overrides?.clinicType || determineClinicType(location, breastScreeningUnit)
   const slots = generateTimeSlots(date, sessionTimes, clinicType)
 
@@ -163,7 +163,7 @@ const generateClinic = (date, location, breastScreeningUnit, sessionTimes, overr
   const totalSlots = slots.length * (isToday && clinicType !== 'assessment' ? 2 : 1)
 
   return {
-    id: generateId(),
+    id: id || generateId(),
     clinicCode: generateClinicCode(),
     date: clinicDate.format('YYYY-MM-DD'),
     breastScreeningUnitId: breastScreeningUnit.id,
@@ -197,6 +197,11 @@ const generateClinicsForBSU = ({ date, breastScreeningUnit }) => {
   // Check if this is today's generation
   const isToday = dayjs(date).startOf('day').isSame(dayjs().startOf('day'))
 
+
+  // Check if this is the first clinic of today - used to assign a specific ID
+  let isFirstClinicOfToday = isToday // Only track this for today
+  const firstClinicHardcodedId = 'wtrl7jud' // Hardcoded ID for the first clinic of today
+
   // Generate clinics for each selected location
   return selectedLocations.flatMap((location, locationIndex) => {
     // Use location-specific patterns if available, otherwise use BSU patterns
@@ -207,26 +212,30 @@ const generateClinicsForBSU = ({ date, breastScreeningUnit }) => {
 
     if (selectedPattern.type === 'single') {
       // For single sessions, create one clinic
-      return [generateClinic(
+      const clinic = generateClinic(
         date,
         location,
         breastScreeningUnit,
         selectedPattern.sessions[0],
-        // Force first clinic of today to be screening
-        isToday && locationIndex === 0 ? { clinicType: 'screening' } : null
-)]
+        isToday && locationIndex === 0 ? { clinicType: 'screening' } : null,
+        isFirstClinicOfToday ? firstClinicHardcodedId : null
+      )
+      isFirstClinicOfToday = false
+      return [clinic]
     } else {
       // For paired sessions, create two clinics
-      return selectedPattern.sessions.map((sessionTimes, sessionIndex) =>
-        generateClinic(
+      return selectedPattern.sessions.map((sessionTimes, sessionIndex) => {
+        const clinic = generateClinic(
           date,
           location,
           breastScreeningUnit,
-          sessionTimes,
-          // Force first clinic of today to be screening
-          isToday && locationIndex === 0 && sessionIndex === 0 ? { clinicType: 'screening' } : null
+          selectedPattern.sessions[0],
+          isToday && locationIndex === 0 ? { clinicType: 'screening' } : null,
+          isFirstClinicOfToday ? firstClinicHardcodedId : null
         )
-      )
+        isFirstClinicOfToday = false
+        return clinic
+      })
     }
   })
 }

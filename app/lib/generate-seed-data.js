@@ -144,6 +144,7 @@ const generateClinicsForDay = (date, allParticipants, unit, usedParticipantsInSn
         slot,
         participant,
         clinic: firstClinic,
+        id: scenario?.participant?.config?.eventId,
         outcomeWeights: config.screening.outcomes[firstClinic.clinicType],
         forceStatus: scenario.participant.config.scheduling.status,
       })
