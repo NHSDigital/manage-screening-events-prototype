@@ -1,11 +1,15 @@
+@use 'nhsuk-frontend/packages/core/settings' as *;
+@use 'nhsuk-frontend/packages/core/tools' as *;
+@use 'header' as *;
+
 /**
  * Organisation header variant
  */
 
 .nhsuk-header--organisation {
   .nhsuk-header__link {
-    @include nhsuk-link-style-header;
     display: block;
+    @include nhsuk-link-style-header;
 
     &:focus {
       .nhsuk-organisation-name,
@@ -19,7 +23,7 @@
     height: 24px;
     width: 60px;
 
-    @include mq($from: tablet) {
+    @include nhsuk-media-query($from: tablet) {
       height: 32px;
       width: 80px;
     }
@@ -27,12 +31,11 @@
 }
 
 .nhsuk-organisation-name {
-  @include nhsuk-font(22, $line-height: 1.1);
   color: $color_nhsuk-white;
   display: block;
-  font-weight: bold;
+  @include nhsuk-font(22, $line-height: 1.1, $weight: bold);
 
-  @include mq($media-type: print) {
+  @include nhsuk-media-query($media-type: print) {
     color: $nhsuk-print-text-color;
   }
 }
@@ -42,12 +45,11 @@
 }
 
 .nhsuk-organisation-descriptor {
-  @include nhsuk-font(14);
   color: $color_nhsuk-white;
   display: block;
-  font-weight: bold;
+  @include nhsuk-font(14, $weight: bold);
 
-  @include mq($media-type: print) {
+  @include nhsuk-media-query($media-type: print) {
     color: $color_nhsuk-blue;
   }
 }

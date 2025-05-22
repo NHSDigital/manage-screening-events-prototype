@@ -1,15 +1,18 @@
+@use 'nhsuk-frontend/packages/core/settings' as *;
+@use 'nhsuk-frontend/packages/core/tools' as *;
+
 $app-dark-mode-blue: #348de0;
 $app-dark-mode-background: #1C1C1C;
-$app-dark-mode-background-secondary: tint($app-dark-mode-background, 10%);
+$app-dark-mode-background-secondary: nhsuk-tint($app-dark-mode-background, 10%);
 $app-dark-mode-white: #E8E8E8;
 $app-dark-mode-text-colour: $app-dark-mode-white;
-$app-dark-mode-text-colour-secondary: shade($app-dark-mode-text-colour, 30%);
+$app-dark-mode-text-colour-secondary: nhsuk-shade($app-dark-mode-text-colour, 30%);
 
 // Links
 $app-dark-mode-link-color: $app-dark-mode-blue;
-$app-dark-mode-link-hover-color: tint($color_nhsuk-dark-pink, 50%);
-$app-dark-mode-link-active-color: shade($app-dark-mode-link-color, 20%);
-$app-dark-mode-link-visited-color: tint($color_nhsuk-purple, 50%);
+$app-dark-mode-link-hover-color: nhsuk-tint($color_nhsuk-dark-pink, 50%);
+$app-dark-mode-link-active-color: nhsuk-shade($app-dark-mode-link-color, 20%);
+$app-dark-mode-link-visited-color: nhsuk-tint($color_nhsuk-purple, 50%);
 
 // Paul's colours
 $app-dark-mode-link-color: #348de0;
