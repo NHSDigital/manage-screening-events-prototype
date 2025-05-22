@@ -197,8 +197,10 @@ const generateClinicsForBSU = ({ date, breastScreeningUnit }) => {
   // Check if this is today's generation
   const isToday = dayjs(date).startOf('day').isSame(dayjs().startOf('day'))
 
+
   // Check if this is the first clinic of today - used to assign a specific ID
   let isFirstClinicOfToday = isToday // Only track this for today
+  const firstClinicHardcodedId = 'wtrl7jud' // Hardcoded ID for the first clinic of today
 
   // Generate clinics for each selected location
   return selectedLocations.flatMap((location, locationIndex) => {
@@ -216,7 +218,7 @@ const generateClinicsForBSU = ({ date, breastScreeningUnit }) => {
         breastScreeningUnit,
         selectedPattern.sessions[0],
         isToday && locationIndex === 0 ? { clinicType: 'screening' } : null,
-        isFirstClinicOfToday ? 'wtrl7jud' : null
+        isFirstClinicOfToday ? firstClinicHardcodedId : null
       )
       isFirstClinicOfToday = false
       return [clinic]
@@ -229,7 +231,7 @@ const generateClinicsForBSU = ({ date, breastScreeningUnit }) => {
           breastScreeningUnit,
           selectedPattern.sessions[0],
           isToday && locationIndex === 0 ? { clinicType: 'screening' } : null,
-          isFirstClinicOfToday ? 'wtrl7jud' : null
+          isFirstClinicOfToday ? firstClinicHardcodedId : null
         )
         isFirstClinicOfToday = false
         return clinic
