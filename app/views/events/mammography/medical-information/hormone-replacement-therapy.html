@@ -6,7 +6,7 @@
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
-{% set formAction = './../record-medical-information' | orReferrer(referrer) %}
+{% set formAction = './../record-medical-information' | getReturnUrl(referrerChain) %}
 
 {# {% set back = {
   href: "/clinics/" + clinicId,

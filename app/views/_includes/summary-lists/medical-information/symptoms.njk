@@ -130,7 +130,7 @@
       actions: {
         items: [
           {
-            href: "./medical-information/symptoms/edit/" + symptom.id,
+            href: "./medical-information/symptoms/edit/" + symptom.id | urlWithReferrer(currentUrl),
             text: "Change",
             visuallyHiddenText: symptom.type | lower
           }

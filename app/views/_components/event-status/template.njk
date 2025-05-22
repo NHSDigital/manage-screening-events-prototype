@@ -16,9 +16,10 @@
 
   {# Build href with optional referrer #}
   {% set href -%}
-  /clinics/{{ params.clinicId }}/check-in/{{ params.event.id }}
-  {%- if params.referrer %}?referrer={{ params.referrer }}{% endif %}
+    /clinics/{{ params.clinicId }}/check-in/{{ params.event.id }}
   {%- endset %}
+
+  {% set href = href | trim | urlWithReferrer(params.referrerChain) %}
 
   {% if params.event.status === 'event_scheduled' %}
     <p class="nhsuk-u-margin-top-2 nhsuk-u-margin-bottom-0">

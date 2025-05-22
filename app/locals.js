@@ -7,7 +7,7 @@ module.exports = (config) => (req, res, next) => {
     currentUrl: req.path,
     flash: req.flash(),
     query: req.query,
-    referrer: req.query.referrer
+    referrerChain: req.query.referrerChain
   }
 
   // Assign all local variables at once

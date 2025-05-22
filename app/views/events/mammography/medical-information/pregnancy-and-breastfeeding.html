@@ -6,7 +6,7 @@
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
-{% set formAction = './../record-medical-information' %}
+{% set formAction = "./../record-medical-information" | getReturnUrl(referrerChain)  %}
 
 {# {% set back = {
   href: "/clinics/" + clinicId,
@@ -30,12 +30,7 @@
     {{ pageHeading }}
   </h1>
 
-  {{ data | log }}
-
-
-
-   {% set currentlyPregnant %}
-
+  {% set currentlyPregnant %}
     {{ input({
       name: "event[medicalInformation][pregnancyAndBreastfeeding][currentlyPregnantDetails]",
       value: event.medicalInformation.pregnancyAndBreastfeeding.currentlyPregnantDetails,
@@ -47,12 +42,9 @@
         text: "For example, due in November"
       }
     } ) }}
-
   {% endset %}
 
-
-   {% set recentlyPregnant %}
-
+  {% set recentlyPregnant %}
     {{ input({
       name: "event[medicalInformation][pregnancyAndBreastfeeding][recentlyPregnantDetails]",
       value: event.medicalInformation.pregnancyAndBreastfeeding.recentlyPregnantDetails,
@@ -64,11 +56,9 @@
         text: "For example, gave birth two weeks ago"
       }
     } ) }}
-
   {% endset %}
 
-     {% set currentlyBreastfeeding %}
-
+  {% set currentlyBreastfeeding %}
     {{ input({
       name: "event[medicalInformation][pregnancyAndBreastfeeding][currentlyBreastfeedingDuration]",
       value: event.medicalInformation.pregnancyAndBreastfeeding.currentlyBreastfeedingDuration,
@@ -80,16 +70,11 @@
         text: "For example, since January"
       }
     } ) }}
-
   {% endset %}
 
-
-
-
-       {% set recentlyBreastfeeding %}
-
+  {% set recentlyBreastfeeding %}
     {{ input({
-        name: "event[medicalInformation][pregnancyAndBreastfeeding][recentlyBreastfeedingDuration]",
+      name: "event[medicalInformation][pregnancyAndBreastfeeding][recentlyBreastfeedingDuration]",
       value: event.medicalInformation.pregnancyAndBreastfeeding.recentlyBreastfeedingDuration,
       label: {
         text: "Describe when"
@@ -99,16 +84,11 @@
         text: "For example, two months ago"
       }
     } ) }}
-
   {% endset %}
 
-
-
-
-
   {{ radios({
-      name: "event[medicalInformation][pregnancyAndBreastfeeding][pregnancyStatus]",
-      value: event.medicalInformation.pregnancyAndBreastfeeding.pregnancyStatus,
+    name: "event[medicalInformation][pregnancyAndBreastfeeding][pregnancyStatus]",
+    value: event.medicalInformation.pregnancyAndBreastfeeding.pregnancyStatus,
     fieldset: {
       legend: {
         text: 'Is the participant pregnant?',
@@ -144,11 +124,9 @@
   ]
   } ) }}
 
- 
-
   {{ radios({
-      name: "event[medicalInformation][pregnancyAndBreastfeeding][breastfeedingStatus]",
-      value: event.medicalInformation.pregnancyAndBreastfeeding.breastfeedingStatus,
+    name: "event[medicalInformation][pregnancyAndBreastfeeding][breastfeedingStatus]",
+    value: event.medicalInformation.pregnancyAndBreastfeeding.breastfeedingStatus,
      fieldset: {
       legend: {
         text: 'Is the participant currently breastfeeding?',
@@ -183,9 +161,6 @@
     }
   ]
   } ) }}
-
-
-
 
   {{ button({
     text: "Continue"

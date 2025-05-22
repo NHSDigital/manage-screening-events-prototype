@@ -5,6 +5,7 @@ const { getFullName } = require('../lib/utils/participants')
 const { generateMammogramImages } = require('../lib/generators/mammogram-generator')
 const { getEvent, saveTempEventToEvent, updateEventStatus } = require('../lib/utils/event-data')
 const generateId = require('../lib/utils/id-generator')
+const { getReturnUrl, urlWithReferrer, appendReferrer } = require('../lib/utils/referrers')
 
 /**
  * Get single event and its related data
@@ -282,7 +283,7 @@ module.exports = router => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
     const action = req.body.action // 'save' or 'save-and-add'
-    const referrer = req.query.referrer
+    const referrerChain = req.query.referrerChain
 
     // Save temp symptom to array
     if (data.event?.symptomTemp) {
@@ -384,13 +385,10 @@ module.exports = router => {
 
     // Redirect based on action
     if (action === 'save-and-add') {
-      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/add`)
+      res.redirect(urlWithReferrer(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/add`, referrerChain))
     } else {
-      if (referrer) {
-        res.redirect(referrer)
-        return;
-      }
-      res.redirect(`/clinics/${clinicId}/events/${eventId}/record-medical-information`)
+      const returnUrl = getReturnUrl(`/clinics/${clinicId}/events/${eventId}/record-medical-information`, referrerChain)
+      res.redirect(returnUrl)
     }
   })
 
@@ -417,7 +415,7 @@ module.exports = router => {
     }
 
     // Go directly to details page since we already know the type
-    res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/details`)
+    res.redirect(urlWithReferrer(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/details`, req.query.referrerChain))
   })
 
   // Delete symptom
@@ -437,13 +435,14 @@ module.exports = router => {
 
     req.flash('success', 'Symptom deleted')
 
-    res.redirect(`/clinics/${clinicId}/events/${eventId}/record-medical-information`)
+    const returnUrl = getReturnUrl(`/clinics/${clinicId}/events/${eventId}/record-medical-information`, req.query.referrerChain)
+    res.redirect(returnUrl)
   })
 
   // Main route in to starting an event - used to clear any temp data
   router.get('/clinics/:clinicId/events/:eventId/medical-information/symptoms/add', (req, res) => {
     delete req.session.data.event.symptomTemp
-    res.redirect(`/clinics/${req.params.clinicId}/events/${req.params.eventId}/medical-information/symptoms/type`)
+    res.redirect(urlWithReferrer(`/clinics/${req.params.clinicId}/events/${req.params.eventId}/medical-information/symptoms/type`, req.query.referrerChain))
   })
 
   const MAMMOGRAPHY_VIEWS = [

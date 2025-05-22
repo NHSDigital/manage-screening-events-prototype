@@ -33,7 +33,7 @@
     {{ eventStatus({
       clinicId: clinicId,
       event: event,
-      referrer: currentUrl
+      referrerChain: currentUrl
     })}}
 
     {% if event.status === "event_attended_not_screened" %}
