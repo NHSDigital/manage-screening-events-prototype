@@ -277,8 +277,18 @@ module.exports = router => {
       return
     }
 
+    const clinicData = getClinicData(req.session.data, req.params.id)
+    let remainingCount = filterEventsByStatus(clinicData.events, 'remaining').length
+
     // Check filter from either URL param or query string
     let defaultFilter = 'remaining'
+    if (clinicData.clinic?.status == 'scheduled') {
+      defaultFilter = 'all'
+    }
+    else if (clinicData.clinic?.status == 'closed' || remainingCount == 0) {
+      defaultFilter = 'complete'
+    }
+
     const filter = req.params.filter || req.query.filter || defaultFilter
 
     // Validate filter
@@ -287,20 +297,11 @@ module.exports = router => {
       return next()
     }
 
-    const clinicData = getClinicData(req.session.data, req.params.id)
-
     if (!clinicData) {
       return res.redirect('/clinics')
     }
 
-    let remainingCount = filterEventsByStatus(clinicData.events, 'remaining').length
 
-    if (clinicData.clinic?.status == 'scheduled') {
-      defaultFilter = 'all'
-    }
-    else if (clinicData.clinic?.status == 'closed' || remainingCount == 0) {
-      defaultFilter = 'complete'
-    }
 
     const filteredEvents = filterEventsByStatus(clinicData.events, filter)
 

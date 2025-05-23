@@ -1014,7 +1014,7 @@ const createReadingBatch = (data, options) => {
 
     // 3. Apply symptoms filter if specified
     if (filters.hasSymptoms) {
-      events = events.filter(event => event.currentSymptoms?.length > 0)
+      events = events.filter(event => event?.medicalInformation.symptoms?.length > 0)
     }
   }
 

@@ -127,7 +127,7 @@ module.exports = router => {
       if (event?.status !== 'event_checked_in') {
         updateEventStatus(data, eventId, 'event_checked_in')
       }
-      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information`)
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information-check`)
     } else {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/attended-not-screened-reason`)
     }
@@ -446,11 +446,11 @@ module.exports = router => {
   })
 
   const MAMMOGRAPHY_VIEWS = [
-    'medical-information',
+    'medical-information-check',
     'record-medical-information',
     'ready-for-imaging',
     'awaiting-images',
-    'images',
+
     'confirm',
     'screening-complete',
     'attended-not-screened-reason',
@@ -459,6 +459,9 @@ module.exports = router => {
     'previous-mammograms/proceed-anyway',
     'medical-information/symptoms/type',
     'medical-information/symptoms/details',
+    // Completed screenings
+    'images',
+    'medical-information',
   ]
 
   // Event within clinic context
@@ -507,7 +510,7 @@ module.exports = router => {
     const hasRelevantMedicalInformation = data?.event?.medicalInformation?.hasRelevantMedicalInformation
 
     if (!hasRelevantMedicalInformation) {
-      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information`)
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information-check`)
     } else if (hasRelevantMedicalInformation === 'yes') {
       res.redirect(`/clinics/${clinicId}/events/${eventId}/record-medical-information`)
     } else {

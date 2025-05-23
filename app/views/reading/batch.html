@@ -136,7 +136,7 @@
                 {%- endset %}
                 <a href="{{ readingHref if event | canUserReadEvent else '#' }}">{{ event.participant | getFullName }}</a>
 
-                {% if event.currentSymptoms | length %}
+                {% if event.medicalInformation.symptoms | length %}
                 <br>
                   {{ "Has symptoms" | toTag }}
                 {% endif %}
@@ -214,7 +214,7 @@
                 {%- endset %}
                 <a href="{{ readingHref if event | canUserReadEvent else '#' }}">{{ event.participant | getFullName }}</a>
 
-                {% if event.currentSymptoms | length %}
+                {% if event.medicalInformation.symptoms | length %}
                 <br>
                   {{ "Has symptoms" | toTag }}
                 {% endif %}
