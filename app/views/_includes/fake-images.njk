@@ -59,7 +59,7 @@
               <div class="nhsuk-grid-column-one-quarter">
                 <div class="app-mammogram-image--placeholder">
                   {# <img class="nhsuk-image__img {{ 'app-image-flip-horizontal' if side.side == 'right' }}" src="/images/mammograms/nci-vol-9405-72.jpg" alt="Mammogram image"> #}
-                  <img class="nhsuk-image__img" src="/images/mammogram-diagrams/{{ side.viewShortWithSide }}.png" alt="">
+                  <img class="nhsuk-image__img" src="/images/mammogram-diagrams/{{ side.viewShortWithSide | lower }}.png" alt="">
                 </div>
               </div>
             </div>
