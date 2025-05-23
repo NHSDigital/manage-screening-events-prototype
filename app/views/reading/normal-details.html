@@ -29,8 +29,8 @@
 
   <div class="nhsuk-grid-row">
     <div class="nhsuk-grid-column-full">
-      {% set symptoms = event.currentSymptoms %}
-      {% set hasSymptoms = symptoms| length > 0 %}
+      {% set symptoms = event.medicalInformation.symptoms %}
+      {% set hasSymptoms = symptoms | length > 0 %}
 
       {% include "symptomsWarningCard.njk" %}
     </div>

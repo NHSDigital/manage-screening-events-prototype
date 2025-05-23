@@ -8,6 +8,7 @@ const config = require('../../config')
 const { STATUS_GROUPS, isCompleted, isFinal } = require('../utils/status')
 const { generateMammogramImages } = require('./mammogram-generator')
 const { generateSymptoms } = require('./symptoms-generator')
+const { users } = require('../../data/users')
 
 const NOT_SCREENED_REASONS = [
   'Recent mammogram at different facility',
@@ -151,12 +152,19 @@ const generateEvent = ({ slot, participant, clinic, outcomeWeights, forceStatus 
       // Pretend some events have previous images requested
       event.hasRequestedImages = weighted.select({ true: 0.3, false: 0.7 })
 
-      // Higher chance of symptoms in assessment clinics
-      // const symptomProbability = clinic.clinicType === 'assessment' ? 0.4 : 0.15
+      // Generate symptoms using new structure
       const symptomProbability = 0.15
-      event.currentSymptoms = generateSymptoms({
-        probabilityOfSymptoms: symptomProbability
+      const symptoms = generateSymptoms({
+        probabilityOfSymptoms: symptomProbability,
+        users
       })
+
+      // Store symptoms in new medicalInformation structure
+      if (symptoms.length > 0) {
+        event.medicalInformation = {
+          symptoms
+        }
+      }
     }
 
     return event

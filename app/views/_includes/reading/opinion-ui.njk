@@ -1,7 +1,7 @@
 {% set existingRead = event | getReadForUser %}
 {{ event | log("Existing Read")}}
 {% set existingResult = existingRead.result %}
-{% set hasSymptoms = event.currentSymptoms | length > 0 %}
+{% set hasSymptoms = event.medicalInformation.symptoms | length > 0 %}
 
 
 {% set opionionHeading = "Review images" %}
@@ -63,7 +63,7 @@
 </div>
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-full">
-    {% set symptoms = event.currentSymptoms %}
+    {% set symptoms = event.medicalInformation.symptoms %}
     {% include "symptomsWarningCard.njk" %}
   </div>
 </div>
