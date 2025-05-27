@@ -202,12 +202,11 @@ module.exports = router => {
 
       // Save changes and update status
       saveTempEventToEvent(data)
-      saveTempParticipantToParticipant
+      saveTempParticipantToParticipant(data)
       updateEventStatus(data, eventId, 'event_attended_not_screened')
 
       // Get participant info for message
-      const eventData = getEventData(data, clinicId, eventId)
-      const participantName = getFullName(eventData.participant)
+      const participantName = getFullName(data.participant)
       const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
       // Flash success message
@@ -563,11 +562,11 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/attended-not-screened-answer', (req, res) => {
     const { clinicId, eventId } = req.params
 
-    const eventData = getEventData(req.session.data, clinicId, eventId)
-    const participantName = getFullName(eventData.participant)
+    const data = req.session.data
+
+    const participantName = getFullName(data.participant)
     const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
-    const data = req.session.data
     const notScreenedReason = data.event.appointmentStopped.stoppedReason
     const needsReschedule = data.event.appointmentStopped.needsReschedule
     const otherReasonDetails = data.event.appointmentStopped.otherDetails
@@ -616,8 +615,7 @@ module.exports = router => {
     const { clinicId, eventId } = req.params
 
     const data = req.session.data
-    const eventData = getEventData(req.session.data, clinicId, eventId)
-    const participantName = getFullName(eventData.participant)
+    const participantName = getFullName(data.participant)
     const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
     saveTempEventToEvent(data)
