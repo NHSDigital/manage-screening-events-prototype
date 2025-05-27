@@ -4,7 +4,7 @@ const dayjs = require('dayjs')
 const { getFilteredClinics, getClinicEvents } = require('../lib/utils/clinics')
 const { filterEventsByStatus } = require('../lib/utils/status')
 const { getReturnUrl, urlWithReferrer, appendReferrer } = require('../lib/utils/referrers')
-
+const { getParticipant } = require('../lib/utils/participants')
 
 /**
  * Get clinic and its related data from id
@@ -21,7 +21,7 @@ function getClinicData (data, clinicId) {
 
   // Get all participants for these events and add their details to the events
   const eventsWithParticipants = clinicEvents.map(event => {
-    const participant = data.participants.find(p => p.id === event.participantId)
+    const participant = getParticipant(data, event.participantId)
     return {
       ...event,
       participant,

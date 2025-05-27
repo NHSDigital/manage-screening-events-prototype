@@ -1,6 +1,6 @@
 // app/routes/participants.js
 
-const { sortBySurname, getParticipantClinicHistory } = require('../lib/utils/participants')
+const { getParticipant, sortBySurname, getParticipantClinicHistory } = require('../lib/utils/participants')
 const { findById } = require('../lib/utils/arrays')
 
 module.exports = router => {
@@ -60,7 +60,7 @@ module.exports = router => {
   router.get('/participants/:participantId', (req, res) => {
     const data = req.session.data
     const participantId = req.params.participantId
-    const participant = findById(data.participants, participantId)
+    const participant = getParticipant(data, participantId)
 
     if (!participant) {
       res.redirect('/participants')
