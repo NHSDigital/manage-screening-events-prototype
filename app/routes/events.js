@@ -1,7 +1,7 @@
 // app/routes/events.js
 const dayjs = require('dayjs')
 
-const { getFullName } = require('../lib/utils/participants')
+const { getParticipant, getFullName, saveTempParticipantToParticipant } = require('../lib/utils/participants')
 const { generateMammogramImages } = require('../lib/generators/mammogram-generator')
 const { getEvent, saveTempEventToEvent, updateEventStatus } = require('../lib/utils/event-data')
 const generateId = require('../lib/utils/id-generator')
@@ -77,6 +77,18 @@ module.exports = router => {
       data.event = originalEventData.event
     }
 
+    const participantId = originalEventData.participant.id
+    if (!data.participant || (data.participant?.id !== participantId)) {
+      if (!data.participant) {
+        console.log('No temp participant data found, creating new one')
+      }
+      else if (data.participant?.id !== participantId) {
+        console.log(`Temp participant data found, but participantId ${data.participant.id} does not match ${participantId}, creating new one`)
+      }
+      // Copy over the participant data to the temp participant
+      data.participant = { ...originalEventData.participant }
+    }
+
     // This will now have any temp event data that forms have added too
     // We'll later save this back to the source data
     res.locals.event = data.event
@@ -84,7 +96,7 @@ module.exports = router => {
     res.locals.eventData = originalEventData
     res.locals.clinic = originalEventData.clinic
 
-    res.locals.participant = originalEventData.participant
+    res.locals.participant = data.participant
     res.locals.unit = originalEventData.unit
     res.locals.clinicId = clinicId
     res.locals.eventId = eventId
@@ -190,11 +202,11 @@ module.exports = router => {
 
       // Save changes and update status
       saveTempEventToEvent(data)
+      saveTempParticipantToParticipant(data)
       updateEventStatus(data, eventId, 'event_attended_not_screened')
 
       // Get participant info for message
-      const eventData = getEventData(data, clinicId, eventId)
-      const participantName = getFullName(eventData.participant)
+      const participantName = getFullName(data.participant)
       const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
       // Flash success message
@@ -550,11 +562,11 @@ module.exports = router => {
   router.post('/clinics/:clinicId/events/:eventId/attended-not-screened-answer', (req, res) => {
     const { clinicId, eventId } = req.params
 
-    const eventData = getEventData(req.session.data, clinicId, eventId)
-    const participantName = getFullName(eventData.participant)
+    const data = req.session.data
+
+    const participantName = getFullName(data.participant)
     const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
-    const data = req.session.data
     const notScreenedReason = data.event.appointmentStopped.stoppedReason
     const needsReschedule = data.event.appointmentStopped.needsReschedule
     const otherReasonDetails = data.event.appointmentStopped.otherDetails
@@ -588,7 +600,7 @@ module.exports = router => {
     }
 
     saveTempEventToEvent(data)
-
+    saveTempParticipantToParticipant(data)
     updateEventStatus(data, eventId, 'event_attended_not_screened')
 
     const successMessage = `
@@ -603,11 +615,11 @@ module.exports = router => {
     const { clinicId, eventId } = req.params
 
     const data = req.session.data
-    const eventData = getEventData(req.session.data, clinicId, eventId)
-    const participantName = getFullName(eventData.participant)
+    const participantName = getFullName(data.participant)
     const participantEventUrl = `/clinics/${clinicId}/events/${eventId}`
 
     saveTempEventToEvent(data)
+    saveTempParticipantToParticipant(data)
     updateEventStatus(data, eventId, 'event_complete')
 
     const successMessage = `

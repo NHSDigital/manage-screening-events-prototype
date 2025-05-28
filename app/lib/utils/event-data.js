@@ -1,4 +1,5 @@
 // app/lib/utils/event-data.js
+const { getParticipant } = require('./participants.js')
 
 /**
  * Get an event by ID
@@ -17,7 +18,7 @@ const getEventData = (data, clinicId, eventId) => {
   const event = data.events.find(e => e.id === eventId && e.clinicId === clinicId)
   if (!event) return null
 
-  const participant = data.participants.find(p => p.id === event.participantId)
+  const participant = getParticipant(data, event.participantId)
   const unit = data.breastScreeningUnits.find(u => u.id === clinic.breastScreeningUnitId)
   const location = unit.locations.find(l => l.id === clinic.locationId)
 

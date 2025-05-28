@@ -2,6 +2,16 @@
 const riskLevels = require('../../data/risk-levels.js')
 
 /**
+ * Get a participant by ID
+ * @param {Object} data - Session data containing participants
+ * @param {string} participantId - Participant ID to search for
+ * @returns {Object|null} Participant object or null if not found
+ */
+const getParticipant = (data, participantId) => {
+  return data.participants.find(p => p.id === participantId) || null
+}
+
+/**
  * Get full name of participant
  * @param {Object} participant - Participant object
  */
@@ -81,21 +91,21 @@ const sortBySurname = (participants) => {
  */
 const getParticipantClinicHistory = (data, participantId, options = {}) => {
   const { filter = 'all', mostRecent = false } = options
-  
+
   if (!data?.events || !data?.clinics || !participantId) return []
 
   const today = new Date().setHours(0, 0, 0, 0)
-  
+
   // Get participant events with clinic details
   const history = data.events
     .filter(event => event.participantId === participantId)
     .map(event => {
       const clinic = data.clinics.find(clinic => clinic.id === event.clinicId)
       if (!clinic) return null
-      
+
       const unit = data.breastScreeningUnits.find(unit => unit.id === clinic.breastScreeningUnitId)
       const location = unit.locations.find(location => location.id === clinic.locationId)
-      
+
       return {
         clinic,
         unit,
@@ -104,11 +114,11 @@ const getParticipantClinicHistory = (data, participantId, options = {}) => {
       }
     })
     .filter(Boolean) // Remove null entries
-    
+
   // Apply date filtering
   const filtered = history.filter(item => {
     const clinicDate = new Date(item.clinic.date).setHours(0, 0, 0, 0)
-    
+
     switch (filter) {
       case 'historic':
         return clinicDate < today
@@ -118,17 +128,17 @@ const getParticipantClinicHistory = (data, participantId, options = {}) => {
         return true
     }
   })
-  
+
   // Sort by date, most recent first
-  const sorted = filtered.sort((a, b) => 
+  const sorted = filtered.sort((a, b) =>
     new Date(b.clinic.date) - new Date(a.clinic.date)
   )
-  
+
   return mostRecent ? sorted[0] || null : sorted
 }
 
 // Helper functions for common use cases
-const getParticipantMostRecentClinic = (data, participantId) => 
+const getParticipantMostRecentClinic = (data, participantId) =>
   getParticipantClinicHistory(data, participantId, { filter: 'historic', mostRecent: true })
 
 const getParticipantMostRecentClinicDate = (data, participantId) => {
@@ -139,10 +149,10 @@ const getParticipantMostRecentClinicDate = (data, participantId) => {
   else return false
 }
 
-const getParticipantHistoricClinics = (data, participantId) => 
+const getParticipantHistoricClinics = (data, participantId) =>
   getParticipantClinicHistory(data, participantId, { filter: 'historic' })
 
-const getParticipantUpcomingClinics = (data, participantId) => 
+const getParticipantUpcomingClinics = (data, participantId) =>
   getParticipantClinicHistory(data, participantId, { filter: 'upcoming' })
 
 /**
@@ -175,8 +185,50 @@ const getCurrentRiskLevel = (participant, referenceDate = new Date()) => {
   return 'routine'
 }
 
+// Saving data
+
+/**
+ * Find and update a participant in session data
+ * @param {Object} data - Session data
+ * @param {string} participantId - Participant ID
+ * @param {Object} updatedParticipant - Updated participant object
+ * @returns {Object|null} Updated participant or null if not found
+ */
+const updateParticipant = (data, participantId, updatedParticipant) => {
+  const participantIndex = data.participants.findIndex(p => p.id === participantId)
+  if (participantIndex === -1) return null
+
+  // Update in the array
+  data.participants[participantIndex] = updatedParticipant
+  return updatedParticipant
+}
+
+/**
+ * Save temporary participant data back to the main participant
+ * @param {Object} data - Session data
+ * @returns {Object|null} Updated participant or null if no temp data
+ *
+ * This function takes the data.participant object and saves it back to the
+ * participants array, then clears participant. Similar to saveTempEventToEvent.
+ */
+const saveTempParticipantToParticipant = (data) => {
+  if (!data.participant || !data.participant.id) {
+    return null
+  }
+
+  const participantId = data.participant.id
+
+  // Use updateParticipant to save the temp data
+  const updatedParticipant = updateParticipant(data, participantId, data.participant)
+
+  // Clear temp data
+  delete data.participant
+
+  return updatedParticipant
+}
 
 module.exports = {
+  getParticipant,
   getFullName,
   getFullNameReversed,
   getShortName,
@@ -188,5 +240,7 @@ module.exports = {
   getParticipantMostRecentClinicDate,
   getParticipantHistoricClinics,
   getParticipantUpcomingClinics,
-  getCurrentRiskLevel
+  getCurrentRiskLevel,
+  updateParticipant,
+  saveTempParticipantToParticipant,
 }
