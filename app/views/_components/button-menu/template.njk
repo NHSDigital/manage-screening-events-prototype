@@ -1,0 +1,50 @@
+{# Adapted from https://github.com/ministryofjustice/app-frontend/blob/main/src/app/components/button-menu/template.njk #}
+
+{# {%- from "govuk/components/button/macro.njk" import govukButton %} #}
+{% from 'button/macro.njk' import button %}
+
+{# {% from "govuk/macros/attributes.njk" import nhsukAttributes %} #}
+{% from "attributes.njk" import nhsukAttributes %}
+
+{#- Set classes for this component #}
+{%- set classNames = "app-button-menu" -%}
+{%- set defaultItemClassNames = "app-button-menu__item nhsuk-button--secondary" %}
+
+{%- if params.classes %}
+  {% set classNames = classNames + " " + params.classes %}
+{% endif %}
+
+{%- set buttonAttributes = {
+  "data-button-text": {
+    value: params.button.text,
+    optional: true
+    },
+  "data-button-classes": {
+    value: params.button.classes,
+    optional: true
+  },
+  "data-align-menu": {
+    value: params.alignMenu,
+    optional: true
+  }
+}
+%}
+
+<div class="{{- classNames -}}" data-module="app-button-menu" {{- nhsukAttributes(params.attributes) -}}  {{- nhsukAttributes(buttonAttributes) -}}>
+  {%- for item in params.items %}
+    {% set currentItemClassNames = " " + item.classes if item.classes else "" %}
+    {{ button({
+      element: item.element,
+      classes: defaultItemClassNames + currentItemClassNames,
+      text: item.text,
+      html: item.html,
+      name: item.name,
+      type: item.type,
+      value: item.value,
+      href: item.href,
+      disabled: item.disabled,
+      attributes: item.attributes,
+      preventDoubleClick: items.preventDoubleClick
+    }) }}
+  {% endfor -%}
+</div>
