@@ -471,6 +471,8 @@ module.exports = router => {
     'previous-mammograms/proceed-anyway',
     'medical-information/symptoms/type',
     'medical-information/symptoms/details',
+    'personal-details/ethnicity-details',
+
     // Completed screenings
     'images',
     'medical-information',
