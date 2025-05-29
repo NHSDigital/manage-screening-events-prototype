@@ -121,10 +121,15 @@ module.exports = router => {
     })
   })
 
-  router.post('/clinics/:clinicId/events/:eventId/personal-details/ethnicity-details-answer', (req, res) => {
+  router.post('/clinics/:clinicId/events/:eventId/personal-details/ethnicity-answer', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
     const selectedEthnicBackground = data.participant?.demographicInformation?.ethnicBackground
+
+    if (!selectedEthnicBackground) {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/personal-details/ethnicity`)
+      return
+    }
 
     // Map ethnic background to ethnic group
     if (selectedEthnicBackground && selectedEthnicBackground !== 'Prefer not to say') {
@@ -526,7 +531,7 @@ module.exports = router => {
     'previous-mammograms/proceed-anyway',
     'medical-information/symptoms/type',
     'medical-information/symptoms/details',
-    'personal-details/ethnicity-details',
+    'personal-details/ethnicity',
 
     // Completed screenings
     'images',
