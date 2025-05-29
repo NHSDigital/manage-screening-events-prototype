@@ -52,7 +52,7 @@ const generateEthnicity = (ethnicities) => {
   if (Math.random() < 0.2) {
     return {
       ethnicGroup,
-      ethnicBackground: 'Not provided'
+      ethnicBackground: 'Prefer not to say'
     }
   }
 

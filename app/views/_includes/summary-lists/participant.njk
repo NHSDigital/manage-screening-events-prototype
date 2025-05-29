@@ -16,23 +16,40 @@
 
 {% set allowEdits = allowEdits | default(true) %}
 
-{% set ethnicGroup = participant.demographicInformation.ethnicGroup  %}
+{% set ethnicGroup = participant.demographicInformation.ethnicGroup %}
 {% set ethnicBackground = participant.demographicInformation.ethnicBackground %}
+
+{% set otherEthnicBackground = participant.demographicInformation.otherEthnicBackground %}
+
+{% if otherEthnicBackground and (ethnicBackground == "Other ethnic background") -%}
+  {% set ethnicBackground -%}
+    {{- ethnicBackground }} - {{ otherEthnicBackground }}
+  {%- endset %}
+{% endif %}
+
+{# {% set legendText = "Is " + (participant | getFullName) + " getting married soon?"%}
+
+{% set legendText %}Is {{ participant | getFullName }} getting married soon?{% endset %}
+
+ #}
+
+
+
+
+
 {% set ethnicityDetailsLink %}
-  <a href="#" class="nhsuk-link">Enter ethnicity details</a>
+  <a href="./{{ eventId }}/personal-details/ethnicity-details" class="nhsuk-link">Enter ethnicity details</a>
 {% endset %}
 
 {% set ethnicityHtml %}
-{% if ethnicGroup %}
-  {{ ethnicGroup }}
-  {% if ethnicBackground and ethnicBackground != 'Not provided' %}
-    ({{ethnicBackground | replace('Any other', 'any other')}})
+  {% if ethnicGroup or ethnicBackground %}
+    {{ ethnicGroup if ethnicGroup }}
+    {% if ethnicBackground and ethnicBackground != 'Prefer not to say' %}
+      ({{ ethnicBackground | replace('Other', 'other') }})
+    {% endif %}
+  {% else %}
+    {{ ethnicityDetailsLink | safe }}
   {% endif %}
-{% else %}
-  {{ ethnicityDetailsLink | safe }}
-{% endif %}
-
-
 {% endset %}
 
 {% set hasAdditionalMammograms = event.previousMammograms | length > 0 %}
@@ -198,10 +215,10 @@
      actions: {
         items: [
           {
-            href: "#",
+            href: eventId + "/personal-details/ethnicity-details",
             text: "Change",
-            visuallyHiddenText: "address"
-          } if false
+            visuallyHiddenText: "ethnicity"
+          }
         ]
       }
    },

@@ -6,7 +6,7 @@
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
-{% set formAction = "./../personal-details" | getReturnUrl(referrerChain)  %}
+{% set formAction = "./../../" + eventId %}
 
 {# {% set back = {
   href: "/events/" + clinicId,
@@ -33,8 +33,11 @@
   <p>Assure the participant that this information is collected to help the NHS identify trends that can help detect and prevent breast cancer. It will not be used to determine individual patient treatment or services.  </p>
 
 
-    {% set otherEthnicGroup %}
+    {% set otherEthnicBackgroundHtml %}
     {{ input({
+      name: "participant[demographicInformation][otherEthnicBackground]",
+      id: "otherEthnicBackground",
+      value: participant.demographicInformation.otherEthnicBackground,
       label: {
         text: "Provide details"
       }
@@ -52,8 +55,8 @@
 
 {{ radios({
   idPrefix: "white",
-  name: "participant[personalDetails][ethnicity]",
-  value: participant.personalDetails.ethnicity,
+  name: "participant[demographicInformation][ethnicBackground]",
+  value: participant.demographicInformation.ethnicBackground,
   fieldset: {
     legend: {
       text: "White",
@@ -61,17 +64,17 @@
     }
   },
   items: [
-    { value: "whiteBritish", text: "English, Welsh, Scottish, Northern Irish or British" },
-    { value: "whiteIrish", text: "Irish" },
-    { value: "gypsyOrIrishTraveller", text: "Gypsy or Irish Traveller" },
-    { value: "otherWhiteBackground", text: "Other White background" }
+    { value: "English, Welsh, Scottish, Northern Irish or British", text: "English, Welsh, Scottish, Northern Irish or British" },
+    { value: "Irish", text: "Irish" },
+    { value: "Gypsy or Irish Traveller", text: "Gypsy or Irish Traveller" },
+    { value: "Other White background", text: "Other White background" }
   ]
 }) }}
 
 {{ radios({
   idPrefix: "mixed",
-  name: "participant[personalDetails][ethnicity]",
-  value: participant.personalDetails.ethnicity,
+  name: "participant[demographicInformation][ethnicBackground]",
+  value: participant.demographicInformation.ethnicBackground,
   fieldset: {
     legend: {
       text: "Mixed or multiple ethnic groups",
@@ -79,17 +82,17 @@
     }
   },
   items: [
-    { value: "whiteAndBlackCaribbean", text: "White and Black Caribbean" },
-    { value: "whiteAndBlackAfrican", text: "White and Black African" },
-    { value: "whiteAndAsian", text: "White and Asian" },
-    { value: "otherMixedBackground", text: "Other mixed or multiple ethnic background" }
+    { value: "White and Black Caribbean", text: "White and Black Caribbean" },
+    { value: "White and Black African", text: "White and Black African" },
+    { value: "White and Asian", text: "White and Asian" },
+    { value: "Other mixed or multiple ethnic background", text: "Other mixed or multiple ethnic background" }
   ]
 }) }}
 
 {{ radios({
   idPrefix: "asian",
-  name: "participant[personalDetails][ethnicity]",
-  value: participant.personalDetails.ethnicity,
+  name: "participant[demographicInformation][ethnicBackground]",
+  value: participant.demographicInformation.ethnicBackground,
   fieldset: {
     legend: {
       text: "Asian or Asian British",
@@ -97,18 +100,18 @@
     }
   },
   items: [
-    { value: "indian", text: "Indian" },
-    { value: "pakistani", text: "Pakistani" },
-    { value: "bangladeshi", text: "Bangladeshi" },
-    { value: "chinese", text: "Chinese" },
-    { value: "otherAsianOrAsianBritishBackground", text: "Other Asian or Asian British background" }
+    { value: "Indian", text: "Indian" },
+    { value: "Pakistani", text: "Pakistani" },
+    { value: "Bangladeshi", text: "Bangladeshi" },
+    { value: "Chinese", text: "Chinese" },
+    { value: "Other Asian or Asian British background", text: "Other Asian or Asian British background" }
   ]
 }) }}
 
 {{ radios({
   idPrefix: "black",
-  name: "participant[personalDetails][ethnicity]",
-  value: participant.personalDetails.ethnicity,
+  name: "participant[demographicInformation][ethnicBackground]",
+  value: participant.demographicInformation.ethnicBackground,
   fieldset: {
     legend: {
       text: "Black, African, Caribbean or Black British",
@@ -116,16 +119,16 @@
     }
   },
   items: [
-    { value: "african", text: "African" },
-    { value: "caribbean", text: "Caribbean" },
-    { value: "otherBlackAfricanCaribbeanBackground", text: "Other Black, African, Caribbean or Black British background" }
+    { value: "African", text: "African" },
+    { value: "Caribbean", text: "Caribbean" },
+    { value: "Other Black, African, Caribbean or Black British background", text: "Other Black, African, Caribbean or Black British background" }
   ]
 }) }}
 
 {{ radios({
   idPrefix: "other",
-  name: "participant[personalDetails][ethnicity]",
-  value: participant.personalDetails.ethnicity,
+  name: "participant[demographicInformation][ethnicBackground]",
+  value: participant.demographicInformation.ethnicBackground,
   fieldset: {
     legend: {
       text: "Other",
@@ -133,18 +136,19 @@
     }
   },
   items: [
+    { value: "Arab", text: "Arab" },
     {
-      value: "otherEthnicGroup",
-      text: "Other ethnic group",
+      value: "Other ethnic background",
+      text: "Other ethnic background",
       conditional: {
-        html: otherEthnicGroup
+        html: otherEthnicBackgroundHtml
       }
     },
     {
       divider: "or"
     },
     {
-      value: "preferNotToSay",
+      value: "Prefer not to say",
       text: "Prefer not to say"
     }
   ]
