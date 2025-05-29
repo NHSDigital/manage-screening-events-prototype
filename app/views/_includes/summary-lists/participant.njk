@@ -18,37 +18,20 @@
 
 {% set ethnicGroup = participant.demographicInformation.ethnicGroup %}
 {% set ethnicBackground = participant.demographicInformation.ethnicBackground %}
+{% set otherEthnicBackgroundDetails = participant.demographicInformation.otherEthnicBackgroundDetails %}
 
-{% set otherEthnicBackground = participant.demographicInformation.otherEthnicBackground %}
-
-{% if otherEthnicBackground and (ethnicBackground == "Other ethnic background") -%}
+{% if otherEthnicBackgroundDetails and (ethnicBackground | lower | startsWith("other")) -%}
   {% set ethnicBackground -%}
-    {{- ethnicBackground }} - {{ otherEthnicBackground }}
+    {{- ethnicBackground }} - {{ otherEthnicBackgroundDetails }}
   {%- endset %}
 {% endif %}
 
-{# {% set legendText = "Is " + (participant | getFullName) + " getting married soon?"%}
-
-{% set legendText %}Is {{ participant | getFullName }} getting married soon?{% endset %}
-
- #}
-
-
-
-
-
-{% set ethnicityDetailsLink %}
-  <a href="./{{ eventId }}/personal-details/ethnicity-details" class="nhsuk-link">Enter ethnicity details</a>
-{% endset %}
-
 {% set ethnicityHtml %}
-  {% if ethnicGroup or ethnicBackground %}
-    {{ ethnicGroup if ethnicGroup }}
-    {% if ethnicBackground and ethnicBackground != 'Prefer not to say' %}
-      ({{ ethnicBackground | replace('Other', 'other') }})
-    {% endif %}
-  {% else %}
-    {{ ethnicityDetailsLink | safe }}
+  {{ ethnicGroup if ethnicGroup }}
+  {% if ethnicBackground and ethnicBackground != 'Prefer not to say' %}
+    ({{ ethnicBackground | replace('Other', 'other') }})
+    {% elseif ethnicBackground == "Prefer not to say" %}
+      {{ ethnicBackground }}
   {% endif %}
 {% endset %}
 
@@ -210,7 +193,7 @@
        text: "Ethnicity"
      },
      value: {
-       html: ethnicityHtml | safe
+       html: ethnicityHtml if ethnicGroup or ethnicBackground
      },
      actions: {
         items: [
@@ -309,4 +292,4 @@
       }
    } if false
   ]
-}) }}
+} | showMissingInformationLink) }}

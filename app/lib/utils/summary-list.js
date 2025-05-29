@@ -23,18 +23,20 @@ const showMissingInformationLink = (summaryList) => {
   if (!summaryList?.rows) return summaryList
 
   const updatedRows = summaryList.rows.map(row => {
+
     const value = row.value?.text || row.value?.html
-    if (!isEmpty(value)) return row
+    const hasAction = row.actions && row.actions.items && row.actions.items.length > 0
+
+    // If value is not empty or there are no existing actions, return row as is
+    if (!isEmpty(value) || (!hasAction)) return row
 
     const keyText = row.actions?.items?.[0]?.visuallyHiddenText || row.key.text.toLowerCase()
     const href = row.actions?.items?.[0]?.href || '#'
 
-
     return {
       ...row,
       value: {
-        html: `<a href="${href}" class="nhsuk-link">Enter ${keyText}</a>`
-        // html: `<a href="${href}" class="nhsuk-link">Enter details</a>`
+        html: `<a href="${href}" class="nhsuk-link">Enter ${keyText} details</a>`
       },
       actions: {
         items: []
