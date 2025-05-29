@@ -2,7 +2,7 @@
 {% extends 'layout-app.html' %}
 
 
-{% set pageHeading = "Participant ethnicity" %}
+{% set pageHeading = "Ethnicity" %}
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
 
@@ -29,7 +29,7 @@
     {{ pageHeading }}
   </h1>
 
-  <p>Assure the participant that this information is collected to help the NHS identify trends that can help detect and prevent breast cancer. It will not be used to determine individual patient treatment or services.  </p>
+  <p>Assure the participant that this information is collected to help the NHS identify breast cancer trends so screening programmes can be improved. It will not be used to determine individual patient treatment or services.</p>
 
   {# This creates a unique input for each 'other' option, so that we don't end up with an array  #}
   {% macro otherBackground(ethnicGroup) %}
