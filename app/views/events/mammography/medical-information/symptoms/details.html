@@ -547,20 +547,25 @@
       }
     }) }}
 
-    {{ button({
+    {# {{ button({
       text: "Save and add another",
       classes: "nhsuk-button--secondary",
       attributes: {
         name: "action",
         value: "save-and-add"
       }
-    }) }}
+    }) }} #}
+    {% set saveSymptomFirst = true %}
+    {% include "add-symptom-button-menu.njk" %}
   </div>
 
   {# Only show link if this is a previously saved symptom #}
   {% if event.symptomTemp.id %}
+    {% set deleteHref %}
+      ./delete/{{ event.symptomTemp.id }}{{ "" | urlWithReferrer(referrerChain) }}
+    {% endset %}
     <p class="nhsuk-u-margin-top-4">
-      <a href="./delete/{{ event.symptomTemp.id }}" class="nhsuk-link app-link--warning">
+      <a href="{{ deleteHref }}" class="nhsuk-link app-link--warning">
         Delete this symptom
       </a>
     </p>

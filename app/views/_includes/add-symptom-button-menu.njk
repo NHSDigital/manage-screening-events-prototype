@@ -1,0 +1,37 @@
+{% set methodUrl -%}
+  /clinics/{{ clinicId }}/events/{{ eventId }}/medical-information/symptoms
+{% endset %}
+
+{% if saveSymptomFirst == true %}
+  {% set methodUrl = methodUrl ~ "/save?action=save-and-add&symptomType=" %}
+{% else %}
+  {% set methodUrl = methodUrl ~ "/add?symptomType=" %}
+{% endif %}
+
+{% set symptoms = [
+  "Breast lump",
+  "Swelling or shape change",
+  "Skin change",
+  "Nipple change",
+  "Persistent pain",
+  "Other"
+] %}
+
+{% set buttonMenuItems = [] %}
+
+{% for symptom in symptoms %}
+  {% set buttonMenuItems = buttonMenuItems | push({
+    text: symptom,
+    href: (methodUrl ~ (symptom | camelCase) ) | urlWithReferrer(referrerChain),
+    classes: "nhsuk-button--secondary"
+  }) %}
+{% endfor %}
+
+{{ buttonMenu({
+  items: buttonMenuItems,
+  button: {
+    text: "Add another symptom" if hasSymptoms or (saveSymptomFirst == true) else "Add a symptom",
+    classes: "nhsuk-button--secondary"
+  },
+  alignMenu: "left"
+}) }}

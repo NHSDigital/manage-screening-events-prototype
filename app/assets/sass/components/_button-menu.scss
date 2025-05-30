@@ -33,17 +33,19 @@
 
 .app-button-menu__wrapper {
   z-index: 10;
+  @include nhsuk-print-hide;
   margin: 5px 0 0; // 2px shadow, 3px gap
   padding: 0;
   list-style: none;
   background-color: $color_nhsuk-white;
   border: 1px solid $nhsuk-border-color;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-bottom: nhsuk-spacing(1) solid $color_nhsuk-grey-4;
+  // box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   &,
   .app-button-group--inline {
     position: absolute;
-    width: 200px;
+    width: 300px;
   }
 
   &--right {
@@ -78,13 +80,15 @@
   margin-right: 0;
   margin-bottom: 0;
   margin-left: 0;
-  padding: nhsuk-spacing(2);
-  border: $nhsuk-border-width-form-element solid transparent;
+  padding: nhsuk-spacing(3);
+  // border: $nhsuk-border-width-form-element solid transparent;
   // border-bottom: 1px solid $nhsuk-secondary-border-color;
-  border-bottom: 1px solid $nhsuk-form-border-color;
+  // border-bottom: 1px solid $nhsuk-form-border-color;
+  border-top: 1px solid $color_nhsuk-grey-3;
   border-radius: 0;
-  color: $nhsuk-text-color;
-  background-color: $color_nhsuk-grey-5;
+  // color: $nhsuk-text-color;
+  color: $color_nhsuk-blue;
+  background-color: $color_nhsuk-white;
   text-align: left;
   vertical-align: top;
   cursor: pointer;
@@ -96,13 +100,13 @@
   &:visited,
   &:active,
   &:hover {
-    color: $nhsuk-text-color;
-    text-decoration: none;
+    // color: $nhsuk-text-color;
+    // text-decoration: none;
   }
 
   &:active,
   &:hover {
-    color: $color_nhsuk-white;
+    // color: $color_nhsuk-white;
   }
 
   // Fix unwanted button padding in Firefox
@@ -112,20 +116,21 @@
   }
 
   &:hover {
-    background-color: $color_nhsuk-blue;
+    background-color: $color_nhsuk-grey-5;
   }
 
   &:focus {
     z-index: 10;
     border-color: $nhsuk-focus-color;
     outline: $nhsuk-focus-width solid transparent;
-    box-shadow: inset 0 0 0 1px $nhsuk-focus-color;
+    box-shadow: inset 0 0 0 4px $nhsuk-focus-color;
   }
 
   &:focus:not(:active):not(:hover) {
     border-color: $nhsuk-focus-color;
     color: $nhsuk-focus-text-color;
     background-color: $nhsuk-focus-color;
-    box-shadow: 0 2px 0 $nhsuk-focus-text-color;
+    // box-shadow: inset 0 -8px 0 $nhsuk-focus-text-color;
+    box-shadow: inset 0 ($nhsuk-focus-width * -1) $nhsuk-focus-text-color;
   }
 }

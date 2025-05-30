@@ -56,7 +56,10 @@ const getReturnUrl = function(url, referrerChain) {
  */
 const urlWithReferrer = (url, referrerChain) => {
   if (!referrerChain) return url
-  return `${url}?referrerChain=${referrerChain}`
+
+  // Check if URL already has query parameters
+  const separator = url.includes('?') ? '&' : '?'
+  return `${url}${separator}referrerChain=${referrerChain}`
 }
 
 /**
