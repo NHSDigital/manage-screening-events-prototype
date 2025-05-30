@@ -121,6 +121,66 @@ module.exports = router => {
     })
   })
 
+  router.post('/clinics/:clinicId/events/:eventId/personal-details/ethnicity-answer', (req, res) => {
+    const { clinicId, eventId } = req.params
+    const data = req.session.data
+    const selectedEthnicBackground = data.participant?.demographicInformation?.ethnicBackground
+
+    if (!selectedEthnicBackground) {
+      res.redirect(`/clinics/${clinicId}/events/${eventId}/personal-details/ethnicity`)
+      return
+    }
+
+    // Map ethnic background to ethnic group
+    if (selectedEthnicBackground && selectedEthnicBackground !== 'Prefer not to say') {
+      const ethnicGroup = getEthnicGroupFromBackground(selectedEthnicBackground)
+      if (ethnicGroup) {
+        data.participant.demographicInformation.ethnicGroup = ethnicGroup
+      }
+
+      // Handle "Other" background details consolidation
+      cleanupOtherEthnicBackgroundDetails(data)
+    }
+    else if (selectedEthnicBackground === 'Prefer not to say') {
+      // Clear both fields if they prefer not to say
+      data.participant.demographicInformation.ethnicGroup = null
+      data.participant.demographicInformation.ethnicBackground = 'Prefer not to say'
+      data.participant.demographicInformation.otherEthnicBackgroundDetails = null
+    }
+
+    // Save the participant data back to the main array
+    saveTempParticipantToParticipant(data)
+
+    // Redirect back to the event page (or wherever appropriate)
+    res.redirect(`/clinics/${clinicId}/events/${eventId}`)
+  })
+
+  // Helper function to clean up otherEthnicBackgroundDetails from array to single value
+  function cleanupOtherEthnicBackgroundDetails(data) {
+    const otherDetails = data.participant?.demographicInformation?.otherEthnicBackgroundDetails
+
+    if (Array.isArray(otherDetails)) {
+      // Filter out empty strings and take the first non-empty value
+      const cleanedDetails = otherDetails.filter(detail => detail && detail.trim())
+      data.participant.demographicInformation.otherEthnicBackgroundDetails =
+        cleanedDetails.length > 0 ? cleanedDetails[0].trim() : null
+    }
+    // If it's already a string or null, leave it as is
+  }
+
+  // Helper function to map ethnic background to ethnic group
+  function getEthnicGroupFromBackground(ethnicBackground) {
+    const ethnicities = require('../data/ethnicities')
+
+    for (const [group, backgrounds] of Object.entries(ethnicities)) {
+      if (backgrounds.includes(ethnicBackground)) {
+        return group
+      }
+    }
+
+    return null // Return null if no match found
+  }
+
   // Handle screening completion
   // Todo - name this route better
   router.post('/clinics/:clinicId/events/:eventId/can-appointment-go-ahead-answer', (req, res) => {
@@ -471,6 +531,8 @@ module.exports = router => {
     'previous-mammograms/proceed-anyway',
     'medical-information/symptoms/type',
     'medical-information/symptoms/details',
+    'personal-details/ethnicity',
+
     // Completed screenings
     'images',
     'medical-information',

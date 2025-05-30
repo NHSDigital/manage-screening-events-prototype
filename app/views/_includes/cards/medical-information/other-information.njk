@@ -81,44 +81,44 @@
 {% endset %}
 
 {% set otherInformationHtml %}
-{{ summaryList({
-  rows: [
-    {
-      key: {
-        text: "Hormone replacement therapy (HRT)"
+  {{ summaryList({
+    rows: [
+      {
+        key: {
+          text: "Hormone replacement therapy (HRT)"
+        },
+        value: {
+          html: hrtHtml
+        },
+        actions: {
+          items: [
+            {
+              href: "./medical-information/hormone-replacement-therapy" | urlWithReferrer(currentUrl),
+              text: "Change",
+              visuallyHiddenText: "hormone replacement therapy (HRT)"
+            }
+          ]
+        }
       },
-      value: {
-        html: hrtHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "./medical-information/hormone-replacement-therapy" | urlWithReferrer(currentUrl),
-            text: "Change",
-            visuallyHiddenText: "hormone replacement therapy (HRT)"
-          }
-        ]
+      {
+        key: {
+          text: "Pregnancy and breastfeeding"
+        },
+        value: {
+          html: pregnancyAndBreastfeedingHtml
+        },
+        actions: {
+          items: [
+            {
+              href: "./medical-information/pregnancy-and-breastfeeding" | urlWithReferrer(currentUrl),
+              text: "Change",
+              visuallyHiddenText: "pregnancy and breastfeeding"
+            }
+          ]
+        }
       }
-    },
-    {
-      key: {
-        text: "Pregnancy and breastfeeding"
-      },
-      value: {
-        html: pregnancyAndBreastfeedingHtml
-      },
-      actions: {
-        items: [
-          {
-            href: "./medical-information/pregnancy-and-breastfeeding" | urlWithReferrer(currentUrl),
-            text: "Change",
-            visuallyHiddenText: "pregnancy and breastfeeding"
-          }
-        ]
-      }
-    }
-  ]
-} | showMissingInformationLink) }}
+    ]
+  } | showMissingInformationLink ) }}
 {% endset %}
 
 {{ card({

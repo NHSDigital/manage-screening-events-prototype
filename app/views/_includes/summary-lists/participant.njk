@@ -16,23 +16,23 @@
 
 {% set allowEdits = allowEdits | default(true) %}
 
-{% set ethnicGroup = participant.demographicInformation.ethnicGroup  %}
+{% set ethnicGroup = participant.demographicInformation.ethnicGroup %}
 {% set ethnicBackground = participant.demographicInformation.ethnicBackground %}
-{% set ethnicityDetailsLink %}
-  <a href="#" class="nhsuk-link">Enter ethnicity details</a>
-{% endset %}
+{% set otherEthnicBackgroundDetails = participant.demographicInformation.otherEthnicBackgroundDetails %}
 
-{% set ethnicityHtml %}
-{% if ethnicGroup %}
-  {{ ethnicGroup }}
-  {% if ethnicBackground and ethnicBackground != 'Not provided' %}
-    ({{ethnicBackground | replace('Any other', 'any other')}})
-  {% endif %}
-{% else %}
-  {{ ethnicityDetailsLink | safe }}
+{% if otherEthnicBackgroundDetails and (ethnicBackground | lower | startsWith("other")) -%}
+  {% set ethnicBackground -%}
+    {{- ethnicBackground }} - {{ otherEthnicBackgroundDetails }}
+  {%- endset %}
 {% endif %}
 
-
+{% set ethnicityHtml %}
+  {{ ethnicGroup if ethnicGroup }}
+  {% if ethnicBackground and ethnicBackground != 'Prefer not to say' %}
+    ({{ ethnicBackground | replace('Other', 'other') }})
+    {% elseif ethnicBackground == "Prefer not to say" %}
+      {{ ethnicBackground }}
+  {% endif %}
 {% endset %}
 
 {% set hasAdditionalMammograms = event.previousMammograms | length > 0 %}
@@ -193,15 +193,15 @@
        text: "Ethnicity"
      },
      value: {
-       html: ethnicityHtml | safe
+       html: ethnicityHtml if ethnicGroup or ethnicBackground
      },
      actions: {
         items: [
           {
-            href: "#",
+            href: eventId + "/personal-details/ethnicity",
             text: "Change",
-            visuallyHiddenText: "address"
-          } if false
+            visuallyHiddenText: "ethnicity"
+          }
         ]
       }
    },
@@ -292,4 +292,4 @@
       }
    } if false
   ]
-}) }}
+} | showMissingInformationLink) }}
