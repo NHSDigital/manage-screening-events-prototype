@@ -63,7 +63,7 @@
       name: "event[medicalInformation][pregnancyAndBreastfeeding][currentlyBreastfeedingDuration]",
       value: event.medicalInformation.pregnancyAndBreastfeeding.currentlyBreastfeedingDuration,
       label: {
-        text: "For how long"
+        text: "For how long?"
       },
       classes: "nhsuk-u-width-two-thirds",
       hint: {
@@ -91,7 +91,7 @@
     value: event.medicalInformation.pregnancyAndBreastfeeding.pregnancyStatus,
     fieldset: {
       legend: {
-        text: 'Is the participant pregnant?',
+        text: "Is " + (participant | getFullName) + " pregnant?",
         classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }
@@ -129,7 +129,7 @@
     value: event.medicalInformation.pregnancyAndBreastfeeding.breastfeedingStatus,
      fieldset: {
       legend: {
-        text: 'Is the participant currently breastfeeding?',
+        text: "Is " + (participant | getFullName) + " currently breastfeeding?",
         classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }
@@ -144,7 +144,7 @@
     },
     {
       value: "recentlyStopped",
-      text: "No, but recently stopped",
+      text: "No, but stopped recently",
       conditional: {
         html: recentlyBreastfeeding
       }
