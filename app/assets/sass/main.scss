@@ -2,6 +2,7 @@
 @forward 'nhsuk-frontend/packages/nhsuk';
 
 // Components that are not in the NHS.UK frontend library
+@forward 'components/button-menu';
 @forward 'components/dark-mode';
 @forward 'components/list-border';
 @forward 'components/related-nav';

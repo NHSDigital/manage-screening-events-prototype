@@ -18,9 +18,13 @@
     {{ "./medical-information/symptoms/add" | urlWithReferrer(currentUrl) }}
   {% endset %}
 
-  <p class="nhsuk-u-margin-top-4 nhsuk-u-margin-bottom-0">
+  {# <p class="nhsuk-u-margin-top-4 nhsuk-u-margin-bottom-0">
     <a href="{{ linkHref }}" class="nhsuk-link">{{ "Add another symptom" if hasSymptoms else "Add a symptom" }}</a>
-  </p>
+  </p> #}
+
+  {# Explicitly set referrer chain to the current url #}
+  {% set referrerChain = currentUrl %}
+  {% include "add-symptom-button-menu.njk" %}
 {% endset %}
 
 {{ card({

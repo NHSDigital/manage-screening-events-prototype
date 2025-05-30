@@ -351,10 +351,11 @@ module.exports = router => {
   }
 
   // Save symptom - handles both 'save' and 'save and add another' with data cleanup
-  router.post('/clinics/:clinicId/events/:eventId/medical-information/symptoms/save', (req, res) => {
+  router.all('/clinics/:clinicId/events/:eventId/medical-information/symptoms/save', (req, res) => {
     const { clinicId, eventId } = req.params
     const data = req.session.data
-    const action = req.body.action // 'save' or 'save-and-add'
+    const action = req.body.action || req.query.action // 'save' or 'save-and-add'
+    const nextSymptomType = req.query.symptomType // camelCase symptom type
     const referrerChain = req.query.referrerChain
 
     // Save temp symptom to array
@@ -455,10 +456,17 @@ module.exports = router => {
       delete data.event.symptomTemp
     }
 
-    // Redirect based on action
+    // Redirect based on action and symptom type
     if (action === 'save-and-add') {
-      res.redirect(urlWithReferrer(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/add`, referrerChain))
+      if (nextSymptomType) {
+        // Redirect to add specific symptom type
+        res.redirect(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/add?symptomType=${nextSymptomType}${referrerChain ? '&referrerChain=' + referrerChain : ''}`)
+      } else {
+        // Fallback to general add page
+        res.redirect(urlWithReferrer(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/add`, referrerChain))
+      }
     } else {
+      // Regular save - redirect back to medical information page
       const returnUrl = getReturnUrl(`/clinics/${clinicId}/events/${eventId}/record-medical-information`, referrerChain)
       res.redirect(returnUrl)
     }
@@ -513,8 +521,41 @@ module.exports = router => {
 
   // Main route in to starting an event - used to clear any temp data
   router.get('/clinics/:clinicId/events/:eventId/medical-information/symptoms/add', (req, res) => {
-    delete req.session.data.event.symptomTemp
-    res.redirect(urlWithReferrer(`/clinics/${req.params.clinicId}/events/${req.params.eventId}/medical-information/symptoms/type`, req.query.referrerChain))
+    const { clinicId, eventId } = req.params
+    const { symptomType } = req.query
+    console.log('Adding symptom type:', symptomType)
+    const data = req.session.data
+
+    // Clear any existing temp symptom data
+    delete data.event?.symptomTemp
+
+    // If symptomType is provided, pre-populate and go to details
+    if (symptomType) {
+      // Map camelCase symptom types to display names
+      const symptomTypeMap = {
+        'breastLump': 'Breast lump',
+        'swellingOrShapeChange': 'Swelling or shape change',
+        'skinChange': 'Skin change',
+        'nippleChange': 'Nipple change',
+        'persistentPain': 'Persistent pain',
+        'other': 'Other'
+      }
+
+      const fullSymptomType = symptomTypeMap[symptomType]
+
+      if (fullSymptomType) {
+        // Pre-populate symptomTemp with the selected type
+        data.event.symptomTemp = {
+          type: fullSymptomType
+        }
+
+        // Redirect to details page
+        return res.redirect(urlWithReferrer(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/details`, req.query.referrerChain))
+      }
+    }
+
+    // No symptomType or invalid type - go to type selection page
+    res.redirect(urlWithReferrer(`/clinics/${clinicId}/events/${eventId}/medical-information/symptoms/type`, req.query.referrerChain))
   })
 
   const MAMMOGRAPHY_VIEWS = [

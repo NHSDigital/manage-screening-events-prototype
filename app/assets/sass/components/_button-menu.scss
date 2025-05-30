@@ -1,0 +1,136 @@
+// Button Menu Component
+// Adapted from MOJ Frontend for NHS prototype use
+@use 'nhsuk-frontend/packages/core/settings' as *;
+@use 'nhsuk-frontend/packages/core/tools' as *;
+@use 'nhsuk-frontend/packages/core/objects' as *;
+@use 'nhsuk-frontend/packages/core/styles/typography' as *;
+
+.app-button-menu {
+  display: inline-block;
+  position: relative;
+}
+
+.app-button-menu__toggle-button,
+.app-button-menu__single-button {
+  margin-bottom: 0;
+  vertical-align: baseline;
+}
+
+.app-button-menu__toggle-button span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-button-menu__toggle-button svg {
+  margin-top: 2px;
+  transform: rotate(180deg);
+}
+
+.app-button-menu__toggle-button[aria-expanded="true"] svg {
+  transform: rotate(0deg);
+}
+
+.app-button-menu__wrapper {
+  z-index: 10;
+  @include nhsuk-print-hide;
+  margin: 5px 0 0; // 2px shadow, 3px gap
+  padding: 0;
+  list-style: none;
+  background-color: $color_nhsuk-white;
+  border: 1px solid $nhsuk-border-color;
+  border-bottom: nhsuk-spacing(1) solid $color_nhsuk-grey-4;
+  // box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &,
+  .app-button-group--inline {
+    position: absolute;
+    width: 300px;
+  }
+
+  &--right {
+    right: 0;
+  }
+}
+
+/* Menu items with no JS */
+.app-button-menu__item {
+  display: inline-block;
+  width: auto; // Override NHS UK's 100% width
+  margin-right: nhsuk-spacing(2);
+  margin-bottom: nhsuk-spacing(2);
+  vertical-align: baseline;
+
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+.app-button-menu li {
+  margin: 0;
+}
+
+/* Menu items with JS */
+.app-button-menu li > .app-button-menu__item {
+  box-sizing: border-box;
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  margin-top: 0;
+  margin-right: 0;
+  margin-bottom: 0;
+  margin-left: 0;
+  padding: nhsuk-spacing(3);
+  // border: $nhsuk-border-width-form-element solid transparent;
+  // border-bottom: 1px solid $nhsuk-secondary-border-color;
+  // border-bottom: 1px solid $nhsuk-form-border-color;
+  border-top: 1px solid $color_nhsuk-grey-3;
+  border-radius: 0;
+  // color: $nhsuk-text-color;
+  color: $color_nhsuk-blue;
+  background-color: $color_nhsuk-white;
+  text-align: left;
+  vertical-align: top;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  @include nhsuk-font(19, $line-height: 19px);
+
+  &:link,
+  &:visited,
+  &:active,
+  &:hover {
+    // color: $nhsuk-text-color;
+    // text-decoration: none;
+  }
+
+  &:active,
+  &:hover {
+    // color: $color_nhsuk-white;
+  }
+
+  // Fix unwanted button padding in Firefox
+  &::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+  }
+
+  &:hover {
+    background-color: $color_nhsuk-grey-5;
+  }
+
+  &:focus {
+    z-index: 10;
+    border-color: $nhsuk-focus-color;
+    outline: $nhsuk-focus-width solid transparent;
+    box-shadow: inset 0 0 0 4px $nhsuk-focus-color;
+  }
+
+  &:focus:not(:active):not(:hover) {
+    border-color: $nhsuk-focus-color;
+    color: $nhsuk-focus-text-color;
+    background-color: $nhsuk-focus-color;
+    // box-shadow: inset 0 -8px 0 $nhsuk-focus-text-color;
+    box-shadow: inset 0 ($nhsuk-focus-width * -1) $nhsuk-focus-text-color;
+  }
+}
