@@ -17,7 +17,7 @@ module.exports = [
     clinicTypes: ['screening'],
     riskLevelHandling: [
       'routine',
-      'moderate',
+      'family history',
     ],
     // Default operating hours for the BSU
     sessionPatterns: [
@@ -46,7 +46,7 @@ module.exports = [
         // Main sites can handle all supported risk levels
         riskLevelHandling: [
           'routine',
-          'moderate',
+          'family history',
         ],
         address: {
           line1: 'Breast Screening Unit',

@@ -158,7 +158,7 @@ const getParticipantUpcomingClinics = (data, participantId) =>
 /**
  * Determine a participant's current risk level based on age and risk factors
  * @param {Object} participant - Participant object
- * @returns {string} Current risk level (routine, moderate, or high)
+ * @returns {string} Current risk level (routine, family history, or high)
  */
 const getCurrentRiskLevel = (participant, referenceDate = new Date()) => {
   const age = getAge(participant, referenceDate)
@@ -169,10 +169,10 @@ const getCurrentRiskLevel = (participant, referenceDate = new Date()) => {
     return 'routine'
   }
 
-  // Check if they're in the moderate risk age range
-  const moderateRange = riskLevels.moderate.ageRange
-  if (age >= moderateRange.lower && age < moderateRange.upper) {
-    return 'moderate'
+  // Check if they're in the family history risk age range
+  const familyHistoryRange = riskLevels['family history'].ageRange
+  if (age >= familyHistoryRange.lower && age < familyHistoryRange.upper) {
+    return 'family history'
   }
 
   // Check if they're in the high risk age range

@@ -94,7 +94,7 @@
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
-  @include nhsuk-font(19, $line-height: 19px);
+  @include nhsuk-font(19);
 
   &:link,
   &:visited,

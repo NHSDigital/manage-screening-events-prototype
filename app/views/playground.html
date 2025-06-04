@@ -1,0 +1,21 @@
+{# app/views/dashboard.html #}
+
+{% extends 'layout-app.html' %}
+
+{% set pageHeading = "Playground" %}
+
+{% set gridColumn = "nhsuk-grid-column-full" %}
+
+{% set hideBackLink = true %}
+
+{% set navActive = "home" %}
+
+{% block pageContent %}
+
+<h1>
+  {{pageHeading}}
+</h1>
+
+<p class="nhsuk-body-l">This is not a user facing page. Use this for quick testing of code.</p>
+
+{% endblock %}

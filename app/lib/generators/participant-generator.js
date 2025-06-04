@@ -264,8 +264,6 @@ const generateParticipant = ({
   // Determine risk level first as it affects age generation
   const participantRiskLevel = overrides?.config?.defaultRiskLevel || riskLevel || pickRiskLevel()
 
-  // const participantRiskLevel = 'moderate'
-
   // First get or generate BSU
   const assignedBSU = overrides?.assignedBSU
     ? breastScreeningUnits.find(bsu => bsu.id === overrides.assignedBSU)
