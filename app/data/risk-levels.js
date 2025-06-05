@@ -10,7 +10,7 @@ module.exports = {
       lower: 50
     }
   },
-  moderate: {
+  "family history": {
     weight: 0.25,
     frequency: 12, // months
     ageRange: {

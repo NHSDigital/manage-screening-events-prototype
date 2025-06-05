@@ -15,14 +15,15 @@
 
 {% block pageContent %}
 
-  {{ participant | log }}
-  {{ event | log }}
+  {{ participant | log("Participant") }}
+  {{ event | log("Event") }}
 
   <h1 class="nhsuk-heading-l">
-    {{ pageHeading }}
+    <span class="nhsuk-caption-l">
+      Participant record
+    </span>
+    {{ pageHeading | safe }}
   </h1>
-
-  {{ screeningHistoryHtml | safe }}
 
   {% set personalDetailsHtml %}
     {% include "summary-lists/participant.njk" %}
@@ -33,26 +34,6 @@
     headingLevel: "2",
     descriptionHtml: personalDetailsHtml
   }) }}
-
-  {# {% set screeningHistoryHtml %}
-
-    {% set lastMammogramDateHtml %}
-      {% set lastMammogramDate = "2021-12-27T12:54:27.756Z" %}
-      {{ lastMammogramDate | formatDate }}<br>
-      <span class="nhsuk-hint">({{ lastMammogramDate | formatRelativeDate }})</span>
-    {% endset %}
-
-    {{ summaryList({
-      rows: [
-        {
-          key: { text: "Date of last mammogram" },
-          value: {
-            html: lastMammogramDateHtml
-          }
-        }
-      ] | removeEmpty
-    }) }}
-  {% endset %} #}
 
   {% set screeningHistoryHtml %}
     {% include "summary-lists/screening-history.njk" %}

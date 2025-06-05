@@ -19,15 +19,47 @@
 
   <div class="app-header-with-status__status-tag">
     {{ statusHtml | safe }}
+    <br>
+    {{ buttonMenu({
+      items: [
+
+        {
+          text: "Reschedule appointment",
+          href: "#" | urlWithReferrer(currentUrl),
+          classes: "nhsuk-button--secondary"
+        },
+        {
+          text: "Cancel appointment",
+          href: "#" | urlWithReferrer(currentUrl),
+          classes: "nhsuk-button--secondary"
+        },
+        {
+          text: "Make this appointment a special appointment" if not event.details.isSpecialAppointment else "Change special appointment details",
+          href: "#" | urlWithReferrer(currentUrl),
+          classes: "nhsuk-button--secondary"
+        }
+      ],
+      button: {
+        text: "Appointment actions",
+        classes: "nhsuk-button--secondary"
+      },
+      alignMenu: "right"
+    }) }}
   </div>
 </div>
 
+<p class="app-text-grey">
+  <span>NHS Number: {{ participant.medicalInformation.nhsNumber | formatNhsNumber }}</span>
+  {# <span class="nhsuk-u-margin-left-4">SX Number: {{ participant.sxNumber }}</span> #}
+</p>
 
-<p class="app-text-grey"><span>NHS Number: {{ participant.medicalInformation.nhsNumber | formatNhsNumber }}</span><span class="nhsuk-u-margin-left-4">SX Number: {{ participant.sxNumber }}</span></p>
+{{ appointmentTimeHtml }}
 
-{{appointmentTimeHtml}}
-
-<p>{{ event.timing.startTime | formatTimeString }} ({{ event.timing.duration }} minutes) - {{ clinic.date | formatDate }} ({{ clinic.date | formatRelativeDate }})<span class="nhsuk-u-margin-left-3"><a href="#">Reschedule appointment</a></span></p>
+<p>{{ event.timing.startTime | formatTimeString }} ({{ event.timing.duration }} minutes) - {{ clinic.date | formatDate }} ({{ clinic.date | formatRelativeDate }})
+  {# <span class="nhsuk-u-margin-left-3">
+    <a href="#">Reschedule appointment</a>
+  </span> #}
+</p>
 
 <p class="nhsuk-u-margin-bottom-4"><a href="{{ '/participants/' + participant.id | urlWithReferrer(currentUrl) }}">View participant record</a></p>
 

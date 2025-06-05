@@ -116,6 +116,12 @@
 
 {% endset %}
 
+{% set riskLevel = participant | getCurrentRiskLevel | sentenceCase %}
+
+{% if riskLevel == "Family history" %}
+  {% set riskLevel = "Family history: moderate risk" %}
+{% endif %}
+
 {{ summaryList({
   rows: [
    {
@@ -276,20 +282,20 @@
    },
    {
      key: {
-       text: "Risk level"
+       text: "Screening protocol"
      },
      value: {
-       html: participant | getCurrentRiskLevel | sentenceCase
+       text: riskLevel
      },
      actions: {
         items: [
           {
             href: "#",
             text: "View or update screening history",
-            visuallyHiddenText: "email"
+            visuallyHiddenText: "screening protocol"
           } if false
         ]
       }
-   } if false
+   }
   ]
 } | showMissingInformationLink) }}

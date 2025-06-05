@@ -7,6 +7,9 @@
 
 {% set gridColumn = "nhsuk-grid-column-full" %}
 
+{# Todo: should these get set by middleware? #}
+{% set isFinal = event | isFinal %}
+{% set isCompleted = event | isCompleted %}
 
 {% set back = {
   href: "/clinics/" + clinicId,
@@ -24,7 +27,7 @@
   {% set activeTab = 'all' %}
 
   {# Show tabs if we've done mammography #}
-  {% if ['event_complete', 'event_partially_screened'] | includes(event.status) %}
+  {% if isCompleted %}
     {% include "event-navigation.njk" %}
   {% endif %}
 
