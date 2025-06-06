@@ -35,6 +35,14 @@
   {% endif %}
 {% endset %}
 
+{% set phoneHtml %}
+  {{ participant.demographicInformation.mobilePhone | formatPhoneNumber }}
+  {% if participant.demographicInformation.homePhone and participant.demographicInformation.mobilePhone %}
+    <br>
+  {% endif %}
+  {{ participant.demographicInformation.homePhone | formatPhoneNumber }}
+{% endset %}
+
 {% set hasAdditionalMammograms = event.previousMammograms | length > 0 %}
 
 {% set lastMammogramHtml %}
@@ -109,11 +117,6 @@
 
   {% endif %}
 
-
-
-
-
-
 {% endset %}
 
 {% set riskLevel = participant | getCurrentRiskLevel | sentenceCase %}
@@ -121,6 +124,11 @@
 {% if riskLevel == "Family history" %}
   {% set riskLevel = "Family history: moderate risk" %}
 {% endif %}
+
+{% set testArray = [0] %}
+
+
+{{ testArray | log("testArray") }}
 
 {{ summaryList({
   rows: [
@@ -213,7 +221,7 @@
    },
    {
      key: {
-       text: "Address"
+       text: "Home address"
      },
      value: {
        html: address
@@ -221,7 +229,7 @@
      actions: {
         items: [
           {
-            href: "#",
+            href: participantId ~ "/personal-details/contact-details",
             text: "Change",
             visuallyHiddenText: "address"
           } if allowEdits
@@ -233,12 +241,12 @@
        text: "Phone"
      },
      value: {
-       text: participant.demographicInformation.phone | formatPhoneNumber
+       html: phoneHtml
      },
      actions: {
         items: [
           {
-            href: "#",
+            href: participantId ~ "/personal-details/contact-details",
             text: "Change",
             visuallyHiddenText: "phone"
           } if allowEdits
@@ -255,7 +263,7 @@
      actions: {
         items: [
           {
-            href: "#",
+            href: participantId ~ "/personal-details/contact-details",
             text: "Change",
             visuallyHiddenText: "email"
           } if allowEdits
