@@ -1,0 +1,27 @@
+{% set phoneNumbersHtml %}
+  {{ participant.demographicInformation.mobilePhone | formatPhoneNumber }}
+  {% if participant.demographicInformation.homePhone and participant.demographicInformation.mobilePhone %}
+    <br>
+  {% endif %}
+  {{ participant.demographicInformation.homePhone | formatPhoneNumber }}
+{% endset %}
+
+{% set phoneNumbersRow = {
+  key: {
+    text: "Phone numbers"
+  },
+  value: {
+    html: phoneNumbersHtml | trim
+  },
+  actions: {
+     items: [
+       {
+         href: "../contact-details" | urlWithReferrer(currentUrl),
+         text: "Change",
+         visuallyHiddenText: "phone numbers"
+       } if allowEdits
+     ]
+   }
+} %}
+
+{{ appSummaryListRow(phoneNumbersRow) }}

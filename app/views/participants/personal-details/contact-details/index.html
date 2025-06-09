@@ -11,7 +11,7 @@
 
 {# {% set formAction = "../" ~ participantId %} #}
 
-{% set formAction = "./contact-details/confirm" %}
+{% set formAction = "./contact-details/confirm" | urlWithReferrer(referrerChain) %}
 
 
 {# {% set back = {

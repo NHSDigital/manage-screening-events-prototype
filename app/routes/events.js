@@ -97,6 +97,7 @@ module.exports = router => {
     res.locals.clinic = originalEventData.clinic
 
     res.locals.participant = data.participant
+    res.locals.eventUrl = `/clinics/${clinicId}/events/${eventId}`
     res.locals.unit = originalEventData.unit
     res.locals.clinicId = clinicId
     res.locals.eventId = eventId

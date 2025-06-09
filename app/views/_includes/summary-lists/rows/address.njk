@@ -1,0 +1,28 @@
+{% set addressHtml %}
+  {{ participant.demographicInformation.address.line1 }}<br>
+  {% if participant.demographicInformation.address.line2 %}
+    {{ participant.demographicInformation.address.line2 }}<br>
+  {% endif %}
+  {{ participant.demographicInformation.address.town }}<br>
+  {{ participant.demographicInformation.address.postcode }}
+{% endset %}
+
+{% set addressRow = {
+  key: {
+    text: "Addresses"
+  },
+  value: {
+    html: addressHtml
+  },
+  actions: {
+     items: [
+       {
+         href: "../contact-details" | urlWithReferrer(currentUrl),
+         text: "Change",
+         visuallyHiddenText: "address"
+       } if allowEdits
+     ]
+   }
+} %}
+
+{{ appSummaryListRow(addressRow) }}

@@ -11,7 +11,7 @@
 
 {# {% set formAction = "../" ~ participantId %} #}
 
-{% set formAction = participantUrl %}
+{% set formAction = participantUrl | getReturnUrl(referrerChain) %}
 
 
 {# {% set back = {
@@ -19,6 +19,8 @@
   text: "Back"
 } %}
  #}
+
+{% set allowEdits = true %}
 
 
 {% block pageContent %}
