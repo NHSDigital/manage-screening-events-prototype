@@ -1,10 +1,7 @@
+{% set addressLines = participant.demographicInformation.address | getObjectValues({removeEmpty: true }) %}
+
 {% set addressHtml %}
-  {{ participant.demographicInformation.address.line1 }}<br>
-  {% if participant.demographicInformation.address.line2 %}
-    {{ participant.demographicInformation.address.line2 }}<br>
-  {% endif %}
-  {{ participant.demographicInformation.address.town }}<br>
-  {{ participant.demographicInformation.address.postcode }}
+  {{ addressLines | join("<br>") | safe }}
 {% endset %}
 
 {% set addressRow = {
@@ -17,9 +14,9 @@
   actions: {
      items: [
        {
-         href: "../contact-details" | urlWithReferrer(currentUrl),
+        href: contextUrl ~ "/personal-details/contact-details" | urlWithReferrer(referrerChain),
          text: "Change",
-         visuallyHiddenText: "address"
+         visuallyHiddenText: "home address"
        } if allowEdits
      ]
    }

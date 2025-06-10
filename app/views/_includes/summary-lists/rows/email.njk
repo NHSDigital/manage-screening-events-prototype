@@ -10,7 +10,7 @@
   actions: {
      items: [
        {
-         href: "../contact-details" | urlWithReferrer(currentPageUrl),
+         href: contextUrl ~ "/personal-details/contact-details" | urlWithReferrer(referrerChain or currentUrl),
          text: "Change",
          visuallyHiddenText: "email"
        } if allowEdits

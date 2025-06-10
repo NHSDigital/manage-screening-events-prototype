@@ -97,6 +97,7 @@ module.exports = router => {
     res.locals.participantId = participantId
 
     res.locals.participantUrl = `/participants/${participantId}`
+    res.locals.contextUrl = `/participants/${participantId}`
 
     // Store original participant data for reference if needed
     res.locals.originalParticipant = originalParticipant
