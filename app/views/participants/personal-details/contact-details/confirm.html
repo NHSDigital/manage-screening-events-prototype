@@ -11,14 +11,14 @@
 
 {# {% set formAction = "../" ~ participantId %} #}
 
-{% set formAction = participantUrl | getReturnUrl(referrerChain) %}
+{% set formAction = (participantUrl ~ "/save") | getReturnUrl(referrerChain) %}
 
 
-{# {% set back = {
-  href: "/events/" + clinicId,
-  text: "Back"
+{% set back = {
+  href: participantUrl,
+  text: "Back to participant"
 } %}
- #}
+
 
 {% set allowEdits = true %}
 
@@ -43,8 +43,12 @@
   {% include "summary-lists/demographic-information/contact-details.njk" %}
 
   {{ button({
-    text: "Confirm"
+    text: "Confirm changes"
   }) }}
+
+  <p>
+    <a href="{{participantUrl}}">Cancel and return to participant</a>
+  </p>
 
 
 {% endblock %}

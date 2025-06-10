@@ -1,8 +1,9 @@
 // app/routes/participants.js
 
-const { getParticipant, sortBySurname, getParticipantClinicHistory } = require('../lib/utils/participants')
+const { getParticipant, sortBySurname, getParticipantClinicHistory, saveTempParticipantToParticipant } = require('../lib/utils/participants')
 const { findById } = require('../lib/utils/arrays')
 const { createDynamicTemplateRoute } = require('../lib/utils/dynamic-routing')
+const { getReturnUrl, urlWithReferrer, appendReferrer } = require('../lib/utils/referrers')
 
 
 module.exports = router => {
@@ -114,5 +115,16 @@ module.exports = router => {
   router.get('/participants/:participantId/*', createDynamicTemplateRoute({
     templatePrefix: 'participants'
   }))
+
+  router.post('/participants/:participantId/save', (req, res) => {
+    const data = req.session.data
+    const participantId = req.params.participantId
+    const referrerChain = req.query.referrerChain
+    saveTempParticipantToParticipant(data)
+
+    // Redirect back to the participant page
+    const returnUrl = getReturnUrl(`/participants/${participantId}`, referrerChain)
+    res.redirect(returnUrl)
+  })
 
 }
