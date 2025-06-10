@@ -61,17 +61,6 @@ const SYMPTOM_TYPES = {
       ]
     }
   },
-  'Persistent pain': {
-    weight: 0.08,
-    requiresLocation: true,
-    descriptions: [
-      'Sharp, shooting pain',
-      'Dull aching pain',
-      'Burning sensation',
-      'Tender to touch',
-      'Pain that worsens with movement'
-    ]
-  },
   'Other': {
     weight: 0.02,
     requiresLocation: true,
@@ -79,7 +68,8 @@ const SYMPTOM_TYPES = {
       'Unusual sensation or tenderness',
       'Heaviness in breast',
       'Tingling sensation',
-      'Unusual firmness'
+      'Unusual firmness',
+      'Persistent pain',
     ]
   }
 }
@@ -221,8 +211,6 @@ const generateSymptom = (options = {}) => {
   // Handle type-specific fields
   if (type === 'Other') {
     symptom.otherDescription = faker.helpers.arrayElement(typeData.descriptions)
-  } else if (type === 'Persistent pain') {
-    symptom.persistentPainDescription = faker.helpers.arrayElement(typeData.descriptions)
   } else if (type === 'Nipple change') {
     const changeType = faker.helpers.arrayElement(typeData.nippleChangeTypes)
     symptom.nippleChangeType = changeType

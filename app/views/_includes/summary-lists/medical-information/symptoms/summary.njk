@@ -24,8 +24,6 @@
       {% else %}
         {% set valueLines = valueLines | push("Change type: " + (symptom.skinChangeType)) %}
       {% endif %}
-    {% elseif symptom.type == "Persistent pain" and symptom.persistentPainDescription %}
-      {% set valueLines = valueLines | push("Pain type: " + (symptom.persistentPainDescription)) %}
     {% elseif symptom.type == "Other" and symptom.otherDescription %}
       {% set valueLines = valueLines | push("Description: " + (symptom.otherDescription)) %}
     {% endif %}

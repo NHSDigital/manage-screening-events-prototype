@@ -413,9 +413,6 @@ module.exports = router => {
       if (symptomType === 'Other') {
         symptom.otherDescription = symptomTemp.otherDescription
       }
-      else if (symptomType === 'Persistent pain') {
-        symptom.persistentPainDescription = symptomTemp.persistentPainDescription
-      }
       else if (symptomType === 'Nipple change') {
         symptom.nippleChangeType = symptomTemp.nippleChangeType
         symptom.nippleChangeLocation = symptomTemp.nippleChangeLocation
@@ -431,7 +428,7 @@ module.exports = router => {
       }
 
       if (symptomType != 'Nipple change') {
-        // For other symptom types (Breast lump, Swelling, Persistent pain)
+        // For other symptom types (Breast lump, Swelling)
         symptom.location = symptomTemp.location
         // Add location descriptions
         if (symptomTemp.location === 'right breast') {
@@ -537,7 +534,6 @@ module.exports = router => {
         'swellingOrShapeChange': 'Swelling or shape change',
         'skinChange': 'Skin change',
         'nippleChange': 'Nipple change',
-        'persistentPain': 'Persistent pain',
         'other': 'Other'
       }
 

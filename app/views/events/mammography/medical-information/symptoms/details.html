@@ -48,18 +48,6 @@
       classes: "nhsuk-u-width-two-thirds"
     }) }}
 
-  {% elseif event.symptomTemp.type == "Persistent pain" %}
-
-    {{ input({
-      name: "event[symptomTemp][persistentPainDescription]",
-      label: {
-        text: "Describe the type of pain",
-        classes: "nhsuk-label--m"
-      },
-      value: event.symptomTemp.persistentPainDescription,
-      classes: "nhsuk-u-width-two-thirds"
-    }) }}
-
   {% elseif event.symptomTemp.type == "Nipple change" %}
     {{ radios({
       idPrefix: "nippleChangeType",
