@@ -1,4 +1,5 @@
 {# /app/views/_includes/summary-lists/participant.njk #}
+{% set allowEdits = allowEdits | default(true) %}
 
 {% set dob %}
   {{ participant.demographicInformation.dateOfBirth | formatDate }}<br>
@@ -10,11 +11,9 @@
   {% if participant.demographicInformation.address.line2 %}
     {{ participant.demographicInformation.address.line2 }}<br>
   {% endif %}
-  {{ participant.demographicInformation.address.city }}<br>
+  {{ participant.demographicInformation.address.town }}<br>
   {{ participant.demographicInformation.address.postcode }}
 {% endset %}
-
-{% set allowEdits = allowEdits | default(true) %}
 
 {% set ethnicGroup = participant.demographicInformation.ethnicGroup %}
 {% set ethnicBackground = participant.demographicInformation.ethnicBackground %}
