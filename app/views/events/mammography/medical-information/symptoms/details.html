@@ -66,12 +66,16 @@
           text: "Discharge"
         },
         {
-          value: "inversion or shape change",
-          text: "Inversion or shape change"
+          value: "inversion",
+          text: "Inversion"
         },
         {
-          value: "rash",
-          text: "Rash"
+          value: "rash or eczema",
+          text: "Rash or eczema"
+        },
+        {
+          value: "shape change",
+          text: "Shape change"
         },
         {
           value: "colour change",
@@ -107,6 +111,10 @@
         }
       },
       items: [
+        {
+          value: "sores or cysts",
+          text: "Sores or cysts"
+        },
         {
           value: "dimples or indentation",
           text: "Dimples or indentation"
@@ -231,7 +239,7 @@
               classes: "nhsuk-u-width-two-thirds"
             })
           }
-        },
+        } if event.symptomTemp.type != "Lump" else {},
         {
           value: "other",
           text: "Other",
@@ -416,38 +424,55 @@
       }) }}
     {% endset %}
 
+    {% set dateRangeOptions = [
+      "Less than a week",
+      "1 week to a month",
+      "1 to 3 months",
+      "3 months to a year",
+      "1 to 3 years",
+      "Over 3 years"
+    ] %}
+
+    {% set dateRadioItems = [{
+      value: "dateKnown",
+      text: "Enter a date",
+      conditional: {
+        html: dateKnownHtml
+      }
+    },
+    {
+      divider: "or"
+    }] %}
+
+    {% for item in dateRangeOptions %}
+      {% set dateRadioItems = dateRadioItems | push({
+        value: item,
+        text: item
+      }) %}
+    {% endfor %}
+
+    {% set dateRadioItems = dateRadioItems | push({
+      divider: "or"
+    }) %}
+
+    {% set dateRadioItems = dateRadioItems | push({
+      value: "notSure",
+      text: "Not sure"
+    }) %}
+
     {# Radios for when were they taken - choices 'Date known' and 'Enter approximate date' and 'Not sure'  #}
     {{ radios({
       idPrefix: "dateType",
       name: "event[symptomTemp][dateType]",
       fieldset: {
         legend: {
-          text: "When did this symptom start?",
+          text: "How long has this symptom existed?",
           classes: "nhsuk-fieldset__legend--m",
           isPageHeading: false
         }
       },
       value: event.symptomTemp.dateType,
-      items: [
-        {
-          value: "dateKnown",
-          text: "Enter a date",
-          conditional: {
-            html: dateKnownHtml
-          }
-        },
-        {
-          value: "approximateDate",
-          text: "Enter an approximate date",
-          conditional: {
-            html: approximateDateHtml
-          }
-        },
-        {
-          value: "notSure",
-          text: "Not sure"
-        }
-      ]
+      items: dateRadioItems
     }) }}
 
     {% set stymptomStoppedHtml %}
@@ -484,7 +509,7 @@
     value: event.symptomTemp.hasBeenInvestigated,
     fieldset: {
       legend: {
-        text: "Has this been investigated by a medical professional?",
+        text: "Has this been investigated?",
         classes: "nhsuk-fieldset__legend--m",
         isPageHeading: false
       }

@@ -428,7 +428,7 @@ module.exports = router => {
       }
 
       if (symptomType != 'Nipple change') {
-        // For other symptom types (Breast lump, Swelling)
+        // For other symptom types (Lump, Swelling)
         symptom.location = symptomTemp.location
         // Add location descriptions
         if (symptomTemp.location === 'right breast') {
@@ -530,7 +530,7 @@ module.exports = router => {
     if (symptomType) {
       // Map camelCase symptom types to display names
       const symptomTypeMap = {
-        'breastLump': 'Breast lump',
+        'lump': 'Lump',
         'swellingOrShapeChange': 'Swelling or shape change',
         'skinChange': 'Skin change',
         'nippleChange': 'Nipple change',

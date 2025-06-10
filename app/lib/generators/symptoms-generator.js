@@ -6,7 +6,7 @@ const generateId = require('../utils/id-generator')
 
 // Updated symptom types to match the form
 const SYMPTOM_TYPES = {
-  'Breast lump': {
+  'Lump': {
     weight: 0.4,
     requiresLocation: true,
     descriptions: [
