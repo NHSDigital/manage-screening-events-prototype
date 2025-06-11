@@ -214,10 +214,10 @@
       {% endif %}
     {% endset %}
 
-    {{ checkboxes({
+    {{ radios({
       idPrefix: "location",
       name: "event[symptomTemp][location]",
-      values: event.symptomTemp.location,
+      value: event.symptomTemp.location,
       fieldset: {
         legend: {
           text: radioQuestionText,
@@ -407,6 +407,17 @@
         classes: "nhsuk-u-width-two-thirds"
       }) }}
     {% endset %}
+
+    {{ checkboxes({
+      idPrefix: "isIntermittent",
+      name: "event[symptomTemp][isIntermittent]",
+      items: [
+        {
+          value: "yes",
+          text: "The symptom is intermittent"
+        }
+      ]
+    }) }}
 
     {{ checkboxes({
       idPrefix: "hasStopped",
