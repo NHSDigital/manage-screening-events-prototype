@@ -398,7 +398,7 @@ module.exports = router => {
         symptom.dateStarted = symptomTemp.dateStarted
         delete symptom.approximateDuration
       }
-      else if (['Less than a week', '1 week to a month', '1 to 3 months', '3 months to a year', '1 to 3 years', 'Over 3 years'].includes(symptomTemp.dateType)) {
+      else if (['Less than 3 months', '3 months to a year', '1 to 3 years', 'Over 3 years'].includes(symptomTemp.dateType)) {
         symptom.approximateDuration = symptomTemp.dateType
       }
       else if (symptomTemp.dateTtype === 'notSure') {

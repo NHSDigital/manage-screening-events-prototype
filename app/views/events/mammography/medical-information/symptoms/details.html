@@ -342,10 +342,17 @@
       }) }}
     {% endset %}
 
-    {% set dateRangeOptions = [
+    {# {% set dateRangeOptions = [
       "Less than a week",
       "1 week to a month",
       "1 to 3 months",
+      "3 months to a year",
+      "1 to 3 years",
+      "Over 3 years"
+    ] %} #}
+
+    {% set dateRangeOptions = [
+      "Less than 3 months",
       "3 months to a year",
       "1 to 3 years",
       "Over 3 years"
@@ -366,7 +373,7 @@
 
     {% set dateRadioItems = dateRadioItems | push({
       value: "dateKnown",
-      text: "Enter a date",
+      text: "Since a specific date",
       conditional: {
         html: dateKnownHtml
       }
@@ -380,6 +387,8 @@
       value: "notSure",
       text: "Not sure"
     }) %}
+
+
 
     {# Radios for when were they taken - choices 'Date known' and 'Enter approximate date' and 'Not sure'  #}
     {{ radios({
@@ -409,6 +418,9 @@
         classes: "nhsuk-u-width-two-thirds"
       }) }}
     {% endset %}
+
+    {# todo: this is hacky! #}
+    <br>
 
     {{ checkboxes({
       idPrefix: "isIntermittent",

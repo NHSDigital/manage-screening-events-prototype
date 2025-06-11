@@ -74,10 +74,17 @@ const SYMPTOM_TYPES = {
   }
 }
 
+// const DATE_RANGE_OPTIONS = [
+//   "Less than a week",
+//   "1 week to a month",
+//   "1 to 3 months",
+//   "3 months to a year",
+//   "1 to 3 years",
+//   "Over 3 years"
+// ]
+
 const DATE_RANGE_OPTIONS = [
-  "Less than a week",
-  "1 week to a month",
-  "1 to 3 months",
+  "Less than  3 months",
   "3 months to a year",
   "1 to 3 years",
   "Over 3 years"
