@@ -210,7 +210,7 @@ const generateSymptom = (options = {}) => {
 
   // Handle type-specific fields
   if (type === 'Other') {
-    symptom.otherDescription = faker.helpers.arrayElement(typeData.descriptions)
+    symptom.otherLocationDescription = faker.helpers.arrayElement(typeData.descriptions)
   } else if (type === 'Nipple change') {
     const changeType = faker.helpers.arrayElement(typeData.nippleChangeTypes)
     symptom.nippleChangeType = changeType

@@ -396,9 +396,13 @@ module.exports = router => {
       // Handle dates - combine ongoing/not ongoing into single approxStartDate
       if (symptomTemp.dateType === 'dateKnown') {
         symptom.dateStarted = symptomTemp.dateStarted
+        delete symptom.approximateDuration
       }
-      else if (symptomTemp.dateType === 'approximateDate') {
-        symptom.approximateDateStarted = symptomTemp.approximateDateStarted
+      else if (['Less than a week', '1 week to a month', '1 to 3 months', '3 months to a year', '1 to 3 years', 'Over 3 years'].includes(symptomTemp.dateType)) {
+        symptom.approximateDuration = symptomTemp.dateType
+      }
+      else if (symptomTemp.dateTtype === 'notSure') {
+        delete symptom.approximateDuration
       }
 
       console.log('symptomTemp', symptomTemp)
@@ -430,16 +434,20 @@ module.exports = router => {
       if (symptomType != 'Nipple change') {
         // For other symptom types (Lump, Swelling)
         symptom.location = symptomTemp.location
-        // Add location descriptions
-        if (symptomTemp.location === 'right breast') {
-          symptom.rightBreastDescription = symptomTemp.rightBreastDescription
-        } else if (symptomTemp.location === 'left breast') {
-          symptom.leftBreastDescription = symptomTemp.leftBreastDescription
-        } else if (symptomTemp.location === 'both breasts') {
-          symptom.bothBreastsDescription = symptomTemp.bothBreastsDescription
-        } else if (symptomTemp.location === 'other') {
-          symptom.otherLocationDescription = symptomTemp.otherDescription
+
+        if (symptomTemp.location?.includes('other')) {
+          symptom.otherLocationDescription = symptomTemp.otherLocationDescription
         }
+        // Add location descriptions
+        // if (symptomTemp.location === 'right breast') {
+        //   symptom.rightBreastDescription = symptomTemp.rightBreastDescription
+        // } else if (symptomTemp.location === 'left breast') {
+        //   symptom.leftBreastDescription = symptomTemp.leftBreastDescription
+        // } else if (symptomTemp.location === 'both breasts') {
+        //   symptom.bothBreastsDescription = symptomTemp.bothBreastsDescription
+        // } else if (symptomTemp.location === 'other') {
+        //   symptom.otherLocationDescription = symptomTemp.otherDescription
+        // }
       }
 
       // Update existing or add new

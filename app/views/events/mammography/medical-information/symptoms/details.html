@@ -48,6 +48,7 @@
       classes: "nhsuk-u-width-two-thirds"
     }) }}
 
+  {# Nipple change type #}
   {% elseif event.symptomTemp.type == "Nipple change" %}
     {{ radios({
       idPrefix: "nippleChangeType",
@@ -97,6 +98,8 @@
         }
       ]
     }) }}
+
+  {# Skin change type #}
   {% elseif event.symptomTemp.type == "Skin change" %}
 
     {{ radios({
@@ -145,11 +148,36 @@
     }) }}
   {% endif %}
 
+  {# Location #}
 
-
-
+  {# Nipple change location #}
   {% if event.symptomTemp.type == "Nipple change" %}
-    {{ radios({
+
+    {{ checkboxes({
+      idPrefix: "nippleChangeLocation",
+      name: "event[symptomTemp][nippleChangeLocation]",
+      values: event.symptomTemp.nippleChangeLocation,
+      classes: "app-checkboxes--inline",
+      fieldset: {
+        legend: {
+          text: "Which nipple has changed?",
+          classes: "nhsuk-fieldset__legend--m",
+          isPageHeading: false
+        }
+      },
+      items: [
+        {
+          value: "right nipple",
+          text: "Right nipple"
+        },
+        {
+          value: "left nipple",
+          text: "Left nipple"
+        }
+      ]
+    }) }}
+
+    {# {{ radios({
       idPrefix: "nippleChangeLocation",
       name: "event[symptomTemp][nippleChangeLocation]",
       value: event.symptomTemp.nippleChangeLocation,
@@ -174,7 +202,7 @@
           text: "Both nipples"
         }
       ]
-    }) }}
+    }) }} #}
 
   {% else %}
 
@@ -186,10 +214,10 @@
       {% endif %}
     {% endset %}
 
-    {{ radios({
+    {{ checkboxes({
       idPrefix: "location",
       name: "event[symptomTemp][location]",
-      value: event.symptomTemp.location,
+      values: event.symptomTemp.location,
       fieldset: {
         legend: {
           text: radioQuestionText,
@@ -239,7 +267,10 @@
               classes: "nhsuk-u-width-two-thirds"
             })
           }
-        } if event.symptomTemp.type != "Lump" else {},
+        } if event.symptomTemp.type == "Lumps" else {},
+        {
+          divider: "or"
+        },
         {
           value: "other",
           text: "Other",
@@ -248,7 +279,7 @@
           },
           conditional: {
             html: input({
-              name: "event[symptomTemp][otherDescription]",
+              name: "event[symptomTemp][otherLocationDescription]",
               label: {
                 text: "Describe the specific area"
               },
@@ -260,125 +291,10 @@
             })
           }
         }
-      ]
+      ] | removeEmpty
     }) }}
+
   {% endif %}
-
-  {# {% set yesOngoingHtml %}
-    {{ dateInput({
-      id: "ongoingStartDate",
-      namePrefix: "event[symptomTemp][ongoingStartDate]",
-      fieldset: {
-        legend: {
-          text: "Approximate start date",
-          _classes: "nhsuk-label--m",
-          isPageHeading: false
-        }
-      },
-      hint: {
-        text: "For example, " + today() | remove(3, "months") | formatDate("M YYYY")
-      },
-      items: [
-        {
-          name: "month",
-          classes: "nhsuk-input--width-2",
-          value: event.symptomTemp.approxStartDate.month
-        },
-        {
-          name: "year",
-          classes: "nhsuk-input--width-4",
-          value: event.symptomTemp.approxStartDate.year
-        }
-      ]
-    }) }}
-{% endset %}
-
-{% set noOngoingHtml %}
-  {{ dateInput({
-    id: "notOngoingStartDate",
-    namePrefix: "event[symptomTemp][notOngoingStartDate]",
-    fieldset: {
-      legend: {
-        text: "Approximate start date",
-        _classes: "nhsuk-label--m",
-        isPageHeading: false
-      }
-    },
-    hint: {
-      text: "For example, " + today() | remove(9, "months") | formatDate("M YYYY")
-    },
-    items: [
-      {
-        name: "month",
-        classes: "nhsuk-input--width-2",
-        value: event.symptomTemp.approxStartDate.month
-      },
-      {
-        name: "year",
-        classes: "nhsuk-input--width-4",
-        value: event.symptomTemp.approxStartDate.year
-      }
-    ]
-  }) }}
-
-  {{ dateInput({
-    id: "approxEndDate",
-    namePrefix: "event[symptomTemp][approxEndDate]",
-    fieldset: {
-      legend: {
-        text: "Approximate end date",
-        _classes: "nhsuk-label--m",
-        isPageHeading: false
-      }
-    },
-    hint: {
-      text: "For example, " + today() | remove(1, "weeks") | formatDate("M YYYY")
-    },
-    items: [
-      {
-        name: "month",
-        classes: "nhsuk-input--width-2",
-        value: event.symptomTemp.approxEndDate.month
-      },
-      {
-        name: "year",
-        classes: "nhsuk-input--width-4",
-        value: event.symptomTemp.approxEndDate.year
-      }
-    ]
-  }) }}
-{% endset %} #}
-
-{# Is this an ongoing symptom #}
-{# {{ radios({
-  idPrefix: "isOngoing",
-  name: "event[symptomTemp][isOngoing]",
-  value: event.symptomTemp.isOngoing,
-  fieldset: {
-    legend: {
-      text: "Is this an ongoing symptom?",
-      classes: "nhsuk-fieldset__legend--m",
-      isPageHeading: false
-    }
-  },
-  items: [
-    {
-      value: "yes",
-      text: "Yes",
-      conditional: {
-        html: yesOngoingHtml
-      }
-    },
-    {
-      value: "no",
-      text: "No",
-      conditional: {
-        html: noOngoingHtml
-      }
-    }
-  ]
-}) }} #}
-
   {% set dateKnownHtml %}
       {{ dateInput({
         id: "dateStarted",
@@ -433,16 +349,7 @@
       "Over 3 years"
     ] %}
 
-    {% set dateRadioItems = [{
-      value: "dateKnown",
-      text: "Enter a date",
-      conditional: {
-        html: dateKnownHtml
-      }
-    },
-    {
-      divider: "or"
-    }] %}
+    {% set dateRadioItems = [] %}
 
     {% for item in dateRangeOptions %}
       {% set dateRadioItems = dateRadioItems | push({
@@ -450,6 +357,18 @@
         text: item
       }) %}
     {% endfor %}
+
+    {% set dateRadioItems = dateRadioItems | push({
+      divider: "or"
+    }) %}
+
+    {% set dateRadioItems = dateRadioItems | push({
+      value: "dateKnown",
+      text: "Enter a date",
+      conditional: {
+        html: dateKnownHtml
+      }
+    }) %}
 
     {% set dateRadioItems = dateRadioItems | push({
       divider: "or"
