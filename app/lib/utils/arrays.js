@@ -58,7 +58,18 @@ const removeEmpty = (items) => {
   }
 
   if (_.isArray(items)) {
-    const filtered = items.filter(item => item && item !== '')
+    const filtered = items.filter(item => {
+      // Filter out falsy values and empty strings
+      if (!item || item === '') return false
+
+      // Filter out empty objects
+      if (_.isObject(item) && !_.isArray(item) && Object.keys(item).length === 0) return false
+
+      // Filter out empty arrays
+      if (_.isArray(item) && item.length === 0) return false
+
+      return true
+    })
     return filtered.length ? filtered : undefined
   }
 }
