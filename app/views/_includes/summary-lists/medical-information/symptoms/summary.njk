@@ -86,6 +86,11 @@
     {% set valueLines = valueLines | push(startText) %}
 
     {# Stop date if applicable #}
+    {% if symptom.isIntermittent %}
+      {% set valueLines = valueLines | push("Symptom is intermittent") %}
+    {% endif %}
+
+    {# Stop date if applicable #}
     {% if symptom.hasStopped and symptom.approximateDateStopped %}
       {% set valueLines = valueLines | push("Stopped: " + symptom.approximateDateStopped) %}
     {% endif %}

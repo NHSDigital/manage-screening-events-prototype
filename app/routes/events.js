@@ -407,6 +407,10 @@ module.exports = router => {
 
       console.log('symptomTemp', symptomTemp)
 
+      if (symptomTemp.isIntermittent) {
+        symptom.isIntermittent = true
+      }
+
       symptom.hasStopped = (symptomTemp?.hasStopped?.includes('yes')) ? true : false
 
       if (symptom.hasStopped) {
@@ -435,19 +439,19 @@ module.exports = router => {
         // For other symptom types (Lump, Swelling)
         symptom.location = symptomTemp.location
 
-        if (symptomTemp.location?.includes('other')) {
+        // if (symptomTemp.location?.includes('other')) {
+        //   symptom.otherLocationDescription = symptomTemp.otherLocationDescription
+        // }
+        // Add location descriptions
+        if (symptomTemp.location === 'right breast') {
+          symptom.rightBreastDescription = symptomTemp.rightBreastDescription
+        } else if (symptomTemp.location === 'left breast') {
+          symptom.leftBreastDescription = symptomTemp.leftBreastDescription
+        } else if (symptomTemp.location === 'both breasts') {
+          symptom.bothBreastsDescription = symptomTemp.bothBreastsDescription
+        } else if (symptomTemp.location === 'other') {
           symptom.otherLocationDescription = symptomTemp.otherLocationDescription
         }
-        // Add location descriptions
-        // if (symptomTemp.location === 'right breast') {
-        //   symptom.rightBreastDescription = symptomTemp.rightBreastDescription
-        // } else if (symptomTemp.location === 'left breast') {
-        //   symptom.leftBreastDescription = symptomTemp.leftBreastDescription
-        // } else if (symptomTemp.location === 'both breasts') {
-        //   symptom.bothBreastsDescription = symptomTemp.bothBreastsDescription
-        // } else if (symptomTemp.location === 'other') {
-        //   symptom.otherLocationDescription = symptomTemp.otherDescription
-        // }
       }
 
       // Update existing or add new

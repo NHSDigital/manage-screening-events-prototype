@@ -35,120 +35,7 @@
     {{ pageHeading }}
   </h1>
 
-
-  {% if event.symptomTemp.type == "Other" %}
-
-    {{ input({
-      name: "event[symptomTemp][otherDescription]",
-      label: {
-        text: "Describe the symptom",
-        classes: "nhsuk-label--m"
-      },
-      value: event.symptomTemp.otherDescription,
-      classes: "nhsuk-u-width-two-thirds"
-    }) }}
-
-  {# Nipple change type #}
-  {% elseif event.symptomTemp.type == "Nipple change" %}
-    {{ radios({
-      idPrefix: "nippleChangeType",
-      name: "event[symptomTemp][nippleChangeType]",
-      value: event.symptomTemp.nippleChangeType,
-      fieldset: {
-        legend: {
-          text: "Describe the change",
-          classes: "nhsuk-fieldset__legend--m",
-          isPageHeading: false
-        }
-      },
-      items: [
-        {
-          value: "discharge",
-          text: "Discharge"
-        },
-        {
-          value: "inversion",
-          text: "Inversion"
-        },
-        {
-          value: "rash or eczema",
-          text: "Rash or eczema"
-        },
-        {
-          value: "shape change",
-          text: "Shape change"
-        },
-        {
-          value: "colour change",
-          text: "Colour change"
-        },
-        {
-          value: "other",
-          text: "Other",
-          conditional: {
-            html: input({
-              name: "event[symptomTemp][nippleChangeDescription]",
-              label: {
-                text: "Describe the specific area"
-              },
-              value: event.symptomTemp.nippleChangeDescription,
-              classes: "nhsuk-u-width-two-thirds"
-            })
-          }
-        }
-      ]
-    }) }}
-
-  {# Skin change type #}
-  {% elseif event.symptomTemp.type == "Skin change" %}
-
-    {{ radios({
-      idPrefix: "skinChangeType",
-      name: "event[symptomTemp][skinChangeType]",
-      value: event.symptomTemp.skinChangeType,
-      fieldset: {
-        legend: {
-          text: "How has the skin changed?",
-          classes: "nhsuk-fieldset__legend--m",
-          isPageHeading: false
-        }
-      },
-      items: [
-        {
-          value: "sores or cysts",
-          text: "Sores or cysts"
-        },
-        {
-          value: "dimples or indentation",
-          text: "Dimples or indentation"
-        },
-        {
-          value: "rash",
-          text: "Rash"
-        },
-        {
-          value: "colour change",
-          text: "Colour change"
-        },
-        {
-          value: "other",
-          text: "Other",
-          conditional: {
-            html: input({
-              name: "event[symptomTemp][skinChangeDescription]",
-              label: {
-                text: "Describe the change"
-              },
-              value: event.symptomTemp.skinChangeDescription,
-              classes: "nhsuk-u-width-two-thirds"
-            })
-          }
-        }
-      ]
-    }) }}
-  {% endif %}
-
-  {# Location #}
+    {# Location #}
 
   {# Nipple change location #}
   {% if event.symptomTemp.type == "Nipple change" %}
@@ -286,7 +173,7 @@
               hint: {
                 text: "For example, the left armpit"
               },
-              value: event.symptomTemp.otherDescription,
+              value: event.symptomTemp.otherLocationDescription,
               classes: "nhsuk-u-width-two-thirds"
             })
           }
@@ -295,6 +182,121 @@
     }) }}
 
   {% endif %}
+
+
+  {% if event.symptomTemp.type == "Other" %}
+
+    {{ input({
+      name: "event[symptomTemp][otherDescription]",
+      label: {
+        text: "Describe the symptom",
+        classes: "nhsuk-label--m"
+      },
+      value: event.symptomTemp.otherDescription,
+      classes: "nhsuk-u-width-two-thirds"
+    }) }}
+
+  {# Nipple change type #}
+  {% elseif event.symptomTemp.type == "Nipple change" %}
+    {{ radios({
+      idPrefix: "nippleChangeType",
+      name: "event[symptomTemp][nippleChangeType]",
+      value: event.symptomTemp.nippleChangeType,
+      fieldset: {
+        legend: {
+          text: "Describe the change",
+          classes: "nhsuk-fieldset__legend--m",
+          isPageHeading: false
+        }
+      },
+      items: [
+        {
+          value: "discharge",
+          text: "Discharge"
+        },
+        {
+          value: "inversion",
+          text: "Inversion"
+        },
+        {
+          value: "rash or eczema",
+          text: "Rash or eczema"
+        },
+        {
+          value: "shape change",
+          text: "Shape change"
+        },
+        {
+          value: "colour change",
+          text: "Colour change"
+        },
+        {
+          value: "other",
+          text: "Other",
+          conditional: {
+            html: input({
+              name: "event[symptomTemp][nippleChangeDescription]",
+              label: {
+                text: "Describe the specific area"
+              },
+              value: event.symptomTemp.nippleChangeDescription,
+              classes: "nhsuk-u-width-two-thirds"
+            })
+          }
+        }
+      ]
+    }) }}
+
+  {# Skin change type #}
+  {% elseif event.symptomTemp.type == "Skin change" %}
+
+    {{ radios({
+      idPrefix: "skinChangeType",
+      name: "event[symptomTemp][skinChangeType]",
+      value: event.symptomTemp.skinChangeType,
+      fieldset: {
+        legend: {
+          text: "How has the skin changed?",
+          classes: "nhsuk-fieldset__legend--m",
+          isPageHeading: false
+        }
+      },
+      items: [
+        {
+          value: "sores or cysts",
+          text: "Sores or cysts"
+        },
+        {
+          value: "dimples or indentation",
+          text: "Dimples or indentation"
+        },
+        {
+          value: "rash",
+          text: "Rash"
+        },
+        {
+          value: "colour change",
+          text: "Colour change"
+        },
+        {
+          value: "other",
+          text: "Other",
+          conditional: {
+            html: input({
+              name: "event[symptomTemp][skinChangeDescription]",
+              label: {
+                text: "Describe the change"
+              },
+              value: event.symptomTemp.skinChangeDescription,
+              classes: "nhsuk-u-width-two-thirds"
+            })
+          }
+        }
+      ]
+    }) }}
+  {% endif %}
+
+  {# Dates #}
   {% set dateKnownHtml %}
       {{ dateInput({
         id: "dateStarted",
