@@ -1,7 +1,6 @@
 
 {% extends 'layout-app.html' %}
 
-
 {% set pageHeading = "Hormone replacement therapy (HRT)" %}
 
 {% set gridColumn = "nhsuk-grid-column-two-thirds" %}
@@ -69,15 +68,18 @@
 
   {% endset %}
 
+  <span class="nhsuk-caption-l">
+    {{ participant | getShortName }}
+  </span>
   {{ radios({
     name: "event[medicalInformation][hrt][hrtQuestion]",
     idPrefix: "hrtQuestion",
     value: event.medicalInformation.hrt.hrtQuestion,
     fieldset: {
       legend: {
-        text: "Is " + (participant | getFullName) + " currently taking HRT?",
-        classes: "nhsuk-fieldset__legend--m",
-        isPageHeading: false
+        text: "Is " + (participant | getShortName) + " currently taking HRT?",
+        classes: "nhsuk-fieldset__legend--l",
+        isPageHeading: true
       }
     },
     items: [
