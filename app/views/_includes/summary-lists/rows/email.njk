@@ -5,7 +5,7 @@
     text: "Email"
   },
   value: {
-    html: participant.demographicInformation.email | trim
+    html: (participant.demographicInformation.email | trim) | safe
   },
   actions: {
      items: [
@@ -16,6 +16,6 @@
        } if allowEdits
      ]
    }
-} %}
+} | handleSummaryListMissingInformation(showNotProvidedText) %}
 
 {{ appSummaryListRow(emailRow) }}
